@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Invaders</title>
+    <style>
+        body {
+            background-color: #0a0a2a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .title {
+            font-size: 4em;
+            text-shadow: 0 0 10px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .invader {
+            font-size: 2em;
+            margin: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .equation {
+            font-size: 1.5em;
+            margin: 10px;
+            animation: slide 5s linear infinite;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 10px #00ff00;
+            }
+            to {
+                text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes slide {
+            0% { transform: translateX(-100vw); }
+            100% { transform: translateX(100vw); }
+        }
+
+        .start-button {
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-button:hover {
+            background-color: #00ff00;
+            color: #0a0a2a;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="title">MATH INVADERS</div>
+    
+    <div class="invader">👾</div>
+    
+    <div class="equation">2x + 5 = 15</div>
+    <div class="equation">√64 + 3² = ?</div>
+    <div class="equation">∫x²dx = ?</div>
+    
+    <button class="start-button" onclick="alert('Get ready for some math action!')">START GAME</button>
+
+    <script>
+        // Add some random movement to invaders
+        const invader = document.querySelector('.invader');
+        setInterval(() => {
+            invader.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+        }, 1000);
+    </script>
+</body>
+</html>
+
