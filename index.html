@@ -72,6 +72,27 @@
             color: #0a0a2a;
             transform: scale(1.1);
         }
+
+        .credits {
+            position: fixed;
+            bottom: 20px;
+            font-size: 1.2em;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .credits span {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            margin: 0 5px;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
@@ -84,6 +105,8 @@
     <div class="equation">∫x²dx = ?</div>
     
     <button class="start-button" onclick="alert('Get ready for some math action!')">START GAME</button>
+
+    <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
 
     <script>
         // Add some random movement to invaders
