@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Alien Level 2 - Slightly Aggressive -->
+  <g fill="#ffe066" stroke="#cc9900" stroke-width="1.5">
+    <!-- Head - Made smaller -->
+    <ellipse cx="50" cy="30" rx="25" ry="25" />
+    
+    <!-- Eyes - Adjusted position and size -->
+    <ellipse cx="40" cy="25" rx="6" ry="4.5" fill="white" stroke="#cc9900" />
+    <ellipse cx="60" cy="25" rx="6" ry="4.5" fill="white" stroke="#cc9900" />
+    <ellipse cx="40" cy="25" rx="3" ry="2.5" fill="black" />
+    <ellipse cx="60" cy="25" rx="3" ry="2.5" fill="black" />
+    
+    <!-- Mouth - Adjusted position -->
+    <path d="M38,40 Q50,37 62,40" fill="none" stroke="#cc9900" stroke-width="2" />
+    <path d="M42,43 L46,41 L50,43 L54,41 L58,43" fill="none" stroke="#cc9900" stroke-width="1.5" />
+    
+    <!-- Antennae - Adjusted position -->
+    <path d="M35,12 Q30,8 25,6" fill="none" stroke="#cc9900" stroke-width="2" />
+    <path d="M65,12 Q70,8 75,6" fill="none" stroke="#cc9900" stroke-width="2" />
+    <path d="M25,6 L20,3" fill="none" stroke="#cc9900" stroke-width="2" />
+    <path d="M75,6 L80,3" fill="none" stroke="#cc9900" stroke-width="2" />
+    
+    <!-- Number Display Area - Enlarged and repositioned -->
+    <rect x="20" y="60" width="60" height="30" rx="5" ry="5" fill="white" stroke="#cc9900" stroke-width="1.5" class="number-display" />
+  </g>
+</svg> 

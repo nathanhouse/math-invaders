@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Alien Level 4 - Most Dangerous -->
+  <g fill="#9966ff" stroke="#6600cc" stroke-width="1.5">
+    <!-- Head - Made smaller -->
+    <path d="M25,30 C25,10 75,10 75,30 L72,50 C72,57 28,57 28,50 Z" />
+    
+    <!-- Spikes on head - Adjusted position -->
+    <path d="M35,15 L32,3" stroke="#6600cc" stroke-width="2" />
+    <path d="M43,12 L41,1" stroke="#6600cc" stroke-width="2" />
+    <path d="M50,10 L50,0" stroke="#6600cc" stroke-width="2" />
+    <path d="M57,12 L59,1" stroke="#6600cc" stroke-width="2" />
+    <path d="M65,15 L68,3" stroke="#6600cc" stroke-width="2" />
+    
+    <!-- Eyes - Adjusted position -->
+    <path d="M35,25 L43,21 L43,29 Z" fill="red" stroke="#6600cc" />
+    <path d="M65,25 L57,21 L57,29 Z" fill="red" stroke="#6600cc" />
+    
+    <!-- Mouth - Adjusted position -->
+    <path d="M35,40 Q50,53 65,40" fill="#330066" stroke="#6600cc" stroke-width="2" />
+    
+    <!-- Teeth - Adjusted position -->
+    <path d="M38,40 L38,47" stroke="white" stroke-width="2" />
+    <path d="M44,42 L44,49" stroke="white" stroke-width="2" />
+    <path d="M50,44 L50,51" stroke="white" stroke-width="2" />
+    <path d="M56,42 L56,49" stroke="white" stroke-width="2" />
+    <path d="M62,40 L62,47" stroke="white" stroke-width="2" />
+    
+    <!-- Number Display Area - Enlarged and repositioned -->
+    <rect x="20" y="60" width="60" height="30" rx="5" ry="5" fill="white" stroke="#6600cc" stroke-width="1.5" class="number-display" />
+  </g>
+</svg> 

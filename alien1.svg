@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Alien Level 1 - Benign -->
+  <g fill="#8eff8e" stroke="#00aa00" stroke-width="1.5">
+    <!-- Head - Made smaller -->
+    <ellipse cx="50" cy="30" rx="25" ry="25" />
+    
+    <!-- Eyes - Adjusted position and size -->
+    <circle cx="40" cy="25" r="6" fill="white" stroke="#00aa00" />
+    <circle cx="60" cy="25" r="6" fill="white" stroke="#00aa00" />
+    <circle cx="40" cy="25" r="3" fill="black" />
+    <circle cx="60" cy="25" r="3" fill="black" />
+    
+    <!-- Smile - Adjusted position -->
+    <path d="M38,40 Q50,47 62,40" fill="none" stroke="#00aa00" stroke-width="2" />
+    
+    <!-- Antennae - Adjusted position -->
+    <path d="M40,10 Q40,5 35,2" fill="none" stroke="#00aa00" stroke-width="2" />
+    <path d="M60,10 Q60,5 65,2" fill="none" stroke="#00aa00" stroke-width="2" />
+    <circle cx="35" cy="2" r="2" />
+    <circle cx="65" cy="2" r="2" />
+    
+    <!-- Number Display Area - Enlarged and repositioned -->
+    <rect x="20" y="60" width="60" height="30" rx="5" ry="5" fill="white" stroke="#00aa00" stroke-width="1.5" class="number-display" />
+  </g>
+</svg> 

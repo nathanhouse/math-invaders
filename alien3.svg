@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80">
+  <!-- Alien Level 3 - More Aggressive -->
+  <g fill="#ff6666" stroke="#cc0000" stroke-width="1.5">
+    <!-- Head - Made smaller -->
+    <path d="M25,30 C25,10 75,10 75,30 L72,50 C72,57 28,57 28,50 Z" />
+    
+    <!-- Eyes - Adjusted position -->
+    <path d="M35,25 L43,21 L43,29 Z" fill="white" stroke="#cc0000" />
+    <path d="M65,25 L57,21 L57,29 Z" fill="white" stroke="#cc0000" />
+    
+    <!-- Mouth - Adjusted position -->
+    <path d="M38,40 Q50,47 62,40" fill="none" stroke="#cc0000" stroke-width="2" />
+    <path d="M42,43 L46,47 L50,43 L54,47 L58,43" fill="none" stroke="#cc0000" stroke-width="1.5" />
+    
+    <!-- Teeth - Adjusted position -->
+    <path d="M42,40 L42,43" stroke="#cc0000" stroke-width="2" />
+    <path d="M50,40 L50,45" stroke="#cc0000" stroke-width="2" />
+    <path d="M58,40 L58,43" stroke="#cc0000" stroke-width="2" />
+    
+    <!-- Horns - Adjusted position -->
+    <path d="M35,15 L28,5" fill="none" stroke="#cc0000" stroke-width="2" />
+    <path d="M65,15 L72,5" fill="none" stroke="#cc0000" stroke-width="2" />
+    
+    <!-- Number Display Area - Enlarged and repositioned -->
+    <rect x="20" y="60" width="60" height="30" rx="5" ry="5" fill="white" stroke="#cc0000" stroke-width="1.5" class="number-display" />
+  </g>
+</svg> 

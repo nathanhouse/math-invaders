@@ -16,12 +16,14 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+            padding-bottom: 60px; /* Add padding at the bottom to ensure credits are visible */
         }
 
         .title {
             font-size: 4em;
             text-shadow: 0 0 10px #00ff00;
             animation: glow 2s ease-in-out infinite alternate;
+            margin-top: 20px;
         }
 
         .invader {
@@ -75,11 +77,12 @@
 
         .credits {
             position: fixed;
-            bottom: 20px;
+            bottom: 10px;
             font-size: 1.2em;
             opacity: 0.8;
             letter-spacing: 2px;
             animation: pulse 2s ease-in-out infinite;
+            z-index: 10; /* Ensure credits are always visible */
         }
 
         .credits span {
@@ -93,6 +96,155 @@
             50% { opacity: 1; }
             100% { opacity: 0.5; }
         }
+
+        .back-button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #00ffff;
+            color: #0a0a2a;
+            transform: scale(1.1);
+        }
+
+        .operator-button {
+            padding: 25px;
+            font-size: 2.5em;
+            background-color: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .operator-button:hover {
+            background-color: #00ff00;
+            color: #0a0a2a;
+            transform: scale(1.1);
+            text-shadow: none;
+        }
+
+        .addition {
+            text-shadow: 0 0 10px #ff0000;
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        
+        .addition:hover {
+            background-color: #ff0000;
+        }
+
+        .subtraction {
+            text-shadow: 0 0 10px #ffff00;
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+        
+        .subtraction:hover {
+            background-color: #ffff00;
+        }
+
+        .multiplication {
+            text-shadow: 0 0 10px #00ffff;
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+        
+        .multiplication:hover {
+            background-color: #00ffff;
+        }
+
+        .division {
+            text-shadow: 0 0 10px #ff00ff;
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+        
+        .division:hover {
+            background-color: #ff00ff;
+        }
+
+        /* Difficulty Selection Styles */
+        .difficulty-section {
+            margin-bottom: 20px;
+        }
+
+        .alien-selection, .math-selection {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .alien-option, .math-option {
+            position: relative;
+            width: 90px;
+            height: 120px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(0, 255, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .alien-option:hover, .math-option:hover {
+            transform: scale(1.05);
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+
+        .alien-option.selected, .math-option.selected {
+            border-color: #00ffff;
+            background-color: rgba(0, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .alien-svg {
+            width: 80px;
+            height: 80px;
+        }
+
+        .level-indicator {
+            position: absolute;
+            bottom: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        .math-level {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .math-description {
+            font-size: 0.9em;
+        }
+
+        /* Number display styling */
+        .alien-number {
+            position: absolute;
+            font-family: 'Courier New', monospace;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #0a0a2a;
+            top: 70px;
+            width: 100%;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -100,11 +252,82 @@
     
     <div class="invader">👾</div>
     
-    <div class="equation">2x + 5 = 15</div>
-    <div class="equation">√64 + 3² = ?</div>
-    <div class="equation">∫x²dx = ?</div>
-    
-    <button class="start-button" onclick="alert('Get ready for some math action!')">START GAME</button>
+    <div id="main-menu" style="margin-bottom: 60px;">
+        <button class="start-button" onclick="showPlayerSelection()">START GAME</button>
+    </div>
+
+    <div id="player-selection" style="display: none; text-align: center; margin-bottom: 60px;">
+        <h2 style="font-size: 2em; margin-bottom: 30px; text-shadow: 0 0 10px #00ff00;">SELECT PLAYERS</h2>
+        <div style="display: flex; justify-content: center; gap: 30px;">
+            <button class="start-button" onclick="showOperatorSelection()">1 PLAYER</button>
+            <button class="start-button" onclick="startGame(2)">2 PLAYERS</button>
+        </div>
+        <button class="back-button" onclick="showMainMenu()">BACK</button>
+    </div>
+
+    <div id="operator-selection" style="display: none; text-align: center; margin-bottom: 60px;">
+        <h2 style="font-size: 2em; margin-bottom: 30px; text-shadow: 0 0 10px #00ff00;">SELECT OPERATOR</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 500px;">
+            <button class="operator-button addition" onclick="showDifficultySelection('addition')">+</button>
+            <button class="operator-button subtraction" onclick="showDifficultySelection('subtraction')">-</button>
+            <button class="operator-button multiplication" onclick="showDifficultySelection('multiplication')">×</button>
+            <button class="operator-button division" onclick="showDifficultySelection('division')">÷</button>
+        </div>
+        <button class="back-button" onclick="showPlayerSelection()">BACK</button>
+    </div>
+
+    <div id="difficulty-selection" style="display: none; text-align: center; margin-bottom: 60px;">
+        <h2 style="font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT DIFFICULTY</h2>
+        
+        <!-- Alien Difficulty -->
+        <div class="difficulty-section">
+            <h3 style="font-size: 1.5em; margin-bottom: 15px; text-shadow: 0 0 8px #00ff00;">ALIEN DIFFICULTY</h3>
+            <div class="alien-selection">
+                <div class="alien-option" onclick="selectAlienDifficulty(1)">
+                    <object data="alien1.svg" type="image/svg+xml" class="alien-svg"></object>
+                    <div class="level-indicator">1</div>
+                </div>
+                <div class="alien-option" onclick="selectAlienDifficulty(2)">
+                    <object data="alien2.svg" type="image/svg+xml" class="alien-svg"></object>
+                    <div class="level-indicator">2</div>
+                </div>
+                <div class="alien-option" onclick="selectAlienDifficulty(3)">
+                    <object data="alien3.svg" type="image/svg+xml" class="alien-svg"></object>
+                    <div class="level-indicator">3</div>
+                </div>
+                <div class="alien-option" onclick="selectAlienDifficulty(4)">
+                    <object data="alien4.svg" type="image/svg+xml" class="alien-svg"></object>
+                    <div class="level-indicator">4</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Math Difficulty -->
+        <div class="difficulty-section">
+            <h3 style="font-size: 1.5em; margin: 20px 0 15px; text-shadow: 0 0 8px #00ff00;">MATH DIFFICULTY</h3>
+            <div class="math-selection">
+                <div class="math-option" onclick="selectMathDifficulty(1)">
+                    <div class="math-level">1</div>
+                    <div class="math-description">EASY</div>
+                </div>
+                <div class="math-option" onclick="selectMathDifficulty(2)">
+                    <div class="math-level">2</div>
+                    <div class="math-description">MEDIUM</div>
+                </div>
+                <div class="math-option" onclick="selectMathDifficulty(3)">
+                    <div class="math-level">3</div>
+                    <div class="math-description">HARD</div>
+                </div>
+                <div class="math-option" onclick="selectMathDifficulty(4)">
+                    <div class="math-level">4</div>
+                    <div class="math-description">EXPERT</div>
+                </div>
+            </div>
+        </div>
+        
+        <button id="start-game-btn" class="start-button" style="opacity: 0.5; cursor: not-allowed;" disabled>START GAME</button>
+        <button class="back-button" onclick="showOperatorSelection()">BACK</button>
+    </div>
 
     <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
 
@@ -114,6 +337,147 @@
         setInterval(() => {
             invader.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
         }, 1000);
+
+        // Game navigation functions
+        function showPlayerSelection() {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('player-selection').style.display = 'block';
+            document.getElementById('operator-selection').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'none';
+        }
+
+        function showMainMenu() {
+            document.getElementById('main-menu').style.display = 'block';
+            document.getElementById('player-selection').style.display = 'none';
+            document.getElementById('operator-selection').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'none';
+        }
+
+        function showOperatorSelection() {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('player-selection').style.display = 'none';
+            document.getElementById('operator-selection').style.display = 'block';
+            document.getElementById('difficulty-selection').style.display = 'none';
+        }
+
+        function showDifficultySelection(operator) {
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('player-selection').style.display = 'none';
+            document.getElementById('operator-selection').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'block';
+            
+            // Store the selected operator
+            selectedOperator = operator;
+            
+            // Reset selections
+            selectedAlienDifficulty = 0;
+            selectedMathDifficulty = 0;
+            updateStartButton();
+            
+            // Clear previous selections
+            document.querySelectorAll('.alien-option.selected, .math-option.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+        }
+
+        // Game state variables
+        let selectedOperator = '';
+        let selectedAlienDifficulty = 0;
+        let selectedMathDifficulty = 0;
+
+        function selectAlienDifficulty(level) {
+            selectedAlienDifficulty = level;
+            
+            // Update visual selection
+            document.querySelectorAll('.alien-option').forEach((el, index) => {
+                if (index + 1 === level) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+            
+            updateStartButton();
+        }
+
+        function selectMathDifficulty(level) {
+            selectedMathDifficulty = level;
+            
+            // Update visual selection
+            document.querySelectorAll('.math-option').forEach((el, index) => {
+                if (index + 1 === level) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+            
+            updateStartButton();
+        }
+
+        function updateStartButton() {
+            const startButton = document.getElementById('start-game-btn');
+            
+            // Enable button only if both difficulties are selected
+            if (selectedAlienDifficulty > 0 && selectedMathDifficulty > 0) {
+                startButton.disabled = false;
+                startButton.style.opacity = '1';
+                startButton.style.cursor = 'pointer';
+                startButton.onclick = function() {
+                    startGameWithSettings(selectedOperator, selectedAlienDifficulty, selectedMathDifficulty);
+                };
+            } else {
+                startButton.disabled = true;
+                startButton.style.opacity = '0.5';
+                startButton.style.cursor = 'not-allowed';
+                startButton.onclick = null;
+            }
+        }
+
+        function startGameWithSettings(operator, alienLevel, mathLevel) {
+            alert(`Starting game with ${operator} problems, alien difficulty: ${alienLevel}, math difficulty: ${mathLevel}`);
+            // Here you would add code to start the actual game with the selected settings
+        }
+
+        function startGame(players) {
+            alert(`Starting ${players} player game! Get ready for some math action!`);
+            // Here you would add code to start the actual game
+        }
+
+        function startGameWithOperator(operator) {
+            showDifficultySelection(operator);
+        }
+
+        // Add sample numbers to aliens for demonstration
+        function addSampleNumbersToAliens() {
+            // Wait for SVGs to load
+            setTimeout(() => {
+                const alienOptions = document.querySelectorAll('.alien-option');
+                
+                // Sample numbers for demonstration
+                const sampleNumbers = ['42', '137', '1024', '9876'];
+                
+                alienOptions.forEach((option, index) => {
+                    const numberElement = document.createElement('div');
+                    numberElement.className = 'alien-number';
+                    numberElement.textContent = sampleNumbers[index];
+                    
+                    // Adjust font size for 4-digit numbers
+                    if (sampleNumbers[index].length >= 4) {
+                        numberElement.style.fontSize = '1.2em';
+                    } else if (sampleNumbers[index].length === 3) {
+                        numberElement.style.fontSize = '1.3em';
+                    }
+                    
+                    option.appendChild(numberElement);
+                });
+            }, 500);
+        }
+
+        // Initialize when page loads
+        window.onload = function() {
+            addSampleNumbersToAliens();
+        };
     </script>
 </body>
 </html>
