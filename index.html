@@ -1843,6 +1843,15 @@
         function handleKeyPress(e) {
             if (gameState.isGameOver) return;
             
+            // P key to pause/unpause game (should work regardless of paused state)
+            if (e.key === 'p' || e.key === 'P') {
+                togglePause();
+                return;
+            }
+            
+            // If game is paused, only P key should work
+            if (gamePaused) return;
+            
             // Q key to exit game
             if (e.key === 'q' || e.key === 'Q') {
                 exitGame();
@@ -1852,12 +1861,6 @@
             // R key to restart game with same parameters
             if (e.key === 'r' || e.key === 'R') {
                 restartGame();
-                return;
-            }
-            
-            // P key to pause/unpause game
-            if (e.key === 'p' || e.key === 'P') {
-                togglePause();
                 return;
             }
             
@@ -1876,7 +1879,7 @@
             }
         }
         function handleKeyRelease(e) {
-            if (gameState.isGameOver) return;
+            if (gameState.isGameOver || gamePaused) return;
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
                 if (!gameState.keysPressed) {
                     gameState.keysPressed = {};
@@ -1886,10 +1889,11 @@
         }
         let touchStartX = 0;
         function handleTouchStart(e) {
+            if (gamePaused) return;
             touchStartX = e.touches[0].clientX;
         }
         function handleTouchMove(e) {
-            if (gameState.isGameOver) return;
+            if (gameState.isGameOver || gamePaused) return;
             const touchX = e.touches[0].clientX;
             const diffX = touchX - touchStartX;
             if (Math.abs(diffX) > 10) {
@@ -1899,6 +1903,16 @@
         }
         function handleClick(e) {
             if (gameState.isGameOver) return;
+            
+            // Check if this is a click on the pause button (should always work)
+            const pauseButton = document.getElementById('pause-game');
+            if (pauseButton && pauseButton.contains(e.target)) {
+                return; // Let the onclick handler of the button handle this
+            }
+            
+            // Block all other game clicks when paused
+            if (gamePaused) return;
+            
             const gameContainer = document.getElementById('game-container');
             const rect = gameContainer.getBoundingClientRect();
             if (
@@ -2424,9 +2438,21 @@
                     resumeText.textContent = 'Press P to resume';
                     resumeText.style.fontSize = '1.5em';
                     resumeText.style.color = '#00ffff';
+                    resumeText.style.marginBottom = '30px';
+                    
+                    // Create a RESUME button for mouse users
+                    const resumeButton = document.createElement('button');
+                    resumeButton.textContent = 'RESUME GAME';
+                    resumeButton.className = 'control-toggle';
+                    resumeButton.style.fontSize = '1em';
+                    resumeButton.style.padding = '10px 20px';
+                    resumeButton.style.margin = '0';
+                    resumeButton.innerHTML = 'RESUME GAME <span class="key-hint">P</span>';
+                    resumeButton.onclick = togglePause;
                     
                     pauseOverlay.appendChild(pauseText);
                     pauseOverlay.appendChild(resumeText);
+                    pauseOverlay.appendChild(resumeButton);
                     document.body.appendChild(pauseOverlay);
                 } else {
                     pauseOverlay.style.display = 'flex';
@@ -2434,6 +2460,10 @@
                 
                 // Update pause button text
                 document.getElementById('pause-game').innerHTML = 'RESUME <span class="key-hint">P</span>';
+                
+                // Disable Exit and Restart buttons during pause
+                document.getElementById('exit-game').onclick = null;
+                document.getElementById('restart-game').onclick = null;
                 
                 // Stop all audio when game is paused
                 soundManager.playSound('buttonClick');
@@ -2463,6 +2493,10 @@
                 
                 // Update pause button text
                 document.getElementById('pause-game').innerHTML = 'PAUSE <span class="key-hint">P</span>';
+                
+                // Re-enable Exit and Restart buttons
+                document.getElementById('exit-game').onclick = exitGame;
+                document.getElementById('restart-game').onclick = restartGame;
                 
                 // Resume background music if needed
                 if (soundEnabled) {
