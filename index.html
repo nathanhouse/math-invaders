@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Math Invaders</title>
     <style>
         body {
@@ -17,6 +20,10 @@
             margin: 0;
             overflow: hidden;
             padding-bottom: 60px; /* Add padding at the bottom to ensure credits are visible */
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
         .title {
@@ -24,18 +31,36 @@
             text-shadow: 0 0 10px #00ff00;
             animation: glow 2s ease-in-out infinite alternate;
             margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
         .invader {
             font-size: 2em;
             margin: 20px;
             animation: float 3s ease-in-out infinite;
+            text-shadow: 0 0 10px #00ff00;
+            color: #00ff00;
         }
 
         .equation {
             font-size: 1.5em;
             margin: 10px;
-            animation: slide 5s linear infinite;
+            animation: slide 10s linear infinite;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .invader-char {
+            font-size: 1.2em;
+            display: inline-block;
+            margin: 0 5px;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            animation: pulse-invader 2s ease-in-out infinite alternate;
         }
 
         @keyframes glow {
@@ -56,6 +81,11 @@
         @keyframes slide {
             0% { transform: translateX(-100vw); }
             100% { transform: translateX(100vw); }
+        }
+
+        @keyframes pulse-invader {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
         }
 
         .start-button {
@@ -137,7 +167,7 @@
             border-color: #ff0000;
             color: #ff0000;
         }
-        
+
         .addition:hover {
             background-color: #ff0000;
         }
@@ -198,6 +228,22 @@
             transition: all 0.3s ease;
             background-color: rgba(0, 255, 0, 0.1);
             margin-bottom: 10px;
+            z-index: 1;
+            /* Button reset styles */
+            padding: 0;
+            font: inherit;
+            color: inherit;
+            outline: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Chrome-specific fix */
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            .alien-option, .math-option {
+                overflow: visible;
+            }
         }
 
         .alien-option:hover, .math-option:hover {
@@ -209,19 +255,32 @@
             border-color: #00ffff;
             background-color: rgba(0, 255, 255, 0.2);
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            animation: pixel-effect 0.5s linear;
         }
 
-        .alien-svg {
-            width: 80px;
-            height: 80px;
+        @keyframes pixel-effect {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.05) skewX(2deg); }
+            50% { transform: scale(1) skewX(-2deg); }
+            75% { transform: scale(1.05) skewX(0deg); }
+            100% { transform: scale(1); }
+        }
+
+        .alien-emoji {
+            font-size: 3em;
+            text-shadow: 0 0 10px #00ff00;
+            animation: glow 2s ease-in-out infinite alternate;
+            margin-bottom: 10px;
         }
 
         .level-indicator {
             position: absolute;
             bottom: 5px;
-            font-size: 1.2em;
+            font-size: 0.9em;
             font-weight: bold;
             color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            text-transform: uppercase;
         }
 
         .math-level {
@@ -234,21 +293,142 @@
             font-size: 0.9em;
         }
 
-        /* Number display styling */
-        .alien-number {
-            position: absolute;
-            font-family: 'Courier New', monospace;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #0a0a2a;
-            top: 70px;
+        /* Add a loading screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            text-align: center;
+            height: 100%;
+            background-color: #0a0a2a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #loading-text {
+            font-size: 2em;
+            color: #00ff00;
+            margin-top: 20px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .loading-invader {
+            font-size: 5em;
+            animation: loading-pulse 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes loading-pulse {
+            from {
+                transform: scale(1);
+                text-shadow: 0 0 10px #00ff00;
+            }
+            to {
+                transform: scale(1.2);
+                text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
+            }
+        }
+
+        /* Sound toggle button */
+        #sound-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            z-index: 20;
+        }
+
+        #sound-toggle:hover {
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+
+        /* Game over screen */
+        #game-over-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 10, 42, 0.9);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-over-title {
+            font-size: 4em;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000;
+            margin-bottom: 30px;
+            animation: game-over-pulse 2s ease-in-out infinite;
+        }
+
+        #final-score {
+            font-size: 2em;
+            color: #00ff00;
+            margin-bottom: 40px;
+        }
+
+        #restart-button {
+            background-color: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+
+        #restart-button:hover {
+            background-color: rgba(0, 255, 0, 0.2);
+            transform: scale(1.05);
+        }
+
+        @keyframes game-over-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-invader">👾</div>
+        <div id="loading-text">LOADING...</div>
+    </div>
+
     <div class="title">MATH INVADERS</div>
+    <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 2.0</div>
+    
+    <!-- Sound toggle button -->
+    <button id="sound-toggle">SOUND: ON</button>
+    
+    <div class="equation">
+        <span class="invader-char">👾</span> 2 + 2 = 4 <span class="invader-char">👾</span>
+    </div>
+    <div class="equation" style="animation-delay: 1s;">
+        <span class="invader-char">👽</span> 7 - 3 = 4 <span class="invader-char">👾</span>
+    </div>
+    <div class="equation" style="animation-delay: 2s;">
+        <span class="invader-char">👾</span> 3 × 4 = 12 <span class="invader-char">🛸</span>
+    </div>
+    <div class="equation" style="animation-delay: 3s;">
+        <span class="invader-char">🛸</span> 10 ÷ 2 = 5 <span class="invader-char">👾</span>
+    </div>
     
     <div class="invader">👾</div>
     
@@ -283,22 +463,22 @@
         <div class="difficulty-section">
             <h3 style="font-size: 1.5em; margin-bottom: 15px; text-shadow: 0 0 8px #00ff00;">ALIEN DIFFICULTY</h3>
             <div class="alien-selection">
-                <div class="alien-option" onclick="selectAlienDifficulty(1)">
-                    <object data="alien1.svg" type="image/svg+xml" class="alien-svg"></object>
-                    <div class="level-indicator">1</div>
-                </div>
-                <div class="alien-option" onclick="selectAlienDifficulty(2)">
-                    <object data="alien2.svg" type="image/svg+xml" class="alien-svg"></object>
-                    <div class="level-indicator">2</div>
-                </div>
-                <div class="alien-option" onclick="selectAlienDifficulty(3)">
-                    <object data="alien3.svg" type="image/svg+xml" class="alien-svg"></object>
-                    <div class="level-indicator">3</div>
-                </div>
-                <div class="alien-option" onclick="selectAlienDifficulty(4)">
-                    <object data="alien4.svg" type="image/svg+xml" class="alien-svg"></object>
-                    <div class="level-indicator">4</div>
-                </div>
+                <button class="alien-option" type="button" onclick="selectAlienDifficulty(1)">
+                    <div class="alien-emoji">👽</div>
+                    <div class="level-indicator">EASY</div>
+                </button>
+                <button class="alien-option" type="button" onclick="selectAlienDifficulty(2)">
+                    <div class="alien-emoji">🛸</div>
+                    <div class="level-indicator">MEDIUM</div>
+                </button>
+                <button class="alien-option" type="button" onclick="selectAlienDifficulty(3)">
+                    <div class="alien-emoji">👾</div>
+                    <div class="level-indicator">HARD</div>
+                </button>
+                <button class="alien-option" type="button" onclick="selectAlienDifficulty(4)">
+                    <div class="alien-emoji">🦠</div>
+                    <div class="level-indicator">EXPERT</div>
+                </button>
             </div>
         </div>
         
@@ -306,22 +486,22 @@
         <div class="difficulty-section">
             <h3 style="font-size: 1.5em; margin: 20px 0 15px; text-shadow: 0 0 8px #00ff00;">MATH DIFFICULTY</h3>
             <div class="math-selection">
-                <div class="math-option" onclick="selectMathDifficulty(1)">
+                <button class="math-option" type="button" onclick="selectMathDifficulty(1)">
                     <div class="math-level">1</div>
                     <div class="math-description">EASY</div>
-                </div>
-                <div class="math-option" onclick="selectMathDifficulty(2)">
+                </button>
+                <button class="math-option" type="button" onclick="selectMathDifficulty(2)">
                     <div class="math-level">2</div>
                     <div class="math-description">MEDIUM</div>
-                </div>
-                <div class="math-option" onclick="selectMathDifficulty(3)">
+                </button>
+                <button class="math-option" type="button" onclick="selectMathDifficulty(3)">
                     <div class="math-level">3</div>
                     <div class="math-description">HARD</div>
-                </div>
-                <div class="math-option" onclick="selectMathDifficulty(4)">
+                </button>
+                <button class="math-option" type="button" onclick="selectMathDifficulty(4)">
                     <div class="math-level">4</div>
                     <div class="math-description">EXPERT</div>
-                </div>
+                </button>
             </div>
         </div>
         
@@ -331,7 +511,130 @@
 
     <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
 
+    <!-- Game Canvas Section (Initially Hidden) -->
+    <div id="game-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0a0a2a; z-index: 100;">
+        <div id="game-header" style="position: absolute; top: 20px; left: 0; width: 100%; text-align: center;">
+            <div id="math-question" style="font-size: 2.5em; color: #00ff00; text-shadow: 0 0 10px #00ff00; margin-bottom: 20px;"></div>
+            <div id="score-display" style="font-size: 1.5em; color: #00ffff; text-shadow: 0 0 5px #00ffff;">SCORE: <span id="score">0</span></div>
+        </div>
+        
+        <div id="game-area" style="position: relative; width: 100%; height: 70%; margin-top: 100px; overflow: hidden;">
+            <!-- Invaders will be dynamically added here -->
+            <div id="invaders-container" style="position: relative; width: 100%; height: 70%;"></div>
+            
+            <!-- Bases -->
+            <div id="bases-container" style="position: absolute; bottom: 100px; width: 100%; display: flex; justify-content: space-around;">
+                <div class="base" style="width: 80px; height: 40px; background-color: #00ff00; border-radius: 5px 5px 0 0;"></div>
+                <div class="base" style="width: 80px; height: 40px; background-color: #00ff00; border-radius: 5px 5px 0 0;"></div>
+                <div class="base" style="width: 80px; height: 40px; background-color: #00ff00; border-radius: 5px 5px 0 0;"></div>
+            </div>
+        
+            <!-- Player Ship -->
+            <div id="player" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 2em;">🚀</div>
+            
+            <!-- Projectiles will be dynamically added here -->
+        </div>
+        
+        <button id="exit-game" class="back-button" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);" onclick="exitGame()">EXIT GAME</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="game-over-screen">
+        <div id="game-over-title">GAME OVER</div>
+        <div id="final-score">SCORE: 0</div>
+        <button id="restart-button">PLAY AGAIN</button>
+    </div>
+
     <script>
+        // Hide loading screen when the window has loaded
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.display = 'none';
+            }, 1000); // Short delay to ensure everything is rendered
+        });
+
+        // Fallback to hide loading screen after a few seconds regardless of other issues
+        setTimeout(function() {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen && loadingScreen.style.display !== 'none') {
+                loadingScreen.style.display = 'none';
+                console.log("Loading screen hidden by fallback timeout");
+            }
+        }, 3000);
+
+        // Sound system initialization
+        let soundEnabled = true;
+        const sounds = {
+            background: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-level-music-689.mp3'),
+            shoot: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-laser-gun-shot-1678.mp3'),
+            explosion: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-explosion-impact-1682.mp3'),
+            correct: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
+            gameOver: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3')
+        };
+
+        // Loop background music
+        sounds.background.loop = true;
+        sounds.background.volume = 0.5;
+
+        // Function to play sound effects
+        function playSound(soundName) {
+            if (!soundEnabled) return;
+            
+            try {
+                if (sounds[soundName]) {
+                    sounds[soundName].currentTime = 0;
+                    sounds[soundName].play().catch(e => console.log(`Error playing ${soundName} sound:`, e));
+                }
+            } catch (err) {
+                console.error(`Error in playSound(${soundName}):`, err);
+            }
+        }
+
+        // Sound toggle functionality
+        document.getElementById('sound-toggle').addEventListener('click', function() {
+            soundEnabled = !soundEnabled;
+            this.textContent = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
+            
+            if (soundEnabled) {
+                if (gameLoopInterval) {
+                    sounds.background.play().catch(e => console.log("Error playing background music:", e));
+                }
+            } else {
+                sounds.background.pause();
+            }
+        });
+
+        // Game state variables
+        let selectedOperator = '';
+        let selectedAlienDifficulty = 0;
+        let selectedMathDifficulty = 0;
+        let gameLoopInterval = null;
+        let gameState = {
+            score: 0,
+            isGameOver: false,
+            currentQuestion: null,
+            correctAnswer: null,
+            invaders: [],
+            projectiles: [],
+            playerPosition: 50, // percentage
+            alienEmoji: '👾',
+            moveDirection: 1,
+            moveDownTrigger: false,
+            lastMoveTime: 0,
+            moveSpeed: 500 // ms between moves
+        };
+
+        // Function to convert operator words to symbols
+        function getOperatorSymbol(operatorWord) {
+            switch(operatorWord) {
+                case 'addition': return '+';
+                case 'subtraction': return '-';
+                case 'multiplication': return '×';
+                case 'division': return '÷';
+                default: return operatorWord; // If it's already a symbol, return as is
+            }
+        }
+
         // Add some random movement to invaders
         const invader = document.querySelector('.invader');
         setInterval(() => {
@@ -344,6 +647,12 @@
             document.getElementById('player-selection').style.display = 'block';
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'none';
+            
+            // Hide math equations
+            document.querySelectorAll('.equation').forEach(eq => {
+                eq.style.display = 'none';
+            });
+            document.querySelector('.invader').style.display = 'none';
         }
 
         function showMainMenu() {
@@ -351,6 +660,14 @@
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'none';
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            // Show math equations
+            document.querySelectorAll('.equation').forEach(eq => {
+                eq.style.display = 'flex';
+            });
+            document.querySelector('.invader').style.display = 'block';
         }
 
         function showOperatorSelection() {
@@ -358,13 +675,27 @@
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('operator-selection').style.display = 'block';
             document.getElementById('difficulty-selection').style.display = 'none';
+            
+            // Hide math equations
+            document.querySelectorAll('.equation').forEach(eq => {
+                eq.style.display = 'none';
+            });
+            document.querySelector('.invader').style.display = 'none';
         }
 
         function showDifficultySelection(operator) {
+            console.log(`Showing difficulty selection for operator: ${operator}`);
+            
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'block';
+            
+            // Hide math equations
+            document.querySelectorAll('.equation').forEach(eq => {
+                eq.style.display = 'none';
+            });
+            document.querySelector('.invader').style.display = 'none';
             
             // Store the selected operator
             selectedOperator = operator;
@@ -379,13 +710,15 @@
                 el.classList.remove('selected');
             });
         }
-
-        // Game state variables
-        let selectedOperator = '';
-        let selectedAlienDifficulty = 0;
-        let selectedMathDifficulty = 0;
+        
+        // Function to refresh SVG images with new timestamps
+        function refreshSvgImages() {
+            // No longer needed for emojis
+            console.log("Using emoji aliens - no refresh needed");
+        }
 
         function selectAlienDifficulty(level) {
+            console.log(`Selecting alien difficulty: ${level}`);
             selectedAlienDifficulty = level;
             
             // Update visual selection
@@ -401,6 +734,7 @@
         }
 
         function selectMathDifficulty(level) {
+            console.log(`Selecting math difficulty: ${level}`);
             selectedMathDifficulty = level;
             
             // Update visual selection
@@ -418,12 +752,15 @@
         function updateStartButton() {
             const startButton = document.getElementById('start-game-btn');
             
+            console.log(`Current selections - Alien: ${selectedAlienDifficulty}, Math: ${selectedMathDifficulty}`);
+            
             // Enable button only if both difficulties are selected
             if (selectedAlienDifficulty > 0 && selectedMathDifficulty > 0) {
                 startButton.disabled = false;
                 startButton.style.opacity = '1';
                 startButton.style.cursor = 'pointer';
                 startButton.onclick = function() {
+                    console.log(`Starting game with: Operator=${selectedOperator}, Alien=${selectedAlienDifficulty}, Math=${selectedMathDifficulty}`);
                     startGameWithSettings(selectedOperator, selectedAlienDifficulty, selectedMathDifficulty);
                 };
             } else {
@@ -435,8 +772,29 @@
         }
 
         function startGameWithSettings(operator, alienLevel, mathLevel) {
-            alert(`Starting game with ${operator} problems, alien difficulty: ${alienLevel}, math difficulty: ${mathLevel}`);
-            // Here you would add code to start the actual game with the selected settings
+            console.log(`Starting game with settings: Operator=${operator}, Alien=${alienLevel}, Math=${mathLevel}`);
+            console.log(`Operator symbol will be: ${getOperatorSymbol(operator)}`);
+            
+            try {
+                // Hide the difficulty selection screen
+                document.getElementById('difficulty-selection').style.display = 'none';
+                
+                // Show the game container
+                document.getElementById('game-container').style.display = 'block';
+                
+                // Initialize and start the game with the selected settings
+                console.log("About to initialize game...");
+                initGame(operator, alienLevel, mathLevel);
+                console.log("Game initialized successfully!");
+            } catch (err) {
+                console.error("Error in startGameWithSettings:", err);
+                // Show an error message to the user
+                alert("An error occurred while starting the game. Please try again.");
+                // Return to the main menu
+                showMainMenu();
+                // Hide loading screen if it's still visible
+                document.getElementById('loading-screen').style.display = 'none';
+            }
         }
 
         function startGame(players) {
@@ -444,41 +802,852 @@
             // Here you would add code to start the actual game
         }
 
-        function startGameWithOperator(operator) {
-            showDifficultySelection(operator);
+        function exitGame() {
+            // Stop the game loop
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
+            }
+            
+            // Stop background music
+            sounds.background.pause();
+            
+            // Clear all game elements
+            document.getElementById('invaders-container').innerHTML = '';
+            
+            // Reset game state
+            gameState = {
+                score: 0,
+                isGameOver: false,
+                currentQuestion: null,
+                correctAnswer: null,
+                invaders: [],
+                projectiles: [],
+                playerPosition: 50, // percentage
+                alienEmoji: '👾',
+                moveDirection: 1,
+                moveDownTrigger: false,
+                lastMoveTime: 0,
+                moveSpeed: 500 // ms between moves
+            };
+            
+            // Update the score display
+            updateScore();
+            
+            // Hide the game container and game over screen
+            document.getElementById('game-container').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            // Show the main menu
+            showMainMenu();
         }
 
-        // Add sample numbers to aliens for demonstration
-        function addSampleNumbersToAliens() {
-            // Wait for SVGs to load
-            setTimeout(() => {
-                const alienOptions = document.querySelectorAll('.alien-option');
+        // Game initialization
+        function initGame(operator, alienLevel, mathLevel) {
+            console.log(`Initializing game: Operator=${operator}, Alien=${alienLevel}, Math=${mathLevel}`);
+            
+            try {
+                // Reset game state
+                gameState = {
+                    score: 0,
+                    isGameOver: false,
+                    currentQuestion: null,
+                    correctAnswer: null,
+                    invaders: [],
+                    projectiles: [],
+                    playerPosition: 50,
+                    alienEmoji: getAlienEmoji(alienLevel),
+                    moveDirection: 1,
+                    moveDownTrigger: false,
+                    lastMoveTime: 0,
+                    moveSpeed: getMoveSpeed(alienLevel)
+                };
                 
-                // Sample numbers for demonstration
-                const sampleNumbers = ['42', '137', '1024', '9876'];
+                console.log(`Using alien emoji: ${gameState.alienEmoji} for level ${alienLevel}`);
+                console.log(`Move speed set to: ${gameState.moveSpeed}ms`);
                 
-                alienOptions.forEach((option, index) => {
-                    const numberElement = document.createElement('div');
-                    numberElement.className = 'alien-number';
-                    numberElement.textContent = sampleNumbers[index];
+                // Set up the game area
+                console.log("Creating invaders...");
+                createInvaders(alienLevel);
+                console.log("Invaders created successfully");
+                
+                // Generate the first math question
+                console.log("Generating first math question...");
+                generateMathQuestion(operator, mathLevel);
+                console.log("Math question generated successfully");
+                
+                // Set up event listeners for player controls
+                console.log("Setting up controls...");
+                setupControls();
+                console.log("Controls set up successfully");
+                
+                // Start the game loop
+                console.log("Starting game loop...");
+                if (gameLoopInterval) {
+                    clearInterval(gameLoopInterval);
+                }
+                gameLoopInterval = setInterval(gameLoop, 16); // ~60fps
+                console.log("Game loop started");
+                
+                // Play background music
+                if (soundEnabled) {
+                    console.log("Playing background music...");
+                    sounds.background.currentTime = 0;
+                    sounds.background.play().catch(e => console.log("Error playing background music:", e));
+                }
+                
+                console.log("Game initialization complete!");
+            } catch (err) {
+                console.error("Error in initGame:", err);
+                // Show an error message to the user
+                alert("An error occurred while initializing the game. Please try again.");
+                // Return to the main menu
+                showMainMenu();
+            }
+        }
+
+        // Get the alien emoji based on the selected level
+        function getAlienEmoji(level) {
+            const emojis = ['👽', '🛸', '👾', '🦠'];
+            const emoji = emojis[level - 1] || '👾';
+            console.log(`Getting alien emoji for level ${level}: ${emoji}`);
+            return emoji;
+        }
+
+        // Get the move speed based on the alien level
+        function getMoveSpeed(level) {
+            // Faster movement for higher levels
+            return 600 - (level * 100); // 500ms, 400ms, 300ms, 200ms
+        }
+
+        // Create the invader grid
+        function createInvaders(level) {
+            console.log(`Creating invaders for level ${level}`);
+            
+            try {
+                const container = document.getElementById('invaders-container');
+                if (!container) {
+                    console.error("Invaders container not found!");
+                    return;
+                }
+                
+                container.innerHTML = '';
+                
+                const rows = 4;
+                const cols = 8;
+                const invaderSize = 50; // px
+                const spacing = 20; // px
+                
+                // Calculate the total width needed
+                const totalWidth = (cols * invaderSize) + ((cols - 1) * spacing);
+                const leftOffset = (window.innerWidth - totalWidth) / 2;
+                
+                // Generate random numbers for invaders
+                const numbers = generateInvaderNumbers(level);
+                console.log("Numbers generated successfully");
+                
+                // Create the invader grid
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        try {
+                            const invader = document.createElement('div');
+                            invader.className = 'game-invader';
+                            invader.style.position = 'absolute';
+                            invader.style.width = `${invaderSize}px`;
+                            invader.style.height = `${invaderSize}px`;
+                            invader.style.left = `${leftOffset + (col * (invaderSize + spacing))}px`;
+                            invader.style.top = `${50 + (row * (invaderSize + spacing))}px`;
+                            invader.style.fontSize = '2em';
+                            invader.style.display = 'flex';
+                            invader.style.flexDirection = 'column';
+                            invader.style.alignItems = 'center';
+                            invader.style.justifyContent = 'center';
+                            invader.style.textShadow = '0 0 10px #00ff00';
+                            invader.style.color = '#00ff00';
+                            
+                            // Add the alien emoji
+                            const emoji = document.createElement('div');
+                            emoji.textContent = gameState.alienEmoji;
+                            emoji.style.animation = 'glow 2s ease-in-out infinite alternate';
+                            invader.appendChild(emoji);
+                            
+                            // Add the number (if any)
+                            // Only add numbers to invaders in row 0 (front row)
+                            let shouldAddNumber = false;
+                            let numberValue = '';
+                            
+                            if (row === 0) {
+                                // Front row - will get numbers (correct and incorrect) later in placeFrontRowAnswers
+                                shouldAddNumber = true;
+                                numberValue = '';
+                            } else {
+                                // No numbers for other rows
+                                shouldAddNumber = false;
+                                numberValue = '';
+                            }
+                            
+                            if (shouldAddNumber) {
+                                const numberElement = document.createElement('div');
+                                numberElement.textContent = numberValue;
+                                numberElement.style.fontSize = '0.7em';
+                                numberElement.style.marginTop = '5px';
+                                invader.appendChild(numberElement);
+                                
+                                // Store the number for game logic
+                                invader.dataset.number = numberValue;
+                            } else {
+                                invader.dataset.number = '';
+                            }
+                            
+                            container.appendChild(invader);
+                            
+                            // Add to game state
+                            gameState.invaders.push({
+                                element: invader,
+                                row: row,
+                                col: col,
+                                number: invader.dataset.number,
+                                isAlive: true
+                            });
+                        } catch (err) {
+                            console.error(`Error creating invader at row ${row}, col ${col}:`, err);
+                        }
+                    }
+                }
+                
+                console.log(`Created ${gameState.invaders.length} invaders`);
+                
+                // Create the bases
+                createBases();
+            } catch (err) {
+                console.error("Error in createInvaders:", err);
+            }
+        }
+        
+        // Create the player bases
+        function createBases() {
+            const basesContainer = document.getElementById('bases-container');
+            basesContainer.innerHTML = '';
+            
+            // Create 4 bases
+            for (let i = 0; i < 4; i++) {
+                const base = document.createElement('div');
+                base.className = 'base';
+                basesContainer.appendChild(base);
+            }
+        }
+
+        // Generate random numbers for invaders based on difficulty
+        function generateInvaderNumbers(level) {
+            console.log(`Generating invader numbers for level ${level}`);
+            
+            // We no longer need to generate numbers for invaders
+            // since only the front row will have numbers, and those are set in placeFrontRowAnswers
+            return [];
+        }
+
+        // Generate a math question based on the selected operator and difficulty
+        function generateMathQuestion(operator, difficulty) {
+            try {
+                console.log("Generating new math question");
+                
+                // Get the selected operator and difficulty
+                const level = difficulty || 1;
+                
+                // Convert operator word to symbol if needed
+                const operatorSymbol = getOperatorSymbol(operator);
+                
+                console.log(`Operator: ${operator}, Symbol: ${operatorSymbol}, Math Level: ${level}`);
+                
+                // Set the maximum number based on difficulty
+                const maxNum = Math.max(10, level * 10);
+                console.log(`Max number for questions: ${maxNum}`);
+                
+                // Generate a question using the fallback method first
+                // This ensures we have a valid question and answer
+                let num1, num2, correctAnswer;
+                
+                // For division, ensure we get a clean division result
+                if (operatorSymbol === '÷') {
+                    num2 = Math.floor(Math.random() * (maxNum / 2)) + 1;
+                    const multiplier = Math.floor(Math.random() * (maxNum / num2)) + 1;
+                    num1 = num2 * multiplier;
+                    correctAnswer = num1 / num2;
+                } else {
+                    num1 = Math.floor(Math.random() * maxNum) + 1;
+                    num2 = Math.floor(Math.random() * maxNum) + 1;
                     
-                    // Adjust font size for 4-digit numbers
-                    if (sampleNumbers[index].length >= 4) {
-                        numberElement.style.fontSize = '1.2em';
-                    } else if (sampleNumbers[index].length === 3) {
-                        numberElement.style.fontSize = '1.3em';
+                    // For subtraction, ensure num1 >= num2
+                    if (operatorSymbol === '-' && num1 < num2) {
+                        [num1, num2] = [num2, num1];
                     }
                     
-                    option.appendChild(numberElement);
+                    // Calculate the correct answer
+                    switch (operatorSymbol) {
+                        case '+':
+                            correctAnswer = num1 + num2;
+                            break;
+                        case '-':
+                            correctAnswer = num1 - num2;
+                            break;
+                        case '×':
+                            correctAnswer = num1 * num2;
+                            break;
+                        default:
+                            correctAnswer = num1 + num2;
+                    }
+                }
+                
+                console.log(`Generated question: ${num1} ${operatorSymbol} ${num2} = ${correctAnswer}`);
+                
+                // Update the game state
+                gameState.currentQuestion = `${num1} ${operatorSymbol} ${num2}`;
+                gameState.correctAnswer = correctAnswer;
+                
+                // Update the question display
+                const questionElement = document.getElementById('math-question');
+                if (questionElement) {
+                    questionElement.textContent = gameState.currentQuestion + ' = ?';
+                } else {
+                    console.error("Question element not found");
+                }
+                
+                // Place the correct answer in the front row
+                placeFrontRowAnswers(correctAnswer, maxNum);
+                
+                console.log("Math question generated successfully");
+            } catch (err) {
+                console.error("Error in generateMathQuestion:", err);
+                // Set a default question if there's an error
+                gameState.currentQuestion = "1 + 1";
+                gameState.correctAnswer = 2;
+                
+                const questionElement = document.getElementById('math-question');
+                if (questionElement) {
+                    questionElement.textContent = gameState.currentQuestion + ' = ?';
+                }
+                
+                // Try to place the correct answer in the front row
+                placeFrontRowAnswers(2, 10);
+            }
+        }
+        
+        // Function to place correct answers in the front row
+        function placeFrontRowAnswers(correctAnswer, maxNum) {
+            try {
+                console.log("Placing answers in front row");
+                
+                if (!gameState.invaders || gameState.invaders.length === 0) {
+                    console.error("No invaders found to place answers");
+                    return;
+                }
+                
+                // Get all front row invaders
+                const frontRowInvaders = gameState.invaders.filter(invader => 
+                    invader.isAlive && invader.row === 0 && invader.element
+                );
+                
+                if (frontRowInvaders.length === 0) {
+                    console.error("No front row invaders found");
+                    return;
+                }
+                
+                // Clear any existing numbers from front row
+                frontRowInvaders.forEach(invader => {
+                    invader.number = '';
+                    invader.element.dataset.number = '';
+                    
+                    // Update the display
+                    const numberElement = invader.element.querySelector('div:nth-child(2)');
+                    if (numberElement) {
+                        numberElement.textContent = '';
+                    }
                 });
-            }, 500);
+                
+                // Generate a set of unique answers for the front row
+                // One will be the correct answer, others will be decoys
+                const frontRowAnswers = [correctAnswer];
+                
+                // Generate decoy answers that are close to the correct answer
+                while (frontRowAnswers.length < frontRowInvaders.length) {
+                    let decoy;
+                    const variation = Math.floor(Math.random() * 5) + 1; // 1-5 difference
+                    
+                    if (Math.random() > 0.5) {
+                        decoy = correctAnswer + variation;
+                    } else {
+                        decoy = Math.max(1, correctAnswer - variation);
+                    }
+                    
+                    // Ensure we don't add duplicates
+                    if (!frontRowAnswers.includes(decoy)) {
+                        frontRowAnswers.push(decoy);
+                    }
+                }
+                
+                // Shuffle the answers
+                for (let i = frontRowAnswers.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [frontRowAnswers[i], frontRowAnswers[j]] = [frontRowAnswers[j], frontRowAnswers[i]];
+                }
+                
+                // Assign the answers to the front row invaders
+                frontRowAnswers.forEach((answer, index) => {
+                    if (index < frontRowInvaders.length) {
+                        const invader = frontRowInvaders[index];
+                        invader.number = answer.toString();
+                        invader.element.dataset.number = answer.toString();
+                        
+                        // Update the display
+                        let numberElement = invader.element.querySelector('div:nth-child(2)');
+                        
+                        if (!numberElement) {
+                            numberElement = document.createElement('div');
+                            numberElement.style.fontSize = '0.7em';
+                            numberElement.style.marginTop = '5px';
+                            invader.element.appendChild(numberElement);
+                        }
+                        
+                        numberElement.textContent = answer;
+                        
+                        // If this is the correct answer, make sure it's visible
+                        if (answer === correctAnswer) {
+                            invader.element.style.zIndex = "10";
+                            console.log(`Placed correct answer ${correctAnswer} in front row at position ${index}`);
+                        }
+                    }
+                });
+                
+                console.log("Front row answers placed successfully");
+            } catch (err) {
+                console.error("Error in placeFrontRowAnswers:", err);
+            }
         }
 
-        // Initialize when page loads
-        window.onload = function() {
-            addSampleNumbersToAliens();
-        };
+        // Set up event listeners for player controls
+        function setupControls() {
+            // Keyboard controls
+            document.addEventListener('keydown', handleKeyPress);
+            
+            // Touch/mouse controls for mobile
+            document.addEventListener('touchstart', handleTouchStart);
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('click', handleClick);
+        }
+
+        // Handle keyboard input
+        function handleKeyPress(e) {
+            console.log("Key pressed:", e.key);
+            if (gameState.isGameOver) return;
+            
+            switch (e.key) {
+                case 'ArrowLeft':
+                    console.log("Moving player left");
+                    movePlayer(-5);
+                    break;
+                case 'ArrowRight':
+                    console.log("Moving player right");
+                    movePlayer(5);
+                    break;
+                case ' ': // Spacebar
+                    console.log("Firing projectile with spacebar");
+                    fireProjectile();
+                    e.preventDefault(); // Prevent page scrolling
+                    break;
+            }
+        }
+
+        // Variables for touch controls
+        let touchStartX = 0;
+        
+        // Handle touch start
+        function handleTouchStart(e) {
+            touchStartX = e.touches[0].clientX;
+        }
+        
+        // Handle touch move
+        function handleTouchMove(e) {
+            if (gameState.isGameOver) return;
+            
+            const touchX = e.touches[0].clientX;
+            const diffX = touchX - touchStartX;
+            
+            if (Math.abs(diffX) > 10) { // Minimum movement threshold
+                movePlayer((diffX / window.innerWidth) * 100);
+                touchStartX = touchX;
+            }
+        }
+        
+        // Handle click/tap
+        function handleClick(e) {
+            if (gameState.isGameOver) return;
+            
+            // Check if click is in the game area
+            const gameArea = document.getElementById('game-area');
+            const rect = gameArea.getBoundingClientRect();
+            
+            if (
+                e.clientX >= rect.left &&
+                e.clientX <= rect.right &&
+                e.clientY >= rect.top &&
+                e.clientY <= rect.bottom
+            ) {
+                // Move player towards click position
+                const clickX = e.clientX;
+                const gameWidth = window.innerWidth;
+                const targetPosition = (clickX / gameWidth) * 100;
+                
+                // If click is near the player, fire instead of moving
+                const playerShip = document.getElementById('player');
+                const playerRect = playerShip.getBoundingClientRect();
+                const playerCenterX = playerRect.left + (playerRect.width / 2);
+                
+                if (Math.abs(clickX - playerCenterX) < 50) {
+                    fireProjectile();
+                } else {
+                    movePlayer(targetPosition - gameState.playerPosition, true);
+                }
+            }
+        }
+
+        // Move the player ship
+        function movePlayer(amount, absolute = false) {
+            if (absolute) {
+                gameState.playerPosition = amount;
+            } else {
+                gameState.playerPosition += amount;
+            }
+            
+            // Keep player within bounds
+            gameState.playerPosition = Math.max(5, Math.min(95, gameState.playerPosition));
+            
+            // Update player position
+            const playerShip = document.getElementById('player');
+            playerShip.style.left = `${gameState.playerPosition}%`;
+        }
+
+        // Fire a projectile from the player's position
+        function fireProjectile() {
+            try {
+                console.log("Firing projectile");
+                
+                // Play sound effect
+                playSound('shoot');
+                
+                // Get the player's position
+                const playerElement = document.getElementById('player');
+                if (!playerElement) {
+                    console.error("Player element not found");
+                    return;
+                }
+                
+                const playerRect = playerElement.getBoundingClientRect();
+                const gameContainer = document.getElementById('game-container');
+                if (!gameContainer) {
+                    console.error("Game container not found");
+                    return;
+                }
+                
+                // Create the projectile element
+                const projectile = document.createElement('div');
+                projectile.className = 'projectile';
+                
+                // Style the projectile
+                projectile.style.position = 'absolute';
+                projectile.style.width = '4px';
+                projectile.style.height = '15px';
+                projectile.style.backgroundColor = '#00ff00';
+                projectile.style.borderRadius = '2px';
+                projectile.style.boxShadow = '0 0 5px #00ff00';
+                
+                // Position the projectile at the player's position
+                const projectileLeft = playerRect.left + (playerRect.width / 2) - 2;
+                const projectileTop = playerRect.top;
+                
+                projectile.style.left = `${projectileLeft}px`;
+                projectile.style.top = `${projectileTop}px`;
+                
+                // Add the projectile to the game container
+                gameContainer.appendChild(projectile);
+                
+                // Add the projectile to the game state
+                if (!gameState.projectiles) {
+                    gameState.projectiles = [];
+                }
+                
+                gameState.projectiles.push({
+                    element: projectile,
+                    isActive: true
+                });
+                
+                console.log("Projectile fired successfully");
+            } catch (err) {
+                console.error("Error in fireProjectile:", err);
+            }
+        }
+
+        // Update the score display
+        function updateScore() {
+            document.getElementById('score').textContent = gameState.score;
+        }
+
+        // Game loop function
+        function gameLoop() {
+            try {
+                if (gameState.isGameOver) return;
+                
+                // Update projectiles
+                updateProjectiles();
+                
+                // Update invaders
+                updateInvaders();
+                
+                // Check for game over conditions
+                checkGameOver();
+            } catch (err) {
+                console.error("Error in gameLoop:", err);
+            }
+        }
+
+        // Update projectile positions and check for collisions
+        function updateProjectiles() {
+            try {
+                if (!gameState.projectiles) return;
+                
+                gameState.projectiles.forEach((projectile, index) => {
+                    if (!projectile.isActive) return;
+                    
+                    // Move the projectile up
+                    const element = projectile.element;
+                    if (!element) return;
+                    
+                    const currentTop = element.offsetTop;
+                    element.style.top = `${currentTop - 10}px`; // Move 10px up
+                    
+                    // Check if the projectile is off-screen
+                    if (currentTop < 0) {
+                        // Remove the projectile
+                        element.remove();
+                        projectile.isActive = false;
+                        return;
+                    }
+                    
+                    // Check for collisions with invaders
+                    checkProjectileCollisions(projectile);
+                });
+                
+                // Clean up inactive projectiles
+                gameState.projectiles = gameState.projectiles.filter(p => p.isActive);
+            } catch (err) {
+                console.error("Error in updateProjectiles:", err);
+            }
+        }
+
+        // Check for collisions between a projectile and invaders
+        function checkProjectileCollisions(projectile) {
+            try {
+                if (!projectile.isActive || !projectile.element) return;
+                
+                const projectileRect = projectile.element.getBoundingClientRect();
+                
+                // Check each invader
+                gameState.invaders.forEach(invader => {
+                    if (!invader.isAlive || !invader.element) return;
+                    
+                    const invaderRect = invader.element.getBoundingClientRect();
+                    
+                    // Check for collision
+                    if (
+                        projectileRect.left < invaderRect.right &&
+                        projectileRect.right > invaderRect.left &&
+                        projectileRect.top < invaderRect.bottom &&
+                        projectileRect.bottom > invaderRect.top
+                    ) {
+                        // Collision detected!
+                        console.log(`Collision with invader number: ${invader.number}`);
+                        
+                        // Check if this is the correct answer
+                        const invaderNumber = parseInt(invader.number);
+                        console.log(`Comparing invader number ${invaderNumber} with correct answer ${gameState.correctAnswer}`);
+                        
+                        if (invaderNumber === gameState.correctAnswer) {
+                            console.log("Correct answer hit!");
+                            
+                            // Play correct sound
+                            playSound('correct');
+                            
+                            // Increase score
+                            gameState.score += 100;
+                            updateScore();
+                            
+                            // Remove the invader
+                            invader.isAlive = false;
+                            invader.element.style.visibility = 'hidden';
+                            
+                            // Remove the projectile
+                            projectile.isActive = false;
+                            projectile.element.remove();
+                            
+                            // Generate a new question with the same operator
+                            // Use setTimeout to ensure this happens after the current frame
+                            setTimeout(() => {
+                                console.log("Generating new question after correct answer");
+                                generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                            }, 100);
+                            
+                            return; // Exit the forEach loop
+                        } else {
+                            // Play explosion sound
+                            playSound('explosion');
+                            
+                            // Remove the invader
+                            invader.isAlive = false;
+                            invader.element.style.visibility = 'hidden';
+                            
+                            // Remove the projectile
+                            projectile.isActive = false;
+                            projectile.element.remove();
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Error in checkProjectileCollisions:", err);
+            }
+        }
+
+        // Update invader positions
+        function updateInvaders() {
+            try {
+                const now = Date.now();
+                
+                // Only move invaders at certain intervals
+                if (now - gameState.lastMoveTime < gameState.moveSpeed) return;
+                
+                gameState.lastMoveTime = now;
+                
+                // Check if any invaders are at the edge
+                let atRightEdge = false;
+                let atLeftEdge = false;
+                let lowestInvader = 0;
+                
+                gameState.invaders.forEach(invader => {
+                    if (!invader.isAlive || !invader.element) return;
+                    
+                    const rect = invader.element.getBoundingClientRect();
+                    
+                    if (rect.right > window.innerWidth - 20) {
+                        atRightEdge = true;
+                    }
+                    
+                    if (rect.left < 20) {
+                        atLeftEdge = true;
+                    }
+                    
+                    // Track the lowest invader
+                    if (rect.bottom > lowestInvader) {
+                        lowestInvader = rect.bottom;
+                    }
+                });
+                
+                // Check if invaders have reached the player
+                const playerElement = document.getElementById('player');
+                if (playerElement) {
+                    const playerTop = playerElement.getBoundingClientRect().top;
+                    
+                    if (lowestInvader >= playerTop - 50) {
+                        gameOver();
+                        return;
+                    }
+                }
+                
+                // Change direction if at an edge
+                if ((atRightEdge && gameState.moveDirection > 0) || (atLeftEdge && gameState.moveDirection < 0)) {
+                    gameState.moveDirection *= -1;
+                    gameState.moveDownTrigger = true;
+                }
+                
+                // Move all invaders
+                gameState.invaders.forEach(invader => {
+                    if (!invader.isAlive || !invader.element) return;
+                    
+                    const element = invader.element;
+                    const currentLeft = element.offsetLeft;
+                    
+                    if (gameState.moveDownTrigger) {
+                        // Move down
+                        element.style.top = `${element.offsetTop + 20}px`;
+                    } else {
+                        // Move sideways
+                        element.style.left = `${currentLeft + (gameState.moveDirection * 10)}px`;
+                    }
+                });
+                
+                // Reset the move down trigger
+                gameState.moveDownTrigger = false;
+                
+                // Check if all invaders are destroyed
+                const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
+                
+                if (!anyInvadersLeft) {
+                    // Level complete!
+                    console.log("All invaders destroyed! Creating new wave...");
+                    
+                    // Increase score
+                    gameState.score += 500;
+                    updateScore();
+                    
+                    // Create new invaders
+                    createInvaders(selectedAlienDifficulty);
+                    
+                    // Generate a new question with the same operator
+                    generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                }
+            } catch (err) {
+                console.error("Error in updateInvaders:", err);
+            }
+        }
+
+        // Check for game over conditions
+        function checkGameOver() {
+            // Already handled in updateInvaders
+        }
+
+        // Game over function
+        function gameOver() {
+            try {
+                console.log("Game over!");
+                
+                // Set game state
+                gameState.isGameOver = true;
+                
+                // Stop the game loop
+                if (gameLoopInterval) {
+                    clearInterval(gameLoopInterval);
+                    gameLoopInterval = null;
+                }
+                
+                // Play game over sound
+                playSound('gameOver');
+                
+                // Stop background music
+                sounds.background.pause();
+                
+                // Show game over screen
+                const gameOverScreen = document.getElementById('game-over-screen');
+                document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
+                gameOverScreen.style.display = 'flex';
+                
+                // Set up restart button
+                document.getElementById('restart-button').onclick = function() {
+                    gameOverScreen.style.display = 'none';
+                    showMainMenu();
+                };
+            } catch (err) {
+                console.error("Error in gameOver:", err);
+                // Fallback to main menu
+                showMainMenu();
+            }
+        }
     </script>
 </body>
 </html>
-
