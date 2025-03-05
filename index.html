@@ -218,18 +218,47 @@
             width: 80%;
             max-width: 800px;
             max-height: 80vh;
-            overflow-y: auto;
+            overflow-y: scroll; /* Changed from auto to scroll to always show scrollbar */
             font-family: 'Courier New', monospace;
             color: #00ff00;
             text-shadow: 0 0 5px #00ff00;
             border-radius: 10px;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: #00ff00 #000;
+        }
+        /* For WebKit browsers (Chrome, Safari, etc.) */
+        .modal-content::-webkit-scrollbar {
+            width: 12px;
+            display: block; /* Ensure the scrollbar is always displayed */
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background-color: #00ff00;
+            border-radius: 5px;
+            border: 2px solid #000;
         }
         .modal-close {
             color: #00ff00;
             float: right;
             font-size: 28px;
-            font-weight: bold;
+            position: fixed;
+            top: 5%;
+            right: calc(10% + 15px);
+            z-index: 1001;
             cursor: pointer;
+            width: 40px;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            background-color: #000;
+            border-radius: 50%;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
         }
         .modal-close:hover { color: #ff0000; }
         .difficulty-explanation {
@@ -241,6 +270,36 @@
             margin-bottom: 10px;
             text-align: center;
             font-family: 'Courier New', monospace;
+        }
+        /* Scroll buttons for the modal */
+        .modal-scroll-button {
+            position: fixed;
+            right: calc(10% + 15px);
+            z-index: 1001;
+            width: 40px;
+            height: 40px;
+            background-color: #000;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #00ff00;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-scroll-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.1);
+        }
+        #scroll-down-button {
+            bottom: 15%;
+        }
+        #scroll-up-button {
+            bottom: 25%;
         }
         .help-button {
             background-color: #0400ff;
@@ -368,20 +427,14 @@
             color: #00ff00;
             margin-bottom: 40px;
         }
-        #restart-button {
-            background-color: transparent;
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            padding: 15px 30px;
-            font-size: 1.5em;
-            border-radius: 5px;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            transition: all 0.3s;
+        #restart-button, #return-menu-button {
+            font-size: 1em; /* Make font size consistent with other control-toggle buttons */
+            padding: 10px 20px; /* Slightly larger padding for game over screen buttons */
         }
-        #restart-button:hover {
-            background-color: rgba(0, 255, 0, 0.2);
-            transform: scale(1.05);
+        .game-over-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
         }
         @keyframes game-over-pulse {
             0% { transform: scale(1); }
@@ -470,6 +523,62 @@
             z-index: 90;
             display: none;
         }
+        /* Game control buttons styling */
+        .game-control-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            background-color: #0400ff;
+            color: #ffffff;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            font-family: 'Press Start 2P', cursive;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.8em;
+        }
+        .game-control-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.05);
+        }
+        
+        /* Control toggle buttons (Sound, Exit, Restart) styling */
+        .control-toggle {
+            background-color: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .control-toggle:hover { 
+            background-color: rgba(0, 255, 0, 0.2);
+        }
+        #sound-toggle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 20;
+        }
+        
+        .key-hint {
+            margin-left: 10px;
+            background-color: #000;
+            color: #00ff00;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid #00ff00;
+            font-family: 'Courier New', monospace;
+        }
         @media (max-width: 850px) {
             #game-container {
                 width: 800px;
@@ -511,7 +620,7 @@
     </div>
     <div class="title">MATH INVADERS</div>
     <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 2.0</div>
-    <button id="sound-toggle">SOUND: ON</button>
+    <button id="sound-toggle" class="control-toggle">SOUND: ON</button>
     <div class="equation">
         <span class="invader-char">👾</span> 2 + 2 = 4 <span class="invader-char">👾</span>
     </div>
@@ -652,12 +761,22 @@
         </div>
     </div>
     <div id="exit-game-container">
-        <button id="exit-game" class="back-button" onclick="exitGame()">EXIT GAME</button>
+        <button id="exit-game" class="control-toggle" onclick="exitGame()">EXIT GAME <span class="key-hint">Q</span></button>
+        <button id="restart-game" class="control-toggle" onclick="restartGame()">RESTART <span class="key-hint">R</span></button>
+        <button id="pause-game" class="control-toggle" onclick="togglePause()">PAUSE <span class="key-hint">P</span></button>
     </div>
+    
+    <!-- Adding scroll buttons to the modal -->
+    <div id="scroll-down-button" class="modal-scroll-button" style="display: none;">⬇</div>
+    <div id="scroll-up-button" class="modal-scroll-button" style="display: none;">⬆</div>
+    
     <div id="game-over-screen">
         <div id="game-over-title">GAME OVER</div>
         <div id="final-score">SCORE: 0</div>
-        <button id="restart-button">PLAY AGAIN</button>
+        <div class="game-over-buttons">
+            <button id="return-menu-button" class="control-toggle">RETURN TO MENU <span class="key-hint">Q</span></button>
+            <button id="restart-button" class="control-toggle">PLAY AGAIN <span class="key-hint">R</span></button>
+        </div>
     </div>
     <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
     <div id="game-container">
@@ -1723,6 +1842,25 @@
         }
         function handleKeyPress(e) {
             if (gameState.isGameOver) return;
+            
+            // Q key to exit game
+            if (e.key === 'q' || e.key === 'Q') {
+                exitGame();
+                return;
+            }
+            
+            // R key to restart game with same parameters
+            if (e.key === 'r' || e.key === 'R') {
+                restartGame();
+                return;
+            }
+            
+            // P key to pause/unpause game
+            if (e.key === 'p' || e.key === 'P') {
+                togglePause();
+                return;
+            }
+            
             if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
                 if (!gameState.keysPressed || !gameState.keysPressed[e.key]) {
                     console.log("Key pressed:", e.key);
@@ -1849,7 +1987,7 @@
         }
         function gameLoop() {
             try {
-                if (gameState.isGameOver) return;
+                if (gameState.isGameOver || gamePaused) return;
                 if (gameState.keysPressed) {
                     if (gameState.keysPressed['ArrowLeft']) {
                         movePlayer(-1.5);
@@ -2082,32 +2220,80 @@
             try {
                 console.log("Game over!");
                 gameState.isGameOver = true;
+                
+                // Clear game loop
                 if (gameLoopInterval) {
                     clearInterval(gameLoopInterval);
                     gameLoopInterval = null;
                 }
+                
+                // Play game over sound
                 if (soundEnabled) {
-                    soundManager.playSound('gameOver', { volume: 0.7 });
-                    if (sounds.gameOver) {
-                        sounds.gameOver.currentTime = 0;
-                        sounds.gameOver.play().catch(e => console.log("Error playing legacy game over sound:", e));
+                    // Make sure to stop all other sounds first
+                    soundManager.stopBackgroundMusic();
+                    if (sounds.background) {
+                        sounds.background.pause();
+                    }
+                    
+                    // Play game over sound after a short delay
+                    setTimeout(() => {
+                        soundManager.playSound('gameOver', { volume: 0.7 });
+                        if (sounds.gameOver) {
+                            sounds.gameOver.currentTime = 0;
+                            sounds.gameOver.play().catch(e => console.log("Error playing legacy game over sound:", e));
+                        }
+                    }, 200);
+                } else {
+                    soundManager.stopBackgroundMusic();
+                    if (sounds.background) {
+                        sounds.background.pause();
                     }
                 }
-                soundManager.stopBackgroundMusic();
-                if (sounds.background) {
-                    sounds.background.pause();
-                }
+                
+                // Hide game UI elements
                 document.getElementById('exit-game-container').style.display = 'none';
+                
+                // Show game over screen with score
                 const gameOverScreen = document.getElementById('game-over-screen');
                 document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
                 gameOverScreen.style.display = 'flex';
+                
+                // Set up button listeners
                 document.getElementById('restart-button').onclick = function() {
                     gameOverScreen.style.display = 'none';
-                    showMainMenu();
                     if (soundEnabled) {
                         soundManager.playSound('buttonClick');
                     }
+                    restartGame();
                 };
+                
+                document.getElementById('return-menu-button').onclick = function() {
+                    gameOverScreen.style.display = 'none';
+                    if (soundEnabled) {
+                        soundManager.playSound('buttonClick');
+                    }
+                    exitGame();
+                };
+                
+                // Set up keyboard listeners for the game over screen
+                document.addEventListener('keydown', function gameOverKeyHandler(e) {
+                    if (e.key === 'q' || e.key === 'Q') {
+                        gameOverScreen.style.display = 'none';
+                        if (soundEnabled) {
+                            soundManager.playSound('buttonClick');
+                        }
+                        exitGame();
+                        document.removeEventListener('keydown', gameOverKeyHandler);
+                    } else if (e.key === 'r' || e.key === 'R') {
+                        gameOverScreen.style.display = 'none';
+                        if (soundEnabled) {
+                            soundManager.playSound('buttonClick');
+                        }
+                        restartGame();
+                        document.removeEventListener('keydown', gameOverKeyHandler);
+                    }
+                });
+                
             } catch (err) {
                 console.error("Error in gameOver:", err);
                 showMainMenu();
@@ -2115,21 +2301,183 @@
         }
         function showDifficultyExplanation() {
             document.getElementById('difficulty-explanation-modal').style.display = 'block';
+            // Show the scroll buttons when the modal is displayed
+            document.getElementById('scroll-down-button').style.display = 'flex';
+            document.getElementById('scroll-up-button').style.display = 'flex';
         }
+        
         function hideDifficultyExplanation() {
             document.getElementById('difficulty-explanation-modal').style.display = 'none';
+            // Hide the scroll buttons when the modal is closed
+            document.getElementById('scroll-down-button').style.display = 'none';
+            document.getElementById('scroll-up-button').style.display = 'none';
         }
+        
         function closeModalOnBackgroundClick(event) {
             const modal = document.getElementById('difficulty-explanation-modal');
             if (event.target === modal) {
                 modal.style.display = 'none';
+                // Hide the scroll buttons when the modal is closed by clicking outside
+                document.getElementById('scroll-down-button').style.display = 'none';
+                document.getElementById('scroll-up-button').style.display = 'none';
             }
         }
+        
+        // Functions to handle scrolling
+        document.getElementById('scroll-down-button').addEventListener('click', function() {
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.scrollBy({
+                top: 200,
+                behavior: 'smooth'
+            });
+        });
+        
+        document.getElementById('scroll-up-button').addEventListener('click', function() {
+            const modalContent = document.querySelector('.modal-content');
+            modalContent.scrollBy({
+                top: -200,
+                behavior: 'smooth'
+            });
+        });
+        
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
                 document.getElementById('difficulty-explanation-modal').style.display = 'none';
+                // Hide the scroll buttons when the modal is closed with Escape key
+                document.getElementById('scroll-down-button').style.display = 'none';
+                document.getElementById('scroll-up-button').style.display = 'none';
             }
         });
+
+        function restartGame() {
+            // Only proceed if we're in an active game or game over screen
+            if (!selectedOperator || selectedAlienDifficulty === 0 || selectedMathDifficulty === 0) {
+                return;
+            }
+            
+            // Clear any existing game loop
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
+            }
+            
+            // Make sure to stop all sounds before restarting
+            soundManager.stopBackgroundMusic();
+            if (sounds.background) {
+                sounds.background.pause();
+                // Reset the current time to ensure clean playback
+                sounds.background.currentTime = 0;
+            }
+            
+            // Hide game over screen if it was showing
+            document.getElementById('game-over-screen').style.display = 'none';
+            
+            // Make sure game container and exit container are visible
+            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('exit-game-container').style.display = 'block';
+            
+            // Reset and start game with same parameters
+            soundManager.playSound('buttonClick');
+            initGame(selectedOperator, selectedAlienDifficulty, selectedMathDifficulty);
+        }
+        
+        // Game pause functionality
+        let gamePaused = false;
+        let pauseOverlay = null;
+        
+        function togglePause() {
+            if (gameState.isGameOver) return;
+            
+            gamePaused = !gamePaused;
+            
+            if (gamePaused) {
+                // Pause the game
+                if (gameLoopInterval) {
+                    clearInterval(gameLoopInterval);
+                    gameLoopInterval = null;
+                }
+                
+                // Create pause overlay if it doesn't exist
+                if (!pauseOverlay) {
+                    pauseOverlay = document.createElement('div');
+                    pauseOverlay.id = 'pause-overlay';
+                    pauseOverlay.style.position = 'fixed';
+                    pauseOverlay.style.top = '0';
+                    pauseOverlay.style.left = '0';
+                    pauseOverlay.style.width = '100%';
+                    pauseOverlay.style.height = '100%';
+                    pauseOverlay.style.backgroundColor = 'rgba(10, 10, 42, 0.8)';
+                    pauseOverlay.style.zIndex = '500';
+                    pauseOverlay.style.display = 'flex';
+                    pauseOverlay.style.flexDirection = 'column';
+                    pauseOverlay.style.justifyContent = 'center';
+                    pauseOverlay.style.alignItems = 'center';
+                    
+                    const pauseText = document.createElement('div');
+                    pauseText.textContent = 'GAME PAUSED';
+                    pauseText.style.fontSize = '3em';
+                    pauseText.style.color = '#00ff00';
+                    pauseText.style.textShadow = '0 0 10px #00ff00';
+                    pauseText.style.marginBottom = '30px';
+                    
+                    const resumeText = document.createElement('div');
+                    resumeText.textContent = 'Press P to resume';
+                    resumeText.style.fontSize = '1.5em';
+                    resumeText.style.color = '#00ffff';
+                    
+                    pauseOverlay.appendChild(pauseText);
+                    pauseOverlay.appendChild(resumeText);
+                    document.body.appendChild(pauseOverlay);
+                } else {
+                    pauseOverlay.style.display = 'flex';
+                }
+                
+                // Update pause button text
+                document.getElementById('pause-game').innerHTML = 'RESUME <span class="key-hint">P</span>';
+                
+                // Stop all audio when game is paused
+                soundManager.playSound('buttonClick');
+                soundManager.stopBackgroundMusic();
+                if (sounds.background) {
+                    sounds.background.pause();
+                }
+                
+                // Pause any other active sound effects
+                for (const sound in sounds) {
+                    if (sounds[sound] && sounds[sound].pause && sound !== 'buttonClick') {
+                        try {
+                            sounds[sound].pause();
+                        } catch (e) {
+                            console.log(`Error pausing sound ${sound}:`, e);
+                        }
+                    }
+                }
+            } else {
+                // Resume the game
+                gameLoopInterval = setInterval(gameLoop, 16);
+                
+                // Hide pause overlay
+                if (pauseOverlay) {
+                    pauseOverlay.style.display = 'none';
+                }
+                
+                // Update pause button text
+                document.getElementById('pause-game').innerHTML = 'PAUSE <span class="key-hint">P</span>';
+                
+                // Resume background music if needed
+                if (soundEnabled) {
+                    soundManager.playSound('buttonClick');
+                    // Small delay before resuming background music to avoid audio overlap
+                    setTimeout(() => {
+                        // Restart SoundManager's background music
+                        soundManager.playBackgroundMusic();
+                        if (sounds.background && typeof sounds.background.play === 'function') {
+                            sounds.background.play().catch(e => console.log("Error resuming background music:", e));
+                        }
+                    }, 100);
+                }
+            }
+        }
     </script>
 </body>
 </html>
