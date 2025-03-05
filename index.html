@@ -8,6 +8,7 @@
     <meta http-equiv="Expires" content="0">
     <title>Math Invaders</title>
     <style>
+        /* CSS remains unchanged */
         body {
             background-color: #0a0a2a;
             color: #00ff00;
@@ -15,45 +16,56 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            justify-content: flex-start;
+            min-height: 100vh;
             margin: 0;
-            overflow: hidden;
-            padding-bottom: 60px; /* Add padding at the bottom to ensure credits are visible */
+            overflow-y: auto;
+            padding: 5px 0 80px 0;
             background-image: 
                 linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
             background-size: 20px 20px;
         }
-
+        #game-container {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 600px;
+            background-color: #0a0a2a;
+            border: 4px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            overflow: hidden;
+            z-index: 100;
+        }
         .title {
             font-size: 4em;
             text-shadow: 0 0 10px #00ff00;
             animation: glow 2s ease-in-out infinite alternate;
-            margin-top: 20px;
+            margin-top: 5px;
+            margin-bottom: 5px;
             font-family: 'Courier New', monospace;
             letter-spacing: 5px;
             text-transform: uppercase;
             font-weight: bold;
         }
-
         .invader {
             font-size: 2em;
-            margin: 20px;
+            margin: 10px;
             animation: float 3s ease-in-out infinite;
             text-shadow: 0 0 10px #00ff00;
             color: #00ff00;
         }
-
         .equation {
             font-size: 1.5em;
-            margin: 10px;
+            margin: 5px;
             animation: slide 10s linear infinite;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
         .invader-char {
             font-size: 1.2em;
             display: inline-block;
@@ -62,34 +74,25 @@
             text-shadow: 0 0 5px #00ff00;
             animation: pulse-invader 2s ease-in-out infinite alternate;
         }
-
         @keyframes glow {
-            from {
-                text-shadow: 0 0 10px #00ff00;
-            }
-            to {
-                text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
-            }
+            from { text-shadow: 0 0 10px #00ff00; }
+            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
         }
-
         @keyframes float {
             0% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
             100% { transform: translateY(0); }
         }
-
         @keyframes slide {
             0% { transform: translateX(-100vw); }
             100% { transform: translateX(100vw); }
         }
-
         @keyframes pulse-invader {
             0% { transform: scale(1); }
             100% { transform: scale(1.2); }
         }
-
         .start-button {
-            margin-top: 30px;
+            margin-top: 15px;
             padding: 15px 30px;
             font-size: 1.5em;
             background-color: transparent;
@@ -98,37 +101,36 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .start-button:hover {
             background-color: #00ff00;
             color: #0a0a2a;
             transform: scale(1.1);
         }
-
         .credits {
             position: fixed;
             bottom: 10px;
-            font-size: 1.2em;
+            font-size: 0.9em;
             opacity: 0.8;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             animation: pulse 2s ease-in-out infinite;
-            z-index: 10; /* Ensure credits are always visible */
+            z-index: 10;
+            width: 100%;
+            text-align: center;
+            background-color: rgba(10, 10, 42, 0.7);
+            padding: 5px 0;
         }
-
         .credits span {
             color: #00ffff;
             text-shadow: 0 0 5px #00ffff;
             margin: 0 5px;
         }
-
         @keyframes pulse {
             0% { opacity: 0.5; }
             50% { opacity: 1; }
             100% { opacity: 0.5; }
         }
-
         .back-button {
-            margin-top: 30px;
+            margin-top: 15px;
             padding: 10px 20px;
             font-size: 1.2em;
             background-color: transparent;
@@ -137,13 +139,11 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-
         .back-button:hover {
             background-color: #00ffff;
             color: #0a0a2a;
             transform: scale(1.1);
         }
-
         .operator-button {
             padding: 25px;
             font-size: 2.5em;
@@ -154,70 +154,31 @@
             transition: all 0.3s ease;
             border-radius: 10px;
         }
-
         .operator-button:hover {
             background-color: #00ff00;
             color: #0a0a2a;
             transform: scale(1.1);
             text-shadow: none;
         }
-
-        .addition {
-            text-shadow: 0 0 10px #ff0000;
-            border-color: #ff0000;
-            color: #ff0000;
-        }
-
-        .addition:hover {
-            background-color: #ff0000;
-        }
-
-        .subtraction {
-            text-shadow: 0 0 10px #ffff00;
-            border-color: #ffff00;
-            color: #ffff00;
-        }
-        
-        .subtraction:hover {
-            background-color: #ffff00;
-        }
-
-        .multiplication {
-            text-shadow: 0 0 10px #00ffff;
-            border-color: #00ffff;
-            color: #00ffff;
-        }
-        
-        .multiplication:hover {
-            background-color: #00ffff;
-        }
-
-        .division {
-            text-shadow: 0 0 10px #ff00ff;
-            border-color: #ff00ff;
-            color: #ff00ff;
-        }
-        
-        .division:hover {
-            background-color: #ff00ff;
-        }
-
-        /* Difficulty Selection Styles */
-        .difficulty-section {
-            margin-bottom: 20px;
-        }
-
+        .addition { text-shadow: 0 0 10px #ff0000; border-color: #ff0000; color: #ff0000; }
+        .addition:hover { background-color: #ff0000; }
+        .subtraction { text-shadow: 0 0 10px #ffff00; border-color: #ffff00; color: #ffff00; }
+        .subtraction:hover { background-color: #ffff00; }
+        .multiplication { text-shadow: 0 0 10px #00ffff; border-color: #00ffff; color: #00ffff; }
+        .multiplication:hover { background-color: #00ffff; }
+        .division { text-shadow: 0 0 10px #ff00ff; border-color: #ff00ff; color: #ff00ff; }
+        .division:hover { background-color: #ff00ff; }
+        .difficulty-section { margin-bottom: 20px; }
         .alien-selection, .math-selection {
             display: flex;
             justify-content: center;
             gap: 15px;
             margin: 10px 0;
         }
-
         .alien-option, .math-option {
             position: relative;
             width: 90px;
-            height: 120px;
+            height: 100px;
             border: 2px solid #00ff00;
             border-radius: 10px;
             display: flex;
@@ -227,9 +188,8 @@
             cursor: pointer;
             transition: all 0.3s ease;
             background-color: rgba(0, 255, 0, 0.1);
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             z-index: 1;
-            /* Button reset styles */
             padding: 0;
             font: inherit;
             color: inherit;
@@ -238,26 +198,81 @@
             -moz-appearance: none;
             appearance: none;
         }
-
-        /* Chrome-specific fix */
-        @media screen and (-webkit-min-device-pixel-ratio:0) {
-            .alien-option, .math-option {
-                overflow: visible;
-            }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
         }
-
+        .modal-content {
+            background-color: #000;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 15px #00ff00;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+            border-radius: 10px;
+        }
+        .modal-close {
+            color: #00ff00;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #ff0000; }
+        .difficulty-explanation {
+            margin: 15px 0;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 15px;
+        }
+        .difficulty-explanation h3 {
+            margin-bottom: 10px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        .help-button {
+            background-color: #0400ff;
+            color: #ffffff;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+            border-radius: 50%;
+            font-size: 1.2em;
+            font-family: 'Press Start 2P', cursive;
+            padding: 12px 15px;
+            cursor: pointer;
+            margin-right: 15px;
+            transition: all 0.3s;
+        }
+        .help-button:hover {
+            background-color: #00ff00;
+            color: #000;
+            transform: scale(1.1);
+        }
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            .alien-option, .math-option { overflow: visible; }
+        }
         .alien-option:hover, .math-option:hover {
             transform: scale(1.05);
             background-color: rgba(0, 255, 0, 0.2);
         }
-
         .alien-option.selected, .math-option.selected {
             border-color: #00ffff;
             background-color: rgba(0, 255, 255, 0.2);
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
             animation: pixel-effect 0.5s linear;
         }
-
         @keyframes pixel-effect {
             0% { transform: scale(1); }
             25% { transform: scale(1.05) skewX(2deg); }
@@ -265,14 +280,12 @@
             75% { transform: scale(1.05) skewX(0deg); }
             100% { transform: scale(1); }
         }
-
         .alien-emoji {
             font-size: 3em;
             text-shadow: 0 0 10px #00ff00;
             animation: glow 2s ease-in-out infinite alternate;
             margin-bottom: 10px;
         }
-
         .level-indicator {
             position: absolute;
             bottom: 5px;
@@ -282,18 +295,12 @@
             text-shadow: 0 0 5px #00ff00;
             text-transform: uppercase;
         }
-
         .math-level {
             font-size: 2em;
             font-weight: bold;
             margin-bottom: 5px;
         }
-
-        .math-description {
-            font-size: 0.9em;
-        }
-
-        /* Add a loading screen */
+        .math-description { font-size: 0.9em; }
         #loading-screen {
             position: fixed;
             top: 0;
@@ -307,31 +314,20 @@
             align-items: center;
             z-index: 9999;
         }
-
         #loading-text {
             font-size: 2em;
             color: #00ff00;
             margin-top: 20px;
             text-shadow: 0 0 10px #00ff00;
         }
-
         .loading-invader {
             font-size: 5em;
             animation: loading-pulse 1s ease-in-out infinite alternate;
         }
-
         @keyframes loading-pulse {
-            from {
-                transform: scale(1);
-                text-shadow: 0 0 10px #00ff00;
-            }
-            to {
-                transform: scale(1.2);
-                text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
-            }
+            from { transform: scale(1); text-shadow: 0 0 10px #00ff00; }
+            to { transform: scale(1.2); text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00; }
         }
-
-        /* Sound toggle button */
         #sound-toggle {
             position: absolute;
             top: 10px;
@@ -346,12 +342,7 @@
             font-size: 0.8em;
             z-index: 20;
         }
-
-        #sound-toggle:hover {
-            background-color: rgba(0, 255, 0, 0.2);
-        }
-
-        /* Game over screen */
+        #sound-toggle:hover { background-color: rgba(0, 255, 0, 0.2); }
         #game-over-screen {
             display: none;
             position: fixed;
@@ -365,7 +356,6 @@
             justify-content: center;
             align-items: center;
         }
-
         #game-over-title {
             font-size: 4em;
             color: #ff0000;
@@ -373,13 +363,11 @@
             margin-bottom: 30px;
             animation: game-over-pulse 2s ease-in-out infinite;
         }
-
         #final-score {
             font-size: 2em;
             color: #00ff00;
             margin-bottom: 40px;
         }
-
         #restart-button {
             background-color: transparent;
             border: 2px solid #00ff00;
@@ -391,32 +379,139 @@
             font-family: 'Courier New', monospace;
             transition: all 0.3s;
         }
-
         #restart-button:hover {
             background-color: rgba(0, 255, 0, 0.2);
             transform: scale(1.05);
         }
-
         @keyframes game-over-pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
         }
+        #game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(10, 10, 42, 0.8);
+            padding: 5px 0;
+            text-align: center;
+            z-index: 20;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #game-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            padding-top: 30px;
+        }
+        #invaders-container {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 30px);
+        }
+        #bases-container {
+            position: absolute;
+            bottom: 80px;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+        }
+        #math-question {
+            font-size: 1.8em !important;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+            text-align: center;
+            width: 100%;
+        }
+        #difficulty-display {
+            position: absolute;
+            top: -30px;
+            right: 10px;
+            font-size: 0.9em;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            z-index: 20;
+            text-align: right;
+            background-color: rgba(10, 10, 42, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+        }
+        #operator-difficulty {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            position: absolute;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+        }
+        .operator-level {
+            margin: 0 10px;
+            padding: 5px 10px;
+            border: 1px solid #00ff00;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .operator-level.active {
+            background-color: #00ff00;
+            color: #0a0a2a;
+        }
+        #exit-game-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 90;
+            display: none;
+        }
+        @media (max-width: 850px) {
+            #game-container {
+                width: 800px;
+                height: 600px;
+                transform: none;
+                position: absolute;
+                top: auto;
+                left: auto;
+                margin: 50px auto;
+            }
+            #difficulty-display { top: -30px; }
+            #exit-game-container {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+            }
+        }
+        #player {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.2em;
+            z-index: 20;
+        }
+        #score-display {
+            position: absolute;
+            right: 20px;
+            font-size: 1.2em;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
-    <!-- Loading Screen -->
+    <!-- HTML content remains unchanged -->
     <div id="loading-screen">
         <div class="loading-invader">👾</div>
         <div id="loading-text">LOADING...</div>
     </div>
-
     <div class="title">MATH INVADERS</div>
     <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 2.0</div>
-    
-    <!-- Sound toggle button -->
     <button id="sound-toggle">SOUND: ON</button>
-    
     <div class="equation">
         <span class="invader-char">👾</span> 2 + 2 = 4 <span class="invader-char">👾</span>
     </div>
@@ -429,24 +524,20 @@
     <div class="equation" style="animation-delay: 3s;">
         <span class="invader-char">🛸</span> 10 ÷ 2 = 5 <span class="invader-char">👾</span>
     </div>
-    
     <div class="invader">👾</div>
-    
-    <div id="main-menu" style="margin-bottom: 60px;">
+    <div id="main-menu" style="margin-bottom: 30px;">
         <button class="start-button" onclick="showPlayerSelection()">START GAME</button>
     </div>
-
-    <div id="player-selection" style="display: none; text-align: center; margin-bottom: 60px;">
-        <h2 style="font-size: 2em; margin-bottom: 30px; text-shadow: 0 0 10px #00ff00;">SELECT PLAYERS</h2>
+    <div id="player-selection" style="display: none; text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT PLAYERS</h2>
         <div style="display: flex; justify-content: center; gap: 30px;">
             <button class="start-button" onclick="showOperatorSelection()">1 PLAYER</button>
             <button class="start-button" onclick="startGame(2)">2 PLAYERS</button>
         </div>
         <button class="back-button" onclick="showMainMenu()">BACK</button>
     </div>
-
-    <div id="operator-selection" style="display: none; text-align: center; margin-bottom: 60px;">
-        <h2 style="font-size: 2em; margin-bottom: 30px; text-shadow: 0 0 10px #00ff00;">SELECT OPERATOR</h2>
+    <div id="operator-selection" style="display: none; text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT OPERATOR</h2>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 500px;">
             <button class="operator-button addition" onclick="showDifficultySelection('addition')">+</button>
             <button class="operator-button subtraction" onclick="showDifficultySelection('subtraction')">-</button>
@@ -455,13 +546,10 @@
         </div>
         <button class="back-button" onclick="showPlayerSelection()">BACK</button>
     </div>
-
-    <div id="difficulty-selection" style="display: none; text-align: center; margin-bottom: 60px;">
-        <h2 style="font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT DIFFICULTY</h2>
-        
-        <!-- Alien Difficulty -->
+    <div id="difficulty-selection" style="display: none; text-align: center; margin-bottom: 30px;">
+        <h2 style="font-size: 2.5em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT DIFFICULTY</h2>
         <div class="difficulty-section">
-            <h3 style="font-size: 1.5em; margin-bottom: 15px; text-shadow: 0 0 8px #00ff00;">ALIEN DIFFICULTY</h3>
+            <h3 style="font-size: 1.5em; margin-bottom: 10px; text-shadow: 0 0 8px #00ff00;">ALIEN DIFFICULTY</h3>
             <div class="alien-selection">
                 <button class="alien-option" type="button" onclick="selectAlienDifficulty(1)">
                     <div class="alien-emoji">👽</div>
@@ -481,10 +569,8 @@
                 </button>
             </div>
         </div>
-        
-        <!-- Math Difficulty -->
         <div class="difficulty-section">
-            <h3 style="font-size: 1.5em; margin: 20px 0 15px; text-shadow: 0 0 8px #00ff00;">MATH DIFFICULTY</h3>
+            <h3 style="font-size: 1.5em; margin: 10px 0 10px; text-shadow: 0 0 8px #00ff00;">MATH DIFFICULTY</h3>
             <div class="math-selection">
                 <button class="math-option" type="button" onclick="selectMathDifficulty(1)">
                     <div class="math-level">1</div>
@@ -504,56 +590,462 @@
                 </button>
             </div>
         </div>
-        
-        <button id="start-game-btn" class="start-button" style="opacity: 0.5; cursor: not-allowed;" disabled>START GAME</button>
-        <button class="back-button" onclick="showOperatorSelection()">BACK</button>
-    </div>
-
-    <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
-
-    <!-- Game Canvas Section (Initially Hidden) -->
-    <div id="game-container" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #0a0a2a; z-index: 100;">
-        <div id="game-header" style="position: absolute; top: 20px; left: 0; width: 100%; text-align: center;">
-            <div id="math-question" style="font-size: 2.5em; color: #00ff00; text-shadow: 0 0 10px #00ff00; margin-bottom: 20px;"></div>
-            <div id="score-display" style="font-size: 1.5em; color: #00ffff; text-shadow: 0 0 5px #00ffff;">SCORE: <span id="score">0</span></div>
+        <div style="display: flex; justify-content: center; align-items: center; margin-top: 15px;">
+            <button class="back-button" style="margin-right: 20px;" onclick="showOperatorSelection()">BACK</button>
+            <button id="start-game-btn" class="start-button" style="opacity: 0.5; cursor: not-allowed;" disabled>START GAME</button>
+            <button class="back-button" style="margin-left: 20px; text-shadow: 0 0 5px #00ffff; font-size: 1em; font-family: 'Courier New', monospace;" onclick="showDifficultyExplanation()">Info</button>
         </div>
-        
-        <div id="game-area" style="position: relative; width: 100%; height: 70%; margin-top: 100px; overflow: hidden;">
-            <!-- Invaders will be dynamically added here -->
-            <div id="invaders-container" style="position: relative; width: 100%; height: 70%;"></div>
-            
-            <!-- Bases -->
-            <div id="bases-container" style="position: absolute; bottom: 100px; width: 100%; display: flex; justify-content: space-around;">
-                <div class="base" style="width: 80px; height: 40px; background-color: #00ff00; border-radius: 5px 5px 0 0;"></div>
-                <div class="base" style="width: 80px; height: 40px; background-color: #00ff00; border-radius: 5px 5px 0 0;"></div>
-                <div class="base" style="width: 80px; height: 40px; background-color: #00ff00; border-radius: 5px 5px 0 0;"></div>
+    </div>
+    <div id="difficulty-explanation-modal" class="modal" onclick="closeModalOnBackgroundClick(event)">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideDifficultyExplanation()">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px; font-family: 'Courier New', monospace;">DIFFICULTY EXPLANATIONS</h2>
+            <div class="difficulty-explanation">
+                <h3>ALIEN DIFFICULTY</h3>
+                <p style="margin-bottom: 10px;">Controls how fast the aliens move and attack:</p>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• EASY: Slow moving aliens</li>
+                    <li style="margin-bottom: 5px;">• MEDIUM: Moderate speed</li>
+                    <li style="margin-bottom: 5px;">• HARD: Fast moving aliens</li>
+                    <li>• EXPERT: Extremely fast and challenging</li>
+                </ul>
             </div>
-        
-            <!-- Player Ship -->
-            <div id="player" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 2em;">🚀</div>
-            
-            <!-- Projectiles will be dynamically added here -->
+            <div class="difficulty-explanation">
+                <h3>ADDITION DIFFICULTY</h3>
+                <p style="margin-bottom: 10px;">Problems increase in complexity:</p>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• EASY: Single-digit numbers with sum up to 12, no carrying required (e.g., 8 + 4 = 12)</li>
+                    <li style="margin-bottom: 5px;">• MEDIUM: One or two-digit numbers, sum up to 40, carrying allowed (e.g., 15 + 25 = 40)</li>
+                    <li style="margin-bottom: 5px;">• HARD: Two-digit numbers, sum up to 200, carrying allowed (e.g., 85 + 97 = 182)</li>
+                    <li>• EXPERT: Two or three-digit numbers, sum up to 999, carrying allowed (e.g., 345 + 612 = 957)</li>
+                </ul>
+            </div>
+            <div class="difficulty-explanation">
+                <h3>SUBTRACTION DIFFICULTY</h3>
+                <ul>
+                    <li style="margin-bottom: 5px;">• EASY: Single-digit numbers only, no borrowing required, result up to 9 (e.g., 8 - 3 = 5)</li>
+                    <li style="margin-bottom: 5px;">• MEDIUM: One or two-digit numbers, result up to 40, borrowing allowed when needed (e.g., 42 - 16 = 26)</li>
+                    <li style="margin-bottom: 5px;">• HARD: Two-digit numbers, result up to 200, borrowing allowed (e.g., 96 - 23 = 73)</li>
+                    <li>• EXPERT: Two or three-digit numbers, result up to 999, borrowing allowed (e.g., 345 - 212 = 133)</li>
+                </ul>
+            </div>
+            <div class="difficulty-explanation">
+                <h3>MULTIPLICATION DIFFICULTY</h3>
+                <p style="margin-bottom: 10px;">Problems increase in complexity:</p>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• EASY: Allowed times tables for 1, 2, 5, 10 - both factors can only be 1, 2, 5, or 10 (e.g., 1 × 5 = 5, 5 × 2 = 10, 10 × 5 = 50)</li>
+                    <li style="margin-bottom: 5px;">• MEDIUM: Allowed factors: {1, 2, 3, 4, 5, 6, 10, 11} - both factors must come from this set (e.g., 3 × 4 = 12, 6 × 5 = 30, 10 × 11 = 110, 11 × 11 = 121)</li>
+                    <li style="margin-bottom: 5px;">• HARD: Covers the entire set from 1 through 12 (e.g., 7 × 10 = 70, 12 × 12 = 144, 9 × 11 = 99)</li>
+                    <li>• EXPERT: Any two-digit by two-digit multiplication (e.g., 23 × 47 = 1081, 56 × 92 = 5152)</li>
+                </ul>
+            </div>
+            <div class="difficulty-explanation">
+                <h3>DIVISION DIFFICULTY</h3>
+                <p style="margin-bottom: 10px;">All problems have whole number answers:</p>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• EASY: Divisor and quotient can only be 1, 2, 5, or 10 (e.g., 10 ÷ 2 = 5, 5 ÷ 1 = 5, 2 ÷ 2 = 1)</li>
+                    <li style="margin-bottom: 5px;">• MEDIUM: Divisor and quotient can be 1, 2, 3, 4, 5, 6, 10, or 11 (e.g., 66 ÷ 6 = 11, 10 ÷ 2 = 5, 110 ÷ 11 = 10)</li>
+                    <li style="margin-bottom: 5px;">• HARD: Divisor and quotient can be any integer from 1 through 12 (e.g., 144 ÷ 12 = 12, 60 ÷ 5 = 12, 36 ÷ 9 = 4)</li>
+                    <li>• EXPERT: Divisor and quotient can be any integer from 10 through 99 (e.g., 9801 ÷ 99 = 99, 3600 ÷ 90 = 40, 484 ÷ 22 = 22)</li>
+                </ul>
+            </div>
         </div>
-        
-        <button id="exit-game" class="back-button" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);" onclick="exitGame()">EXIT GAME</button>
     </div>
-
-    <!-- Game Over Screen -->
+    <div id="exit-game-container">
+        <button id="exit-game" class="back-button" onclick="exitGame()">EXIT GAME</button>
+    </div>
     <div id="game-over-screen">
         <div id="game-over-title">GAME OVER</div>
         <div id="final-score">SCORE: 0</div>
         <button id="restart-button">PLAY AGAIN</button>
     </div>
+    <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
+    <div id="game-container">
+        <div id="game-header">
+            <div id="math-question"></div>
+            <div id="score-display" style="position: absolute; right: 15px; font-size: 1.2em; color: #00ffff; text-shadow: 0 0 5px #00ffff;">SCORE: <span id="score">0</span></div>
+        </div>
+        <div id="difficulty-display">
+            <div style="display: flex; gap: 10px;">
+                <span id="operator-display"></span> | 
+                <span id="alien-level-display"></span> | 
+                <span id="math-level-display"></span>
+            </div>
+        </div>
+        <div id="game-area">
+            <div id="invaders-container"></div>
+            <div id="bases-container"></div>
+            <div id="player">🚀</div>
+        </div>
+    </div>
 
     <script>
-        // Hide loading screen when the window has loaded
+        // JavaScript code with the fixed placeFrontRowAnswers function
+        class SoundManager {
+            constructor() {
+                this.sounds = {};
+                this.audioContext = null;
+                this.gainNode = null;
+                this.isMuted = false;
+                this.isInitialized = false;
+                this.pendingPreload = false;
+                this.backgroundMusicSource = null;
+                const initOnInteraction = () => {
+                    this.initAudioContext();
+                    if (this.pendingPreload) {
+                        this.preloadSounds();
+                        this.pendingPreload = false;
+                    }
+                    document.removeEventListener('click', initOnInteraction);
+                    document.removeEventListener('keydown', initOnInteraction);
+                    document.removeEventListener('touchstart', initOnInteraction);
+                };
+                document.addEventListener('click', initOnInteraction, { once: true });
+                document.addEventListener('keydown', initOnInteraction, { once: true });
+                document.addEventListener('touchstart', initOnInteraction, { once: true });
+                console.log("Sound Manager created - waiting for user interaction to initialize audio");
+            }
+            initAudioContext() {
+                try {
+                    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.audioContext = new AudioContext();
+                    this.gainNode = this.audioContext.createGain();
+                    this.gainNode.gain.value = 0.7;
+                    this.gainNode.connect(this.audioContext.destination);
+                    this.isInitialized = true;
+                    console.log("Web Audio API initialized successfully");
+                } catch (e) {
+                    console.error("Web Audio API initialization failed:", e);
+                    this.isInitialized = false;
+                }
+            }
+            preloadSounds() {
+                if (!this.isInitialized) {
+                    console.log("Deferring sound generation until AudioContext is initialized");
+                    this.pendingPreload = true;
+                    return;
+                }
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume().catch(err => {
+                        console.warn("Could not resume AudioContext:", err);
+                    });
+                }
+                console.log("Generating game sounds programmatically...");
+                this.sounds["shoot"] = this.createShootSound();
+                this.sounds["explosion"] = this.createExplosionSound();
+                this.sounds["correct"] = this.createCorrectSound();
+                this.sounds["incorrect"] = this.createIncorrectSound();
+                this.sounds["menuSelect"] = this.createMenuSelectSound();
+                this.sounds["buttonClick"] = this.createButtonClickSound();
+                this.sounds["menuBack"] = this.createMenuBackSound();
+                this.sounds["backgroundMusic"] = this.createBackgroundMusic();
+                this.sounds["alienMove"] = this.createAlienMoveSound();
+                this.sounds["warning"] = this.createWarningSound();
+                this.sounds["gameOver"] = this.createGameOverSound();
+                this.sounds["levelComplete"] = this.createLevelCompleteSound();
+                console.log("All sounds generated successfully!");
+            }
+            createShootSound() {
+                const duration = 0.3;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const startFreq = 1500;
+                const endFreq = 500;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const freq = startFreq + (endFreq - startFreq) * t;
+                    data[i] = Math.sin(i * freq * 2 * Math.PI / sampleRate) * (1 - t);
+                }
+                return buffer;
+            }
+            createExplosionSound() {
+                const duration = 0.5;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-3 * t);
+                }
+                return buffer;
+            }
+            createCorrectSound() {
+                const duration = 0.5;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const frequencies = [523.25, 659.25, 783.99];
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const envelope = t < 0.1 ? t / 0.1 : Math.exp(-5 * (t - 0.1));
+                    let sample = 0;
+                    for (let j = 0; j < frequencies.length; j++) {
+                        sample += Math.sin(i * frequencies[j] * 2 * Math.PI / sampleRate);
+                    }
+                    data[i] = sample * 0.3 * envelope;
+                }
+                return buffer;
+            }
+            createIncorrectSound() {
+                const duration = 0.4;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const startFreq = 400;
+                const endFreq = 200;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const freq = startFreq - (startFreq - endFreq) * t;
+                    const wobble = 1 + 0.1 * Math.sin(i * 30 * 2 * Math.PI / sampleRate);
+                    data[i] = Math.sin(i * freq * wobble * 2 * Math.PI / sampleRate) * (1 - t);
+                }
+                return buffer;
+            }
+            createMenuSelectSound() {
+                const duration = 0.15;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const startFreq = 400;
+                const endFreq = 800;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const freq = startFreq + (endFreq - startFreq) * t;
+                    data[i] = Math.sin(i * freq * 2 * Math.PI / sampleRate) * Math.sin(t * Math.PI);
+                }
+                return buffer;
+            }
+            createButtonClickSound() {
+                const duration = 0.08;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const freq = 800;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    data[i] = Math.sin(i * freq * 2 * Math.PI / sampleRate) * Math.exp(-15 * t);
+                }
+                return buffer;
+            }
+            createMenuBackSound() {
+                const duration = 0.15;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const startFreq = 800;
+                const endFreq = 400;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const freq = startFreq + (endFreq - startFreq) * t;
+                    data[i] = Math.sin(i * freq * 2 * Math.PI / sampleRate) * Math.sin(t * Math.PI);
+                }
+                return buffer;
+            }
+            createAlienMoveSound() {
+                const duration = 0.2;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const baseFreq = 150;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const modulator = 1 + 0.5 * Math.sin(2 * Math.PI * t * 10);
+                    data[i] = Math.sin(i * baseFreq * modulator * 2 * Math.PI / sampleRate) * (1 - t);
+                }
+                return buffer;
+            }
+            createWarningSound() {
+                const duration = 0.7;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const baseFreq = 880;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const pulse = (Math.sin(2 * Math.PI * t * 8) > 0) ? 1 : 0.3;
+                    data[i] = Math.sin(i * baseFreq * 2 * Math.PI / sampleRate) * pulse * (1 - 0.5 * t);
+                }
+                return buffer;
+            }
+            createGameOverSound() {
+                const duration = 1.5;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+                const data = buffer.getChannelData(0);
+                const baseNotes = [880, 783.99, 659.25, 587.33, 523.25, 440];
+                const noteDuration = duration / baseNotes.length;
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const noteIndex = Math.min(Math.floor(t / noteDuration), baseNotes.length - 1);
+                    const noteStart = noteIndex * noteDuration;
+                    const noteT = (t - noteStart) / noteDuration;
+                    const envelope = Math.sin(noteT * Math.PI);
+                    data[i] = Math.sin(i * baseNotes[noteIndex] * 2 * Math.PI / sampleRate) * envelope * 0.8;
+                }
+                return buffer;
+            }
+            createLevelCompleteSound() {
+                const duration = 2.0;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(2, sampleRate * duration, sampleRate);
+                const leftChannel = buffer.getChannelData(0);
+                const rightChannel = buffer.getChannelData(1);
+                const noteDuration = 0.125;
+                const notes = [523.25, 659.25, 783.99, 523.25, 659.25, 783.99, 880.00, 1046.50];
+                const harmonies = [392.00, 523.25, 587.33, 392.00, 523.25, 587.33, 659.25, 783.99];
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / sampleRate;
+                    const elapsedTime = t;
+                    const noteIndex = Math.min(Math.floor(elapsedTime / noteDuration), notes.length - 1);
+                    const noteFreq = notes[noteIndex];
+                    const harmonyFreq = harmonies[noteIndex];
+                    const noteTime = elapsedTime - (noteIndex * noteDuration);
+                    let envelope;
+                    if (noteTime < 0.02) {
+                        envelope = noteTime / 0.02;
+                    } else {
+                        envelope = 1.0 - ((noteTime - 0.02) / (noteDuration - 0.02) * 0.5);
+                    }
+                    const shimmer = Math.sin(t * 4000) * 0.1 * Math.exp(-t * 10);
+                    const vibrato = Math.sin(t * 20) * 5;
+                    const pan = Math.sin(t * 2) * 0.2 + 0.5;
+                    const melody = Math.sin((i + vibrato) * noteFreq * 2 * Math.PI / sampleRate);
+                    const harmony = Math.sin(i * harmonyFreq * 2 * Math.PI / sampleRate) * 0.5;
+                    const bass = (noteIndex % 2 === 0) ? 
+                        Math.sin(i * noteFreq/2 * 2 * Math.PI / sampleRate) * 0.3 : 0;
+                    const sample = (melody + harmony + bass + shimmer) * Math.max(0, envelope) * 0.5;
+                    leftChannel[i] = sample * (1 - pan * 0.5);
+                    rightChannel[i] = sample * (0.5 + pan * 0.5);
+                }
+                return buffer;
+            }
+            createBackgroundMusic() {
+                const duration = 4.0;
+                const sampleRate = this.audioContext.sampleRate;
+                const buffer = this.audioContext.createBuffer(2, sampleRate * duration, sampleRate);
+                const leftChannel = buffer.getChannelData(0);
+                const rightChannel = buffer.getChannelData(1);
+                const bassPattern = [
+                    { note: 65.41, duration: 0.5 },
+                    { note: 65.41, duration: 0.5 },
+                    { note: 98.00, duration: 0.5 },
+                    { note: 98.00, duration: 0.5 },
+                    { note: 73.42, duration: 0.5 },
+                    { note: 73.42, duration: 0.5 },
+                    { note: 98.00, duration: 0.5 },
+                    { note: 87.31, duration: 0.5 }
+                ];
+                const arpeggioPattern = [261.63, 329.63, 392.00, 523.25];
+                for (let i = 0; i < buffer.length; i++) {
+                    const t = i / buffer.length;
+                    const elapsedTime = t * duration;
+                    let bassIndex = 0;
+                    let bassTime = 0;
+                    let currentBassTime = 0;
+                    while (bassIndex < bassPattern.length) {
+                        currentBassTime = bassTime;
+                        bassTime += bassPattern[bassIndex].duration;
+                        if (elapsedTime < bassTime) break;
+                        bassIndex++;
+                    }
+                    if (bassIndex < bassPattern.length) {
+                        const noteTime = elapsedTime - currentBassTime;
+                        const noteDuration = bassPattern[bassIndex].duration;
+                        const envelope = Math.sin(noteTime / noteDuration * Math.PI);
+                        leftChannel[i] = 0.3 * envelope * 
+                            Math.sin(i * bassPattern[bassIndex].note * 2 * Math.PI / sampleRate);
+                    }
+                    const arpeggioSpeed = 8;
+                    const arpeggioIndex = Math.floor((elapsedTime * arpeggioSpeed) % arpeggioPattern.length);
+                    const arpeggioEnvelope = Math.sin(Math.PI * ((elapsedTime * arpeggioSpeed) % 1));
+                    rightChannel[i] = 0.2 * arpeggioEnvelope * 
+                        Math.sin(i * arpeggioPattern[arpeggioIndex] * 2 * Math.PI / sampleRate);
+                    const lfo = 0.1 * Math.sin(2 * Math.PI * elapsedTime * 0.25);
+                    leftChannel[i] += 0.1 * rightChannel[i] + lfo;
+                    rightChannel[i] += 0.1 * leftChannel[i] + lfo;
+                }
+                return buffer;
+            }
+            playSound(name, options = {}) {
+                if (this.isMuted || !this.isInitialized) return null;
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume().catch(err => {
+                        console.warn("Could not resume AudioContext:", err);
+                    });
+                }
+                const settings = {
+                    volume: options.volume !== undefined ? options.volume : 0.7,
+                    loop: options.loop !== undefined ? options.loop : false,
+                    playbackRate: options.playbackRate !== undefined ? options.playbackRate : 1.0,
+                    pan: options.pan !== undefined ? options.pan : 0
+                };
+                if (!this.sounds[name]) {
+                    console.warn(`Sound ${name} not loaded yet, playing will be skipped`);
+                    return;
+                }
+                try {
+                    const source = this.audioContext.createBufferSource();
+                    source.buffer = this.sounds[name];
+                    source.loop = settings.loop;
+                    source.playbackRate.value = settings.playbackRate;
+                    const gainNode = this.audioContext.createGain();
+                    gainNode.gain.value = settings.volume;
+                    if (settings.pan !== 0 && this.audioContext.createStereoPanner) {
+                        const pannerNode = this.audioContext.createStereoPanner();
+                        pannerNode.pan.value = settings.pan;
+                        source.connect(pannerNode);
+                        pannerNode.connect(gainNode);
+                    } else {
+                        source.connect(gainNode);
+                    }
+                    gainNode.connect(this.gainNode);
+                    source.start(0);
+                    return source;
+                } catch (e) {
+                    console.warn(`Error playing sound ${name}:`, e);
+                    return null;
+                }
+            }
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                if (this.gainNode) {
+                    this.gainNode.gain.value = this.isMuted ? 0 : 0.7;
+                }
+                return this.isMuted;
+            }
+            playBackgroundMusic() {
+                if (!this.isInitialized || this.isMuted) return;
+                this.backgroundMusicSource = this.playSound('backgroundMusic', {
+                    volume: 0.4,
+                    loop: true
+                });
+            }
+            stopBackgroundMusic() {
+                if (this.backgroundMusicSource) {
+                    try {
+                        this.backgroundMusicSource.stop();
+                    } catch (e) {
+                        console.log("Error stopping background music:", e);
+                    }
+                    this.backgroundMusicSource = null;
+                }
+            }
+        }
+        const soundManager = new SoundManager();
+        document.addEventListener('DOMContentLoaded', function() {
+            soundManager.preloadSounds();
+        });
+        document.addEventListener('click', function() {
+            if (soundManager.audioContext && soundManager.audioContext.state === 'suspended') {
+                soundManager.audioContext.resume();
+            }
+        }, { once: true });
         window.addEventListener('load', function() {
             setTimeout(function() {
                 document.getElementById('loading-screen').style.display = 'none';
-            }, 1000); // Short delay to ensure everything is rendered
+            }, 1000);
         });
-
-        // Fallback to hide loading screen after a few seconds regardless of other issues
         setTimeout(function() {
             const loadingScreen = document.getElementById('loading-screen');
             if (loadingScreen && loadingScreen.style.display !== 'none') {
@@ -561,25 +1053,18 @@
                 console.log("Loading screen hidden by fallback timeout");
             }
         }, 3000);
-
-        // Sound system initialization
         let soundEnabled = true;
         const sounds = {
-            background: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-game-level-music-689.mp3'),
-            shoot: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-laser-gun-shot-1678.mp3'),
-            explosion: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-explosion-impact-1682.mp3'),
-            correct: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
-            gameOver: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3')
+            background: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 },
+            shoot: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 },
+            explosion: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 },
+            correct: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 },
+            gameOver: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 }
         };
-
-        // Loop background music
         sounds.background.loop = true;
         sounds.background.volume = 0.5;
-
-        // Function to play sound effects
         function playSound(soundName) {
             if (!soundEnabled) return;
-            
             try {
                 if (sounds[soundName]) {
                     sounds[soundName].currentTime = 0;
@@ -589,22 +1074,26 @@
                 console.error(`Error in playSound(${soundName}):`, err);
             }
         }
-
-        // Sound toggle functionality
         document.getElementById('sound-toggle').addEventListener('click', function() {
-            soundEnabled = !soundEnabled;
-            this.textContent = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
-            
-            if (soundEnabled) {
-                if (gameLoopInterval) {
-                    sounds.background.play().catch(e => console.log("Error playing background music:", e));
+            try {
+                const isMuted = soundManager.toggleMute();
+                this.textContent = isMuted ? 'SOUND: OFF' : 'SOUND: ON';
+                soundEnabled = !isMuted;
+                if (soundEnabled) {
+                    if (gameLoopInterval && sounds.background && typeof sounds.background.play === 'function') {
+                        sounds.background.play().catch(e => console.log("Error playing background music:", e));
+                    }
+                } else {
+                    if (sounds.background && typeof sounds.background.pause === 'function') {
+                        sounds.background.pause();
+                    }
                 }
-            } else {
-                sounds.background.pause();
+            } catch (error) {
+                console.warn("Error toggling sound:", error);
+                soundEnabled = !soundEnabled;
+                this.textContent = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
             }
         });
-
-        // Game state variables
         let selectedOperator = '';
         let selectedAlienDifficulty = 0;
         let selectedMathDifficulty = 0;
@@ -616,45 +1105,41 @@
             correctAnswer: null,
             invaders: [],
             projectiles: [],
-            playerPosition: 50, // percentage
+            playerPosition: 50,
             alienEmoji: '👾',
             moveDirection: 1,
             moveDownTrigger: false,
             lastMoveTime: 0,
-            moveSpeed: 500 // ms between moves
+            moveSpeed: 500,
+            dangerWarningShown: false,
+            keysPressed: {}
         };
-
-        // Function to convert operator words to symbols
         function getOperatorSymbol(operatorWord) {
             switch(operatorWord) {
                 case 'addition': return '+';
                 case 'subtraction': return '-';
                 case 'multiplication': return '×';
                 case 'division': return '÷';
-                default: return operatorWord; // If it's already a symbol, return as is
+                default: return operatorWord;
             }
         }
-
-        // Add some random movement to invaders
         const invader = document.querySelector('.invader');
         setInterval(() => {
             invader.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
         }, 1000);
-
-        // Game navigation functions
         function showPlayerSelection() {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('player-selection').style.display = 'block';
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'none';
-            
-            // Hide math equations
+            document.querySelector('.title').style.display = 'none';
+            document.querySelector('.title + div').style.display = 'none';
             document.querySelectorAll('.equation').forEach(eq => {
                 eq.style.display = 'none';
             });
             document.querySelector('.invader').style.display = 'none';
+            soundManager.playSound('menuSelect');
         }
-
         function showMainMenu() {
             document.getElementById('main-menu').style.display = 'block';
             document.getElementById('player-selection').style.display = 'none';
@@ -662,106 +1147,73 @@
             document.getElementById('difficulty-selection').style.display = 'none';
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
-            
-            // Show math equations
+            document.querySelector('.title').style.display = 'block';
+            document.querySelector('.title + div').style.display = 'block';
             document.querySelectorAll('.equation').forEach(eq => {
                 eq.style.display = 'flex';
             });
             document.querySelector('.invader').style.display = 'block';
+            soundManager.playSound('menuBack');
         }
-
         function showOperatorSelection() {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('operator-selection').style.display = 'block';
             document.getElementById('difficulty-selection').style.display = 'none';
-            
-            // Hide math equations
+            document.querySelector('.title').style.display = 'none';
+            document.querySelector('.title + div').style.display = 'none';
             document.querySelectorAll('.equation').forEach(eq => {
                 eq.style.display = 'none';
             });
             document.querySelector('.invader').style.display = 'none';
+            soundManager.playSound('menuSelect');
         }
-
         function showDifficultySelection(operator) {
-            console.log(`Showing difficulty selection for operator: ${operator}`);
-            
-            document.getElementById('main-menu').style.display = 'none';
-            document.getElementById('player-selection').style.display = 'none';
+            selectedOperator = operator;
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'block';
-            
-            // Hide math equations
-            document.querySelectorAll('.equation').forEach(eq => {
-                eq.style.display = 'none';
-            });
-            document.querySelector('.invader').style.display = 'none';
-            
-            // Store the selected operator
-            selectedOperator = operator;
-            
-            // Reset selections
             selectedAlienDifficulty = 0;
             selectedMathDifficulty = 0;
-            updateStartButton();
-            
-            // Clear previous selections
-            document.querySelectorAll('.alien-option.selected, .math-option.selected').forEach(el => {
-                el.classList.remove('selected');
-            });
-        }
-        
-        // Function to refresh SVG images with new timestamps
-        function refreshSvgImages() {
-            // No longer needed for emojis
-            console.log("Using emoji aliens - no refresh needed");
-        }
-
-        function selectAlienDifficulty(level) {
-            console.log(`Selecting alien difficulty: ${level}`);
-            selectedAlienDifficulty = level;
-            
-            // Update visual selection
-            document.querySelectorAll('.alien-option').forEach((el, index) => {
-                if (index + 1 === level) {
-                    el.classList.add('selected');
-                } else {
-                    el.classList.remove('selected');
-                }
-            });
-            
-            updateStartButton();
-        }
-
-        function selectMathDifficulty(level) {
-            console.log(`Selecting math difficulty: ${level}`);
-            selectedMathDifficulty = level;
-            
-            // Update visual selection
-            document.querySelectorAll('.math-option').forEach((el, index) => {
-                if (index + 1 === level) {
-                    el.classList.add('selected');
-                } else {
-                    el.classList.remove('selected');
-                }
-            });
-            
-            updateStartButton();
-        }
-
-        function updateStartButton() {
+            document.querySelectorAll('.alien-option').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.math-option').forEach(btn => btn.classList.remove('selected'));
             const startButton = document.getElementById('start-game-btn');
-            
-            console.log(`Current selections - Alien: ${selectedAlienDifficulty}, Math: ${selectedMathDifficulty}`);
-            
-            // Enable button only if both difficulties are selected
+            startButton.disabled = true;
+            startButton.style.opacity = '0.5';
+            startButton.style.cursor = 'not-allowed';
+            soundManager.playSound('menuSelect');
+            document.getElementById('operator-display').textContent = getOperatorSymbol(operator);
+        }
+        function selectAlienDifficulty(level) {
+            selectedAlienDifficulty = level;
+            document.querySelectorAll('.alien-option').forEach(btn => btn.classList.remove('selected'));
+            const selectedButton = Array.from(document.querySelectorAll('.alien-option')).find(btn => 
+                parseInt(btn.onclick.toString().match(/\d+/)[0]) === level
+            );
+            if (selectedButton) selectedButton.classList.add('selected');
+            checkDifficultySelection();
+            document.getElementById('alien-level-display').textContent = `ALIEN: ${['EASY', 'MEDIUM', 'HARD', 'EXPERT'][level - 1]}`;
+            soundManager.playSound('buttonClick');
+        }
+        function selectMathDifficulty(level) {
+            selectedMathDifficulty = level;
+            document.querySelectorAll('.math-option').forEach(btn => btn.classList.remove('selected'));
+            const selectedButton = Array.from(document.querySelectorAll('.math-option')).find(btn => 
+                parseInt(btn.onclick.toString().match(/\d+/)[0]) === level
+            );
+            if (selectedButton) selectedButton.classList.add('selected');
+            checkDifficultySelection();
+            document.getElementById('math-level-display').textContent = `MATH: ${['EASY', 'MEDIUM', 'HARD', 'EXPERT'][level - 1]}`;
+            soundManager.playSound('buttonClick');
+        }
+        function checkDifficultySelection() {
+            const startButton = document.getElementById('start-game-btn');
             if (selectedAlienDifficulty > 0 && selectedMathDifficulty > 0) {
                 startButton.disabled = false;
                 startButton.style.opacity = '1';
                 startButton.style.cursor = 'pointer';
                 startButton.onclick = function() {
-                    console.log(`Starting game with: Operator=${selectedOperator}, Alien=${selectedAlienDifficulty}, Math=${selectedMathDifficulty}`);
-                    startGameWithSettings(selectedOperator, selectedAlienDifficulty, selectedMathDifficulty);
+                    startGame();
+                    soundManager.playSound('buttonClick');
                 };
             } else {
                 startButton.disabled = true;
@@ -770,52 +1222,28 @@
                 startButton.onclick = null;
             }
         }
-
-        function startGameWithSettings(operator, alienLevel, mathLevel) {
-            console.log(`Starting game with settings: Operator=${operator}, Alien=${alienLevel}, Math=${mathLevel}`);
-            console.log(`Operator symbol will be: ${getOperatorSymbol(operator)}`);
-            
-            try {
-                // Hide the difficulty selection screen
-                document.getElementById('difficulty-selection').style.display = 'none';
-                
-                // Show the game container
-                document.getElementById('game-container').style.display = 'block';
-                
-                // Initialize and start the game with the selected settings
-                console.log("About to initialize game...");
-                initGame(operator, alienLevel, mathLevel);
-                console.log("Game initialized successfully!");
-            } catch (err) {
-                console.error("Error in startGameWithSettings:", err);
-                // Show an error message to the user
-                alert("An error occurred while starting the game. Please try again.");
-                // Return to the main menu
-                showMainMenu();
-                // Hide loading screen if it's still visible
-                document.getElementById('loading-screen').style.display = 'none';
+        function startGame() {
+            if (!selectedOperator || selectedAlienDifficulty === 0 || selectedMathDifficulty === 0) {
+                alert("Please select an operator and both difficulties!");
+                return;
             }
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('player-selection').style.display = 'none';
+            document.getElementById('operator-selection').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'none';
+            document.getElementById('game-container').style.display = 'block';
+            document.getElementById('exit-game-container').style.display = 'block';
+            initGame(selectedOperator, selectedAlienDifficulty, selectedMathDifficulty);
         }
-
-        function startGame(players) {
-            alert(`Starting ${players} player game! Get ready for some math action!`);
-            // Here you would add code to start the actual game
-        }
-
         function exitGame() {
-            // Stop the game loop
             if (gameLoopInterval) {
                 clearInterval(gameLoopInterval);
                 gameLoopInterval = null;
             }
-            
-            // Stop background music
-            sounds.background.pause();
-            
-            // Clear all game elements
-            document.getElementById('invaders-container').innerHTML = '';
-            
-            // Reset game state
+            soundManager.stopBackgroundMusic();
+            if (sounds.background) {
+                sounds.background.pause();
+            }
             gameState = {
                 score: 0,
                 isGameOver: false,
@@ -823,31 +1251,25 @@
                 correctAnswer: null,
                 invaders: [],
                 projectiles: [],
-                playerPosition: 50, // percentage
+                playerPosition: 50,
                 alienEmoji: '👾',
                 moveDirection: 1,
                 moveDownTrigger: false,
                 lastMoveTime: 0,
-                moveSpeed: 500 // ms between moves
+                moveSpeed: 500,
+                dangerWarningShown: false,
+                keysPressed: {}
             };
-            
-            // Update the score display
             updateScore();
-            
-            // Hide the game container and game over screen
             document.getElementById('game-container').style.display = 'none';
+            document.getElementById('exit-game-container').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
-            
-            // Show the main menu
             showMainMenu();
+            soundManager.playSound('menuBack');
         }
-
-        // Game initialization
         function initGame(operator, alienLevel, mathLevel) {
             console.log(`Initializing game: Operator=${operator}, Alien=${alienLevel}, Math=${mathLevel}`);
-            
             try {
-                // Reset game state
                 gameState = {
                     score: 0,
                     isGameOver: false,
@@ -860,93 +1282,86 @@
                     moveDirection: 1,
                     moveDownTrigger: false,
                     lastMoveTime: 0,
-                    moveSpeed: getMoveSpeed(alienLevel)
+                    moveSpeed: getMoveSpeed(alienLevel),
+                    dangerWarningShown: false,
+                    keysPressed: {},
+                    lastAlienMoveSound: 0
                 };
-                
                 console.log(`Using alien emoji: ${gameState.alienEmoji} for level ${alienLevel}`);
                 console.log(`Move speed set to: ${gameState.moveSpeed}ms`);
-                
-                // Set up the game area
                 console.log("Creating invaders...");
                 createInvaders(alienLevel);
                 console.log("Invaders created successfully");
-                
-                // Generate the first math question
                 console.log("Generating first math question...");
                 generateMathQuestion(operator, mathLevel);
                 console.log("Math question generated successfully");
-                
-                // Set up event listeners for player controls
                 console.log("Setting up controls...");
                 setupControls();
                 console.log("Controls set up successfully");
-                
-                // Start the game loop
                 console.log("Starting game loop...");
                 if (gameLoopInterval) {
                     clearInterval(gameLoopInterval);
                 }
-                gameLoopInterval = setInterval(gameLoop, 16); // ~60fps
+                gameLoopInterval = setInterval(gameLoop, 16);
                 console.log("Game loop started");
-                
-                // Play background music
-                if (soundEnabled) {
-                    console.log("Playing background music...");
-                    sounds.background.currentTime = 0;
-                    sounds.background.play().catch(e => console.log("Error playing background music:", e));
+                try {
+                    if (soundEnabled) {
+                        soundManager.playBackgroundMusic();
+                        if (sounds.background && typeof sounds.background.play === 'function') {
+                            sounds.background.play().catch(e => console.log("Error playing legacy background music:", e));
+                        }
+                    }
+                } catch (soundError) {
+                    console.warn("Could not play background music, but game will continue:", soundError);
                 }
-                
                 console.log("Game initialization complete!");
             } catch (err) {
                 console.error("Error in initGame:", err);
-                // Show an error message to the user
                 alert("An error occurred while initializing the game. Please try again.");
-                // Return to the main menu
                 showMainMenu();
             }
         }
-
-        // Get the alien emoji based on the selected level
         function getAlienEmoji(level) {
             const emojis = ['👽', '🛸', '👾', '🦠'];
             const emoji = emojis[level - 1] || '👾';
             console.log(`Getting alien emoji for level ${level}: ${emoji}`);
             return emoji;
         }
-
-        // Get the move speed based on the alien level
         function getMoveSpeed(level) {
-            // Faster movement for higher levels
-            return 600 - (level * 100); // 500ms, 400ms, 300ms, 200ms
+            let baseSpeed = 600 - (level * 100);
+            const screenSizeFactor = Math.min(1, window.innerWidth / 1200);
+            const adjustedSpeed = baseSpeed / screenSizeFactor;
+            return Math.max(150, Math.min(adjustedSpeed, 800));
         }
-
-        // Create the invader grid
         function createInvaders(level) {
             console.log(`Creating invaders for level ${level}`);
-            
             try {
                 const container = document.getElementById('invaders-container');
                 if (!container) {
                     console.error("Invaders container not found!");
                     return;
                 }
-                
                 container.innerHTML = '';
-                
-                const rows = 4;
-                const cols = 8;
-                const invaderSize = 50; // px
-                const spacing = 20; // px
-                
-                // Calculate the total width needed
+                const GRID_ROWS = 10;
+                const PLAYER_ROW = 9;
+                const GAME_OVER_ROW = 8;
+                const DANGER_ROW = 7;
+                gameState.gridInfo = {
+                    rows: GRID_ROWS,
+                    playerRow: PLAYER_ROW,
+                    gameOverRow: GAME_OVER_ROW,
+                    dangerRow: DANGER_ROW,
+                    rowHeight: container.clientHeight / GRID_ROWS
+                };
+                const rows = 5;
+                const cols = 10;
+                const gameWidth = container.clientWidth;
+                const rowHeight = gameState.gridInfo.rowHeight;
+                const invaderSize = Math.min(gameWidth / (cols * 2.2), rowHeight * 0.7);
+                const spacing = invaderSize * 0.8;
                 const totalWidth = (cols * invaderSize) + ((cols - 1) * spacing);
-                const leftOffset = (window.innerWidth - totalWidth) / 2;
-                
-                // Generate random numbers for invaders
-                const numbers = generateInvaderNumbers(level);
-                console.log("Numbers generated successfully");
-                
-                // Create the invader grid
+                const leftOffset = (gameWidth - totalWidth) / 2;
+                const topOffset = 40;
                 for (let row = 0; row < rows; row++) {
                     for (let col = 0; col < cols; col++) {
                         try {
@@ -956,55 +1371,42 @@
                             invader.style.width = `${invaderSize}px`;
                             invader.style.height = `${invaderSize}px`;
                             invader.style.left = `${leftOffset + (col * (invaderSize + spacing))}px`;
-                            invader.style.top = `${50 + (row * (invaderSize + spacing))}px`;
-                            invader.style.fontSize = '2em';
+                            const gridRow = row;
+                            invader.style.top = `${topOffset + (gridRow * rowHeight) + (rowHeight - invaderSize) / 2}px`;
+                            invader.style.fontSize = '1.4em';
                             invader.style.display = 'flex';
                             invader.style.flexDirection = 'column';
                             invader.style.alignItems = 'center';
                             invader.style.justifyContent = 'center';
                             invader.style.textShadow = '0 0 10px #00ff00';
                             invader.style.color = '#00ff00';
-                            
-                            // Add the alien emoji
                             const emoji = document.createElement('div');
                             emoji.textContent = gameState.alienEmoji;
                             emoji.style.animation = 'glow 2s ease-in-out infinite alternate';
                             invader.appendChild(emoji);
-                            
-                            // Add the number (if any)
-                            // Only add numbers to invaders in row 0 (front row)
                             let shouldAddNumber = false;
                             let numberValue = '';
-                            
                             if (row === 0) {
-                                // Front row - will get numbers (correct and incorrect) later in placeFrontRowAnswers
                                 shouldAddNumber = true;
                                 numberValue = '';
                             } else {
-                                // No numbers for other rows
                                 shouldAddNumber = false;
                                 numberValue = '';
                             }
-                            
                             if (shouldAddNumber) {
                                 const numberElement = document.createElement('div');
                                 numberElement.textContent = numberValue;
-                                numberElement.style.fontSize = '0.7em';
-                                numberElement.style.marginTop = '5px';
+                                numberElement.style.fontSize = '0.8em';
+                                numberElement.style.marginTop = '2px';
                                 invader.appendChild(numberElement);
-                                
-                                // Store the number for game logic
                                 invader.dataset.number = numberValue;
                             } else {
                                 invader.dataset.number = '';
                             }
-                            
                             container.appendChild(invader);
-                            
-                            // Add to game state
                             gameState.invaders.push({
                                 element: invader,
-                                row: row,
+                                gridRow: gridRow,
                                 col: col,
                                 number: invader.dataset.number,
                                 isAlive: true
@@ -1014,80 +1416,192 @@
                         }
                     }
                 }
-                
                 console.log(`Created ${gameState.invaders.length} invaders`);
-                
-                // Create the bases
+                const playerShip = document.getElementById('player');
+                if (playerShip) {
+                    playerShip.style.bottom = '25px';
+                    playerShip.style.top = 'auto';
+                    playerShip.style.fontSize = `${invaderSize * 1.2}px`;
+                }
                 createBases();
             } catch (err) {
                 console.error("Error in createInvaders:", err);
             }
         }
-        
-        // Create the player bases
         function createBases() {
             const basesContainer = document.getElementById('bases-container');
             basesContainer.innerHTML = '';
-            
-            // Create 4 bases
-            for (let i = 0; i < 4; i++) {
+            basesContainer.style.bottom = '100px';
+            basesContainer.style.top = 'auto';
+            for (let i = 0; i < 6; i++) {
                 const base = document.createElement('div');
                 base.className = 'base';
+                base.style.width = '70px';
+                base.style.height = '35px';
+                base.style.backgroundColor = '#00ff00';
+                base.style.borderRadius = '5px 5px 0 0';
                 basesContainer.appendChild(base);
             }
         }
-
-        // Generate random numbers for invaders based on difficulty
         function generateInvaderNumbers(level) {
             console.log(`Generating invader numbers for level ${level}`);
-            
-            // We no longer need to generate numbers for invaders
-            // since only the front row will have numbers, and those are set in placeFrontRowAnswers
             return [];
         }
-
-        // Generate a math question based on the selected operator and difficulty
         function generateMathQuestion(operator, difficulty) {
             try {
                 console.log("Generating new math question");
-                
-                // Get the selected operator and difficulty
                 const level = difficulty || 1;
-                
-                // Convert operator word to symbol if needed
                 const operatorSymbol = getOperatorSymbol(operator);
-                
                 console.log(`Operator: ${operator}, Symbol: ${operatorSymbol}, Math Level: ${level}`);
-                
-                // Set the maximum number based on difficulty
-                const maxNum = Math.max(10, level * 10);
-                console.log(`Max number for questions: ${maxNum}`);
-                
-                // Generate a question using the fallback method first
-                // This ensures we have a valid question and answer
                 let num1, num2, correctAnswer;
-                
-                // For division, ensure we get a clean division result
-                if (operatorSymbol === '÷') {
-                    num2 = Math.floor(Math.random() * (maxNum / 2)) + 1;
-                    const multiplier = Math.floor(Math.random() * (maxNum / num2)) + 1;
-                    num1 = num2 * multiplier;
-                    correctAnswer = num1 / num2;
+                let maxNum;
+                console.log(`Starting question generation for ${operator} at level ${level}`);
+                if (operatorSymbol === '+') {
+                    switch (level) {
+                        case 1:
+                            do {
+                                num1 = Math.floor(Math.random() * 9) + 1;
+                                num2 = Math.floor(Math.random() * (12 - num1)) + 1;
+                            } while (num1 + num2 > 12);
+                            maxNum = 12;
+                            break;
+                        case 2:
+                            num1 = Math.floor(Math.random() * 30) + 1;
+                            num2 = Math.floor(Math.random() * Math.min(40 - num1, 30)) + 1;
+                            maxNum = 40;
+                            break;
+                        case 3:
+                            num1 = Math.floor(Math.random() * 90) + 10;
+                            num2 = Math.floor(Math.random() * Math.min(200 - num1, 90)) + 10;
+                            maxNum = 200;
+                            break;
+                        case 4:
+                            const useThreeDigits = Math.random() < 0.5;
+                            if (useThreeDigits) {
+                                num1 = Math.floor(Math.random() * 900) + 100;
+                                num2 = Math.floor(Math.random() * Math.min(999 - num1, 90)) + 10;
+                            } else {
+                                num1 = Math.floor(Math.random() * 90) + 10;
+                                num2 = Math.floor(Math.random() * Math.min(999 - num1, 900)) + 10;
+                                if (num2 < 10) num2 = 10 + Math.floor(Math.random() * 90);
+                            }
+                            maxNum = 999;
+                            break;
+                        default:
+                            num1 = Math.floor(Math.random() * 10) + 1;
+                            num2 = Math.floor(Math.random() * 10) + 1;
+                            maxNum = 20;
+                    }
+                    correctAnswer = num1 + num2;
+                } else if (operatorSymbol === '-') {
+                    switch (level) {
+                        case 1:
+                            num1 = Math.floor(Math.random() * 9) + 1;
+                            num2 = Math.floor(Math.random() * num1) + 1;
+                            correctAnswer = num1 - num2;
+                            console.log(`Easy Subtraction: ${num1} - ${num2} = ${correctAnswer}`);
+                            break;
+                        case 2:
+                            correctAnswer = Math.floor(Math.random() * 40) + 1;
+                            num2 = Math.floor(Math.random() * 40) + 1;
+                            num1 = correctAnswer + num2;
+                            break;
+                        case 3:
+                            correctAnswer = Math.floor(Math.random() * 200) + 1;
+                            num2 = Math.floor(Math.random() * 90) + 10;
+                            num1 = correctAnswer + num2;
+                            break;
+                        case 4:
+                            correctAnswer = Math.floor(Math.random() * 999) + 1;
+                            const useThreeDigits = Math.random() < 0.5;
+                            if (useThreeDigits) {
+                                num2 = Math.floor(Math.random() * 900) + 100;
+                            } else {
+                                num2 = Math.floor(Math.random() * 90) + 10;
+                            }
+                            num1 = correctAnswer + num2;
+                            break;
+                        default:
+                            num1 = Math.floor(Math.random() * 10) + 1;
+                            num2 = Math.floor(Math.random() * num1) + 1;
+                            correctAnswer = num1 - num2;
+                    }
+                } else if (operatorSymbol === '×') {
+                    switch (level) {
+                        case 1: // Easy - Times tables for 1, 2, 5, 10
+                            const easyMultipliers = [1, 2, 5, 10];
+                            const randomMultiplierIndex1 = Math.floor(Math.random() * easyMultipliers.length);
+                            const randomMultiplierIndex2 = Math.floor(Math.random() * easyMultipliers.length);
+                            num1 = easyMultipliers[randomMultiplierIndex1];
+                            num2 = easyMultipliers[randomMultiplierIndex2];
+                            correctAnswer = num1 * num2;
+                            break;
+                        case 2: // Medium - Times tables for 1, 2, 3, 4, 5, 6, 10, 11
+                            const mediumMultipliers = [1, 2, 3, 4, 5, 6, 10, 11];
+                            const randomMediumMultiplierIndex1 = Math.floor(Math.random() * mediumMultipliers.length);
+                            const randomMediumMultiplierIndex2 = Math.floor(Math.random() * mediumMultipliers.length);
+                            num1 = mediumMultipliers[randomMediumMultiplierIndex1];
+                            num2 = mediumMultipliers[randomMediumMultiplierIndex2];
+                            correctAnswer = num1 * num2;
+                            break;
+                        case 3: // Hard - Covers the entire set from 1 through 12
+                            num1 = Math.floor(Math.random() * 12) + 1; // 1 to 12
+                            num2 = Math.floor(Math.random() * 12) + 1; // 1 to 12
+                            correctAnswer = num1 * num2;
+                            break;
+                        case 4: // Expert - Any two-digit by two-digit multiplication (e.g., 23 × 47 = 1081, 56 × 92 = 5152)
+                            num1 = Math.floor(Math.random() * 90) + 10; // 10 to 99
+                            num2 = Math.floor(Math.random() * 90) + 10; // 10 to 99
+                            correctAnswer = num1 * num2;
+                            break;
+                        default:
+                            num1 = Math.floor(Math.random() * 10) + 1;
+                            num2 = Math.floor(Math.random() * 10) + 1;
+                            correctAnswer = num1 * num2;
+                    }
+                } else if (operatorSymbol === '÷') {
+                    switch (level) {
+                        case 1: // Easy - Divisor and Quotient in {1, 2, 5, 10}
+                            const easyDivisionValues = [1, 2, 5, 10];
+                            const randomDivisorIndex = Math.floor(Math.random() * easyDivisionValues.length);
+                            const randomQuotientIndex = Math.floor(Math.random() * easyDivisionValues.length);
+                            num2 = easyDivisionValues[randomDivisorIndex]; // Divisor
+                            correctAnswer = easyDivisionValues[randomQuotientIndex]; // Quotient
+                            num1 = num2 * correctAnswer; // Dividend = Divisor × Quotient
+                            break;
+                        case 2: // Medium - Divisor and Quotient in {1, 2, 3, 4, 5, 6, 10, 11}
+                            const mediumDivisionValues = [1, 2, 3, 4, 5, 6, 10, 11];
+                            const randomMediumDivisorIndex = Math.floor(Math.random() * mediumDivisionValues.length);
+                            const randomMediumQuotientIndex = Math.floor(Math.random() * mediumDivisionValues.length);
+                            num2 = mediumDivisionValues[randomMediumDivisorIndex]; // Divisor
+                            correctAnswer = mediumDivisionValues[randomMediumQuotientIndex]; // Quotient
+                            num1 = num2 * correctAnswer; // Dividend = Divisor × Quotient
+                            break;
+                        case 3: // Hard - Divisor and Quotient in {1 through 12}
+                            num2 = Math.floor(Math.random() * 12) + 1; // Divisor: 1 to 12
+                            correctAnswer = Math.floor(Math.random() * 12) + 1; // Quotient: 1 to 12
+                            num1 = num2 * correctAnswer; // Dividend = Divisor × Quotient
+                            break;
+                        case 4: // Expert - Divisor and Quotient in {10 through 99}
+                            num2 = Math.floor(Math.random() * 90) + 10; // Divisor: 10 to 99
+                            correctAnswer = Math.floor(Math.random() * 90) + 10; // Quotient: 10 to 99
+                            num1 = num2 * correctAnswer; // Dividend = Divisor × Quotient
+                            break;
+                        default:
+                            num2 = Math.floor(Math.random() * 9) + 1; // Default divisor: 1 to 9
+                            correctAnswer = Math.floor(Math.random() * 10) + 1; // Default quotient: 1 to 10
+                            num1 = num2 * correctAnswer; // Dividend = Divisor × Quotient
+                    }
                 } else {
+                    // Default fallback for any other operator
+                    maxNum = Math.max(10, level * 10);
                     num1 = Math.floor(Math.random() * maxNum) + 1;
                     num2 = Math.floor(Math.random() * maxNum) + 1;
-                    
-                    // For subtraction, ensure num1 >= num2
-                    if (operatorSymbol === '-' && num1 < num2) {
-                        [num1, num2] = [num2, num1];
-                    }
-                    
-                    // Calculate the correct answer
                     switch (operatorSymbol) {
-                        case '+':
-                            correctAnswer = num1 + num2;
-                            break;
                         case '-':
+                            if (num1 < num2) {
+                                [num1, num2] = [num2, num1];
+                            }
                             correctAnswer = num1 - num2;
                             break;
                         case '×':
@@ -1097,211 +1611,170 @@
                             correctAnswer = num1 + num2;
                     }
                 }
-                
                 console.log(`Generated question: ${num1} ${operatorSymbol} ${num2} = ${correctAnswer}`);
-                
-                // Update the game state
+                console.log(`DEBUG - num1: ${num1}, num2: ${num2}, operatorSymbol: ${operatorSymbol}, correctAnswer: ${correctAnswer}`);
+                if (correctAnswer === undefined) {
+                    console.error("ERROR: correctAnswer is undefined!");
+                    correctAnswer = 0;
+                }
                 gameState.currentQuestion = `${num1} ${operatorSymbol} ${num2}`;
                 gameState.correctAnswer = correctAnswer;
-                
-                // Update the question display
                 const questionElement = document.getElementById('math-question');
                 if (questionElement) {
                     questionElement.textContent = gameState.currentQuestion + ' = ?';
                 } else {
                     console.error("Question element not found");
                 }
-                
-                // Place the correct answer in the front row
-                placeFrontRowAnswers(correctAnswer, maxNum);
-                
-                console.log("Math question generated successfully");
-            } catch (err) {
-                console.error("Error in generateMathQuestion:", err);
-                // Set a default question if there's an error
+                return placeFrontRowAnswers(correctAnswer, maxNum);
+            } catch (error) {
+                console.error("Error in generateMathQuestion:", error);
                 gameState.currentQuestion = "1 + 1";
                 gameState.correctAnswer = 2;
-                
                 const questionElement = document.getElementById('math-question');
                 if (questionElement) {
                     questionElement.textContent = gameState.currentQuestion + ' = ?';
                 }
-                
-                // Try to place the correct answer in the front row
-                placeFrontRowAnswers(2, 10);
+                return placeFrontRowAnswers(2, 10);
             }
         }
-        
-        // Function to place correct answers in the front row
+        // Fixed placeFrontRowAnswers function
         function placeFrontRowAnswers(correctAnswer, maxNum) {
             try {
                 console.log("Placing answers in front row");
-                
                 if (!gameState.invaders || gameState.invaders.length === 0) {
                     console.error("No invaders found to place answers");
                     return;
                 }
-                
-                // Get all front row invaders
+                const lowestRow = Math.min(...gameState.invaders.filter(invader => invader.isAlive).map(invader => invader.gridRow));
                 const frontRowInvaders = gameState.invaders.filter(invader => 
-                    invader.isAlive && invader.row === 0 && invader.element
+                    invader.isAlive && invader.gridRow === lowestRow && invader.element
                 );
-                
                 if (frontRowInvaders.length === 0) {
                     console.error("No front row invaders found");
+                    if (!gameState.invaders.some(invader => invader.isAlive)) {
+                        createInvaders(selectedAlienDifficulty);
+                        setTimeout(() => placeFrontRowAnswers(correctAnswer, maxNum), 100);
+                    }
                     return;
                 }
-                
-                // Clear any existing numbers from front row
+                if (frontRowInvaders.length < 1) {
+                    console.error("Not enough front row invaders to place answers");
+                    return;
+                }
                 frontRowInvaders.forEach(invader => {
                     invader.number = '';
                     invader.element.dataset.number = '';
-                    
-                    // Update the display
                     const numberElement = invader.element.querySelector('div:nth-child(2)');
                     if (numberElement) {
                         numberElement.textContent = '';
                     }
                 });
-                
-                // Generate a set of unique answers for the front row
-                // One will be the correct answer, others will be decoys
                 const frontRowAnswers = [correctAnswer];
-                
-                // Generate decoy answers that are close to the correct answer
-                while (frontRowAnswers.length < frontRowInvaders.length) {
-                    let decoy;
-                    const variation = Math.floor(Math.random() * 5) + 1; // 1-5 difference
-                    
-                    if (Math.random() > 0.5) {
-                        decoy = correctAnswer + variation;
-                    } else {
-                        decoy = Math.max(1, correctAnswer - variation);
-                    }
-                    
-                    // Ensure we don't add duplicates
-                    if (!frontRowAnswers.includes(decoy)) {
-                        frontRowAnswers.push(decoy);
+                const minDecoy = Math.max(1, correctAnswer - 5);
+                const maxDecoy = correctAnswer + 5;
+                const possibleDecoys = [];
+                for (let i = minDecoy; i <= maxDecoy; i++) {
+                    if (i !== correctAnswer) {
+                        possibleDecoys.push(i);
                     }
                 }
-                
-                // Shuffle the answers
+                while (frontRowAnswers.length < frontRowInvaders.length) {
+                    if (possibleDecoys.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * possibleDecoys.length);
+                        const decoy = possibleDecoys[randomIndex];
+                        frontRowAnswers.push(decoy);
+                    } else {
+                        frontRowAnswers.push(correctAnswer + 1);
+                    }
+                }
                 for (let i = frontRowAnswers.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     [frontRowAnswers[i], frontRowAnswers[j]] = [frontRowAnswers[j], frontRowAnswers[i]];
                 }
-                
-                // Assign the answers to the front row invaders
                 frontRowAnswers.forEach((answer, index) => {
                     if (index < frontRowInvaders.length) {
                         const invader = frontRowInvaders[index];
                         invader.number = answer.toString();
                         invader.element.dataset.number = answer.toString();
-                        
-                        // Update the display
                         let numberElement = invader.element.querySelector('div:nth-child(2)');
-                        
                         if (!numberElement) {
                             numberElement = document.createElement('div');
-                            numberElement.style.fontSize = '0.7em';
-                            numberElement.style.marginTop = '5px';
+                            numberElement.style.fontSize = '0.8em';
+                            numberElement.style.marginTop = '2px';
                             invader.element.appendChild(numberElement);
                         }
-                        
                         numberElement.textContent = answer;
-                        
-                        // If this is the correct answer, make sure it's visible
                         if (answer === correctAnswer) {
                             invader.element.style.zIndex = "10";
-                            console.log(`Placed correct answer ${correctAnswer} in front row at position ${index}`);
                         }
                     }
                 });
-                
                 console.log("Front row answers placed successfully");
             } catch (err) {
                 console.error("Error in placeFrontRowAnswers:", err);
             }
         }
-
-        // Set up event listeners for player controls
         function setupControls() {
-            // Keyboard controls
             document.addEventListener('keydown', handleKeyPress);
-            
-            // Touch/mouse controls for mobile
+            document.addEventListener('keyup', handleKeyRelease);
             document.addEventListener('touchstart', handleTouchStart);
             document.addEventListener('touchmove', handleTouchMove);
             document.addEventListener('click', handleClick);
         }
-
-        // Handle keyboard input
         function handleKeyPress(e) {
-            console.log("Key pressed:", e.key);
             if (gameState.isGameOver) return;
-            
-            switch (e.key) {
-                case 'ArrowLeft':
-                    console.log("Moving player left");
-                    movePlayer(-5);
-                    break;
-                case 'ArrowRight':
-                    console.log("Moving player right");
-                    movePlayer(5);
-                    break;
-                case ' ': // Spacebar
-                    console.log("Firing projectile with spacebar");
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
+                if (!gameState.keysPressed || !gameState.keysPressed[e.key]) {
+                    console.log("Key pressed:", e.key);
+                }
+                if (!gameState.keysPressed) {
+                    gameState.keysPressed = {};
+                }
+                gameState.keysPressed[e.key] = true;
+                if (e.key === ' ') {
                     fireProjectile();
-                    e.preventDefault(); // Prevent page scrolling
-                    break;
+                    e.preventDefault();
+                }
             }
         }
-
-        // Variables for touch controls
+        function handleKeyRelease(e) {
+            if (gameState.isGameOver) return;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
+                if (!gameState.keysPressed) {
+                    gameState.keysPressed = {};
+                }
+                gameState.keysPressed[e.key] = false;
+            }
+        }
         let touchStartX = 0;
-        
-        // Handle touch start
         function handleTouchStart(e) {
             touchStartX = e.touches[0].clientX;
         }
-        
-        // Handle touch move
         function handleTouchMove(e) {
             if (gameState.isGameOver) return;
-            
             const touchX = e.touches[0].clientX;
             const diffX = touchX - touchStartX;
-            
-            if (Math.abs(diffX) > 10) { // Minimum movement threshold
+            if (Math.abs(diffX) > 10) {
                 movePlayer((diffX / window.innerWidth) * 100);
                 touchStartX = touchX;
             }
         }
-        
-        // Handle click/tap
         function handleClick(e) {
             if (gameState.isGameOver) return;
-            
-            // Check if click is in the game area
-            const gameArea = document.getElementById('game-area');
-            const rect = gameArea.getBoundingClientRect();
-            
+            const gameContainer = document.getElementById('game-container');
+            const rect = gameContainer.getBoundingClientRect();
             if (
                 e.clientX >= rect.left &&
                 e.clientX <= rect.right &&
                 e.clientY >= rect.top &&
                 e.clientY <= rect.bottom
             ) {
-                // Move player towards click position
-                const clickX = e.clientX;
-                const gameWidth = window.innerWidth;
+                const clickX = e.clientX - rect.left;
+                const gameWidth = rect.width;
                 const targetPosition = (clickX / gameWidth) * 100;
-                
-                // If click is near the player, fire instead of moving
                 const playerShip = document.getElementById('player');
                 const playerRect = playerShip.getBoundingClientRect();
                 const playerCenterX = playerRect.left + (playerRect.width / 2);
-                
                 if (Math.abs(clickX - playerCenterX) < 50) {
                     fireProjectile();
                 } else {
@@ -1309,202 +1782,159 @@
                 }
             }
         }
-
-        // Move the player ship
         function movePlayer(amount, absolute = false) {
             if (absolute) {
                 gameState.playerPosition = amount;
             } else {
                 gameState.playerPosition += amount;
             }
-            
-            // Keep player within bounds
-            gameState.playerPosition = Math.max(5, Math.min(95, gameState.playerPosition));
-            
-            // Update player position
+            const gameContainer = document.getElementById('game-container');
+            const gameWidth = gameContainer.clientWidth;
             const playerShip = document.getElementById('player');
+            const playerWidth = playerShip.offsetWidth;
+            const maxPosition = gameWidth - playerWidth;
+            const pixelPosition = (gameState.playerPosition / 100) * gameWidth;
+            const boundedPixelPosition = Math.max(0, Math.min(maxPosition, pixelPosition));
+            gameState.playerPosition = (boundedPixelPosition / gameWidth) * 100;
             playerShip.style.left = `${gameState.playerPosition}%`;
         }
-
-        // Fire a projectile from the player's position
         function fireProjectile() {
             try {
+                const now = Date.now();
+                if (gameState.lastFireTime && now - gameState.lastFireTime < 250) {
+                    return;
+                }
+                gameState.lastFireTime = now;
                 console.log("Firing projectile");
-                
-                // Play sound effect
-                playSound('shoot');
-                
-                // Get the player's position
+                soundManager.playSound('shoot', { volume: 0.4 });
                 const playerElement = document.getElementById('player');
                 if (!playerElement) {
                     console.error("Player element not found");
                     return;
                 }
-                
                 const playerRect = playerElement.getBoundingClientRect();
                 const gameContainer = document.getElementById('game-container');
                 if (!gameContainer) {
                     console.error("Game container not found");
                     return;
                 }
-                
-                // Create the projectile element
+                const containerRect = gameContainer.getBoundingClientRect();
                 const projectile = document.createElement('div');
                 projectile.className = 'projectile';
-                
-                // Style the projectile
                 projectile.style.position = 'absolute';
                 projectile.style.width = '4px';
                 projectile.style.height = '15px';
                 projectile.style.backgroundColor = '#00ff00';
                 projectile.style.borderRadius = '2px';
                 projectile.style.boxShadow = '0 0 5px #00ff00';
-                
-                // Position the projectile at the player's position
-                const projectileLeft = playerRect.left + (playerRect.width / 2) - 2;
-                const projectileTop = playerRect.top;
-                
+                const projectileLeft = playerRect.left - containerRect.left + (playerRect.width / 2) + 10;
+                const projectileTop = playerRect.top - containerRect.top - 15;
                 projectile.style.left = `${projectileLeft}px`;
                 projectile.style.top = `${projectileTop}px`;
-                
-                // Add the projectile to the game container
                 gameContainer.appendChild(projectile);
-                
-                // Add the projectile to the game state
                 if (!gameState.projectiles) {
                     gameState.projectiles = [];
                 }
-                
                 gameState.projectiles.push({
                     element: projectile,
                     isActive: true
                 });
-                
                 console.log("Projectile fired successfully");
             } catch (err) {
                 console.error("Error in fireProjectile:", err);
             }
         }
-
-        // Update the score display
         function updateScore() {
             document.getElementById('score').textContent = gameState.score;
         }
-
-        // Game loop function
         function gameLoop() {
             try {
                 if (gameState.isGameOver) return;
-                
-                // Update projectiles
+                if (gameState.keysPressed) {
+                    if (gameState.keysPressed['ArrowLeft']) {
+                        movePlayer(-1.5);
+                    }
+                    if (gameState.keysPressed['ArrowRight']) {
+                        movePlayer(1.5);
+                    }
+                    if (gameState.keysPressed[' ']) {
+                        fireProjectile();
+                    }
+                }
                 updateProjectiles();
-                
-                // Update invaders
                 updateInvaders();
-                
-                // Check for game over conditions
                 checkGameOver();
             } catch (err) {
                 console.error("Error in gameLoop:", err);
             }
         }
-
-        // Update projectile positions and check for collisions
         function updateProjectiles() {
             try {
                 if (!gameState.projectiles) return;
-                
+                const gameContainer = document.getElementById('game-container');
+                const containerRect = gameContainer.getBoundingClientRect();
                 gameState.projectiles.forEach((projectile, index) => {
                     if (!projectile.isActive) return;
-                    
-                    // Move the projectile up
                     const element = projectile.element;
                     if (!element) return;
-                    
                     const currentTop = element.offsetTop;
-                    element.style.top = `${currentTop - 10}px`; // Move 10px up
-                    
-                    // Check if the projectile is off-screen
+                    element.style.top = `${currentTop - 10}px`;
                     if (currentTop < 0) {
-                        // Remove the projectile
                         element.remove();
                         projectile.isActive = false;
                         return;
                     }
-                    
-                    // Check for collisions with invaders
                     checkProjectileCollisions(projectile);
                 });
-                
-                // Clean up inactive projectiles
                 gameState.projectiles = gameState.projectiles.filter(p => p.isActive);
             } catch (err) {
                 console.error("Error in updateProjectiles:", err);
             }
         }
-
-        // Check for collisions between a projectile and invaders
         function checkProjectileCollisions(projectile) {
             try {
                 if (!projectile.isActive || !projectile.element) return;
-                
                 const projectileRect = projectile.element.getBoundingClientRect();
-                
-                // Check each invader
                 gameState.invaders.forEach(invader => {
                     if (!invader.isAlive || !invader.element) return;
-                    
                     const invaderRect = invader.element.getBoundingClientRect();
-                    
-                    // Check for collision
                     if (
                         projectileRect.left < invaderRect.right &&
                         projectileRect.right > invaderRect.left &&
                         projectileRect.top < invaderRect.bottom &&
                         projectileRect.bottom > invaderRect.top
                     ) {
-                        // Collision detected!
                         console.log(`Collision with invader number: ${invader.number}`);
-                        
-                        // Check if this is the correct answer
-                        const invaderNumber = parseInt(invader.number);
-                        console.log(`Comparing invader number ${invaderNumber} with correct answer ${gameState.correctAnswer}`);
-                        
-                        if (invaderNumber === gameState.correctAnswer) {
-                            console.log("Correct answer hit!");
-                            
-                            // Play correct sound
-                            playSound('correct');
-                            
-                            // Increase score
-                            gameState.score += 100;
-                            updateScore();
-                            
-                            // Remove the invader
-                            invader.isAlive = false;
-                            invader.element.style.visibility = 'hidden';
-                            
-                            // Remove the projectile
-                            projectile.isActive = false;
-                            projectile.element.remove();
-                            
-                            // Generate a new question with the same operator
-                            // Use setTimeout to ensure this happens after the current frame
-                            setTimeout(() => {
-                                console.log("Generating new question after correct answer");
-                                generateMathQuestion(selectedOperator, selectedMathDifficulty);
-                            }, 100);
-                            
-                            return; // Exit the forEach loop
+                        if (invader.number && invader.number !== '') {
+                            const invaderNumber = parseInt(invader.number);
+                            console.log(`Comparing invader number ${invaderNumber} with correct answer ${gameState.correctAnswer}`);
+                            if (invaderNumber === gameState.correctAnswer) {
+                                console.log("Correct answer hit!");
+                                showFeedbackEmoji('✔', '#00ff00', invaderRect);
+                                soundManager.playSound('correct', { volume: 0.7 });
+                                gameState.score += 100;
+                                updateScore();
+                                invader.isAlive = false;
+                                invader.element.style.visibility = 'hidden';
+                                projectile.isActive = false;
+                                projectile.element.remove();
+                                setTimeout(() => {
+                                    console.log("Generating new question after correct answer");
+                                    generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                                }, 100);
+                                return;
+                            } else {
+                                showFeedbackEmoji('❌', '#ff0000', invaderRect);
+                                soundManager.playSound('incorrect', { volume: 0.5 });
+                                invader.isAlive = false;
+                                invader.element.style.visibility = 'hidden';
+                                projectile.isActive = false;
+                                projectile.element.remove();
+                            }
                         } else {
-                            // Play explosion sound
-                            playSound('explosion');
-                            
-                            // Remove the invader
+                            soundManager.playSound('explosion', { volume: 0.5 });
                             invader.isAlive = false;
                             invader.element.style.visibility = 'hidden';
-                            
-                            // Remove the projectile
                             projectile.isActive = false;
                             projectile.element.remove();
                         }
@@ -1514,140 +1944,192 @@
                 console.error("Error in checkProjectileCollisions:", err);
             }
         }
-
-        // Update invader positions
+        function showFeedbackEmoji(emoji, color, targetRect) {
+            try {
+                const gameContainer = document.getElementById('game-container');
+                if (!gameContainer) return;
+                const containerRect = gameContainer.getBoundingClientRect();
+                const feedback = document.createElement('div');
+                feedback.textContent = emoji === '✓' ? '✔' : emoji;
+                feedback.style.position = 'absolute';
+                feedback.style.fontSize = emoji === '✓' ? '3.5em' : '2.5em';
+                feedback.style.color = color;
+                feedback.style.textShadow = `0 0 10px ${color}`;
+                feedback.style.zIndex = '50';
+                feedback.style.pointerEvents = 'none';
+                const left = targetRect.left - containerRect.left + (targetRect.width / 2) - 15;
+                const top = targetRect.top - containerRect.top + (targetRect.height / 2) - 15;
+                feedback.style.left = `${left}px`;
+                feedback.style.top = `${top}px`;
+                feedback.style.animation = 'feedback-fade 1s forwards';
+                if (!document.getElementById('feedback-animation-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'feedback-animation-style';
+                    style.textContent = `
+                        @keyframes feedback-fade {
+                            0% { transform: scale(0.5); opacity: 0; }
+                            20% { transform: scale(1.5); opacity: 1; }
+                            80% { transform: scale(1.5); opacity: 1; }
+                            100% { transform: scale(2); opacity: 0; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                gameContainer.appendChild(feedback);
+                setTimeout(() => {
+                    if (feedback && feedback.parentNode) {
+                        feedback.parentNode.removeChild(feedback);
+                    }
+                }, 1000);
+            } catch (err) {
+                console.error("Error in showFeedbackEmoji:", err);
+            }
+        }
         function updateInvaders() {
             try {
                 const now = Date.now();
-                
-                // Only move invaders at certain intervals
                 if (now - gameState.lastMoveTime < gameState.moveSpeed) return;
-                
                 gameState.lastMoveTime = now;
-                
-                // Check if any invaders are at the edge
+                if (now - (gameState.lastAlienMoveSound || 0) > 500) {
+                    soundManager.playSound('alienMove', { volume: 0.15, playbackRate: 0.8 + Math.random() * 0.4 });
+                    gameState.lastAlienMoveSound = now;
+                }
+                const gameContainer = document.getElementById('game-container');
+                const gameWidth = gameContainer.clientWidth;
                 let atRightEdge = false;
                 let atLeftEdge = false;
-                let lowestInvader = 0;
-                
+                let lowestInvaderGridRow = -1;
+                const basesContainer = document.getElementById('bases-container');
+                const basesRect = basesContainer.getBoundingClientRect();
+                const gameContainerRect = gameContainer.getBoundingClientRect();
+                const basesTop = basesRect.top - gameContainerRect.top;
+                let invadersReachedBases = false;
                 gameState.invaders.forEach(invader => {
                     if (!invader.isAlive || !invader.element) return;
-                    
                     const rect = invader.element.getBoundingClientRect();
-                    
-                    if (rect.right > window.innerWidth - 20) {
+                    const containerRect = gameContainer.getBoundingClientRect();
+                    if (rect.bottom >= basesRect.top) {
+                        invadersReachedBases = true;
+                    }
+                    const edgeThreshold = 20;
+                    if (rect.right > containerRect.right - edgeThreshold) {
                         atRightEdge = true;
                     }
-                    
-                    if (rect.left < 20) {
+                    if (rect.left < containerRect.left + edgeThreshold) {
                         atLeftEdge = true;
                     }
-                    
-                    // Track the lowest invader
-                    if (rect.bottom > lowestInvader) {
-                        lowestInvader = rect.bottom;
+                    if (invader.gridRow > lowestInvaderGridRow) {
+                        lowestInvaderGridRow = invader.gridRow;
                     }
                 });
-                
-                // Check if invaders have reached the player
-                const playerElement = document.getElementById('player');
-                if (playerElement) {
-                    const playerTop = playerElement.getBoundingClientRect().top;
-                    
-                    if (lowestInvader >= playerTop - 50) {
-                        gameOver();
-                        return;
-                    }
+                if (invadersReachedBases) {
+                    gameOver();
+                    return;
                 }
-                
-                // Change direction if at an edge
+                const gridInfo = gameState.gridInfo || {
+                    dangerRow: 5,
+                    gameOverRow: 6
+                };
+                if (lowestInvaderGridRow >= gridInfo.dangerRow && !gameState.dangerWarningShown) {
+                    gameContainer.style.backgroundColor = '#500';
+                    setTimeout(() => {
+                        gameContainer.style.backgroundColor = '#0a0a2a';
+                    }, 200);
+                    soundManager.playSound('warning', { volume: 0.7 });
+                    gameState.dangerWarningShown = true;
+                }
+                if (lowestInvaderGridRow >= gridInfo.gameOverRow) {
+                    gameOver();
+                    return;
+                }
                 if ((atRightEdge && gameState.moveDirection > 0) || (atLeftEdge && gameState.moveDirection < 0)) {
                     gameState.moveDirection *= -1;
                     gameState.moveDownTrigger = true;
+                    soundManager.playSound('alienMove', { volume: 0.3, playbackRate: 0.6 });
                 }
-                
-                // Move all invaders
                 gameState.invaders.forEach(invader => {
                     if (!invader.isAlive || !invader.element) return;
-                    
                     const element = invader.element;
                     const currentLeft = element.offsetLeft;
-                    
                     if (gameState.moveDownTrigger) {
-                        // Move down
-                        element.style.top = `${element.offsetTop + 20}px`;
+                        const rowHeight = gameState.gridInfo.rowHeight;
+                        invader.gridRow += 0.5;
+                        const newTop = parseFloat(element.style.top) + (rowHeight * 0.5);
+                        element.style.top = `${newTop}px`;
                     } else {
-                        // Move sideways
-                        element.style.left = `${currentLeft + (gameState.moveDirection * 10)}px`;
+                        const moveSidewaysAmount = 10 * gameState.moveDirection;
+                        element.style.left = `${currentLeft + moveSidewaysAmount}px`;
                     }
                 });
-                
-                // Reset the move down trigger
                 gameState.moveDownTrigger = false;
-                
-                // Check if all invaders are destroyed
                 const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
-                
                 if (!anyInvadersLeft) {
-                    // Level complete!
                     console.log("All invaders destroyed! Creating new wave...");
-                    
-                    // Increase score
                     gameState.score += 500;
                     updateScore();
-                    
-                    // Create new invaders
+                    gameState.dangerWarningShown = false;
+                    gameState.invaders = [];
+                    soundManager.playSound('levelComplete', { volume: 0.7 });
                     createInvaders(selectedAlienDifficulty);
-                    
-                    // Generate a new question with the same operator
                     generateMathQuestion(selectedOperator, selectedMathDifficulty);
                 }
             } catch (err) {
                 console.error("Error in updateInvaders:", err);
             }
         }
-
-        // Check for game over conditions
-        function checkGameOver() {
-            // Already handled in updateInvaders
-        }
-
-        // Game over function
+        function checkGameOver() {}
         function gameOver() {
             try {
                 console.log("Game over!");
-                
-                // Set game state
                 gameState.isGameOver = true;
-                
-                // Stop the game loop
                 if (gameLoopInterval) {
                     clearInterval(gameLoopInterval);
                     gameLoopInterval = null;
                 }
-                
-                // Play game over sound
-                playSound('gameOver');
-                
-                // Stop background music
-                sounds.background.pause();
-                
-                // Show game over screen
+                if (soundEnabled) {
+                    soundManager.playSound('gameOver', { volume: 0.7 });
+                    if (sounds.gameOver) {
+                        sounds.gameOver.currentTime = 0;
+                        sounds.gameOver.play().catch(e => console.log("Error playing legacy game over sound:", e));
+                    }
+                }
+                soundManager.stopBackgroundMusic();
+                if (sounds.background) {
+                    sounds.background.pause();
+                }
+                document.getElementById('exit-game-container').style.display = 'none';
                 const gameOverScreen = document.getElementById('game-over-screen');
                 document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
                 gameOverScreen.style.display = 'flex';
-                
-                // Set up restart button
                 document.getElementById('restart-button').onclick = function() {
                     gameOverScreen.style.display = 'none';
                     showMainMenu();
+                    if (soundEnabled) {
+                        soundManager.playSound('buttonClick');
+                    }
                 };
             } catch (err) {
                 console.error("Error in gameOver:", err);
-                // Fallback to main menu
                 showMainMenu();
             }
         }
+        function showDifficultyExplanation() {
+            document.getElementById('difficulty-explanation-modal').style.display = 'block';
+        }
+        function hideDifficultyExplanation() {
+            document.getElementById('difficulty-explanation-modal').style.display = 'none';
+        }
+        function closeModalOnBackgroundClick(event) {
+            const modal = document.getElementById('difficulty-explanation-modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.getElementById('difficulty-explanation-modal').style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
