@@ -4516,11 +4516,54 @@
                                 // Incorrect answer hit
                                 console.log("Incorrect answer hit!");
                                 showFeedbackEmoji('❌', '#ff0000', invaderRect);
+                                
+                                // Lose a life when hitting incorrect answer
+                                gameState.lives--;
+                                console.log(`Player lost a life. Remaining lives: ${gameState.lives}`);
+                                
+                                // Update the lives display
+                                updateLivesDisplay();
+                                
+                                // Play incorrect answer sound
                                 soundManager.playSound('incorrect', { volume: 0.5 });
+                                
+                                // Get game elements for visual effects
+                                const gameArea = document.getElementById('game-area');
+                                const playerShip = document.getElementById('player');
+                                
+                                // Apply red flash to the game area
+                                if (gameArea) {
+                                    gameArea.style.animation = 'flash-red 0.5s';
+                                    
+                                    // Remove animation after it completes
+                                    setTimeout(() => {
+                                        gameArea.style.animation = '';
+                                    }, 500);
+                                }
+                                
+                                // Apply red flash to the player rocket
+                                if (playerShip) {
+                                    playerShip.style.animation = 'flash-rocket 0.5s';
+                                    playerShip.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                                    
+                                    // Remove animation after it completes
+                                    setTimeout(() => {
+                                        playerShip.style.animation = '';
+                                        playerShip.style.backgroundColor = 'transparent';
+                                    }, 500);
+                                }
+                                
+                                // Hide the invader and remove the projectile
                                 invader.isAlive = false;
                                 invader.element.style.visibility = 'hidden';
                                 projectile.isActive = false;
                                 projectile.element.remove();
+                                
+                                // Check if player has run out of lives
+                                if (gameState.lives <= 0) {
+                                    handleGameOver();
+                                }
+                                
                                 return;
                             }
                         } else {
