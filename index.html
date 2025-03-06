@@ -1618,6 +1618,13 @@
             }
             playBackgroundMusic() {
                 if (!this.isInitialized || this.isMuted) return;
+                
+                // Stop any existing HTML5 audio element background music
+                if (sounds.background && typeof sounds.background.pause === 'function') {
+                    sounds.background.pause();
+                    sounds.background.currentTime = 0;
+                }
+                
                 this.backgroundMusicSource = this.playSound('backgroundMusic', {
                     volume: 0.4,
                     loop: true
@@ -1631,6 +1638,12 @@
                         console.log("Error stopping background music:", e);
                     }
                     this.backgroundMusicSource = null;
+                }
+                
+                // Also stop any HTML5 audio element background music
+                if (sounds.background && typeof sounds.background.pause === 'function') {
+                    sounds.background.pause();
+                    sounds.background.currentTime = 0;
                 }
                 
                 // Force stop all audio contexts and sound sources
@@ -1708,13 +1721,13 @@
                 this.textContent = isMuted ? 'SOUND: OFF' : 'SOUND: ON';
                 soundEnabled = !isMuted;
                 if (soundEnabled) {
-                    if (gameLoopInterval && sounds.background && typeof sounds.background.play === 'function') {
-                        sounds.background.play().catch(e => console.log("Error playing background music:", e));
+                    if (gameLoopInterval) {
+                        // Use only the SoundManager for background music
+                        soundManager.playBackgroundMusic();
                     }
-                    } else {
-                    if (sounds.background && typeof sounds.background.pause === 'function') {
-                        sounds.background.pause();
-                    }
+                } else {
+                    // Stop SoundManager background music
+                    soundManager.stopBackgroundMusic();
                 }
             } catch (error) {
                 console.warn("Error toggling sound:", error);
@@ -2140,8 +2153,10 @@
                     gameLoopInterval = safeSetGameLoop();
                     console.log("Game loop started");
                     
-                    // Play background music
-                    soundManager.playSound('backgroundMusic', { volume: 0.4, loop: true });
+                    // Play background music - use only the SoundManager
+                    if (soundEnabled) {
+                        soundManager.playBackgroundMusic();
+                    }
                     
                     console.log("Game initialization complete!");
                     
@@ -2184,9 +2199,7 @@
                 try {
                     if (soundEnabled) {
                         soundManager.playBackgroundMusic();
-                        if (sounds.background && typeof sounds.background.play === 'function') {
-                            sounds.background.play().catch(e => console.log("Error playing legacy background music:", e));
-                        }
+                        // Remove the legacy HTML5 audio playback to prevent duplicate sounds
                     }
                 } catch (soundError) {
                     console.warn("Could not play background music, but game will continue:", soundError);
@@ -2206,7 +2219,15 @@
         }
         function getMoveSpeed(level) {
             // Base speed depends on alien difficulty level
-            let baseSpeed = 600 - (level * 100); // Initial speed based on alien difficulty
+            let baseSpeed;
+            
+            if (level === 1) {
+                // For Easy mode, start at 600ms
+                baseSpeed = 600;
+            } else {
+                // For other difficulties, use original formula
+                baseSpeed = 600 - (level * 100);
+            }
             
             // Apply additional speed increase based on current game level
             // Different difficulty levels will now progress at different rates
@@ -2232,30 +2253,18 @@
                         }
                         break;
                     case 4: // Expert
-                        // Expert difficulty scales slowly at first, then faster
-                        // Designed to reach ~100ms around level 6
-                        if (gameLevel <= 2) {
-                            baseSpeed -= gameLevel * 20; // Slower at first
-                        } else if (gameLevel <= 5) {
-                            // Accelerate between levels 3-5
-                            baseSpeed -= 40 + (gameLevel - 2) * 30;
-                        } else {
-                            // Maximum speed reduction by level 6
-                            baseSpeed -= 130 + (gameLevel - 5) * 15;
+                        // Expert difficulty scales most aggressively
+                        baseSpeed -= gameLevel * 40;
+                        // Add an extra reduction for very high levels
+                        if (gameLevel > 2) {
+                            baseSpeed -= (gameLevel - 2) * 20;
                         }
                         break;
-                    default:
-                        // Default fallback uses original progression
-                        baseSpeed -= gameLevel * 30;
                 }
             }
             
-            // Adjust for screen size
-            const screenSizeFactor = Math.min(1, window.innerWidth / 1200);
-            const adjustedSpeed = baseSpeed / screenSizeFactor;
-            
-            // Ensure speed doesn't exceed min/max boundaries
-            return Math.max(100, Math.min(adjustedSpeed, 800));
+            // Ensure minimum speed of 100ms to prevent aliens from moving too fast
+            return Math.max(100, baseSpeed);
         }
         function createInvaders(level) {
             console.log(`Creating invaders for level ${level}`);
@@ -4033,11 +4042,9 @@
                     
                     // Small delay before resuming background music to avoid audio overlap
                     setTimeout(() => {
-                        // Restart SoundManager's background music
+                        // Restart SoundManager's background music only
                         soundManager.playBackgroundMusic();
-                        if (sounds.background && typeof sounds.background.play === 'function') {
-                            sounds.background.play().catch(e => console.log("Error resuming background music:", e));
-                        }
+                        // Remove the legacy HTML5 audio playback to prevent duplicate sounds
                     }, 100);
                 }
             }
@@ -4046,6 +4053,9 @@
         // Updated restartGame function to ensure proper game reset
         function restartGame() {
             console.log("Restarting game...");
+            
+            // Stop any currently playing background music first
+            soundManager.stopBackgroundMusic();
             
             // Clear all projectiles to fix issue with lasers persisting
             clearAllProjectiles();
