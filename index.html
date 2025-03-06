@@ -1787,6 +1787,18 @@
             document.getElementById('high-scores-screen').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('level-complete-screen').style.display = 'none';
+            
+            // Restore the first screen elements
+            document.querySelector('.title').style.display = 'block';
+            document.querySelector('.title + div').style.display = 'block'; // Version info
+            document.querySelectorAll('.equation').forEach(eq => {
+                eq.style.display = 'block';
+            });
+            document.querySelector('.invader').style.display = 'block';
+            
+            if (soundEnabled) {
+                soundManager.playSound('menuSelect');
+            }
         }
         function showOperatorSelection() {
             document.getElementById('main-menu').style.display = 'none';
