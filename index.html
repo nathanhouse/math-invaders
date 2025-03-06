@@ -577,6 +577,13 @@
             z-index: 20;
         }
         
+        #score-popup-toggle {
+            position: absolute;
+            top: 45px; /* Positioned below the sound-toggle button (10px + height + some spacing) */
+            left: 10px;
+            z-index: 20;
+        }
+        
         .key-hint {
             margin-left: 10px;
             background-color: #000;
@@ -827,7 +834,7 @@
     <div class="title">MATH INVADERS</div>
     <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 2.0</div>
     <button id="sound-toggle" class="control-toggle">SOUND: ON</button>
-    <button id="score-popup-toggle" class="control-toggle" style="margin-left: 10px;">SCORE POPUPS: ON</button>
+    <button id="score-popup-toggle" class="control-toggle">SCORE POPUPS: ON</button>
     <div class="equation">
         <span class="invader-char">👾</span> 2 + 2 = 4 <span class="invader-char">👾</span>
     </div>
@@ -3348,8 +3355,21 @@
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'none';
             
+            // Hide floating equations and invader
+            document.querySelectorAll('.equation').forEach(eq => {
+                eq.style.display = 'none';
+            });
+            document.querySelector('.invader').style.display = 'none';
+            
+            // Position the high scores screen at the top
+            const highScoresScreen = document.getElementById('high-scores-screen');
+            highScoresScreen.style.marginTop = '10px';
+            highScoresScreen.style.position = 'absolute';
+            highScoresScreen.style.top = '90px'; // Just below the MATH INVADERS title
+            highScoresScreen.style.zIndex = '100';
+            
             // Show high scores screen
-            document.getElementById('high-scores-screen').style.display = 'flex';
+            highScoresScreen.style.display = 'flex';
             
             // Load high scores if needed
             loadHighScores();
@@ -3384,23 +3404,16 @@
         
         // Hide high scores screen
         function hideHighScores() {
-            document.getElementById('high-scores-screen').style.display = 'none';
+            const highScoresScreen = document.getElementById('high-scores-screen');
+            highScoresScreen.style.display = 'none';
+            
+            // Reset the high scores styling
+            highScoresScreen.style.position = '';
+            highScoresScreen.style.top = '';
+            highScoresScreen.style.marginTop = '';
+            highScoresScreen.style.zIndex = '';
+            
             document.getElementById('main-menu').style.display = 'block';
-            
-            // Play sound
-            if (soundEnabled) {
-                soundManager.playSound('buttonClick');
-            }
-        }
-        
-        // Show name input for high score
-        function showNameInput() {
-            document.getElementById('name-input-container').style.display = 'block';
-            document.getElementById('player-name').value = '';
-            document.getElementById('player-name').focus();
-            
-            // Set up submit button
-            const submitButton = document.getElementById('submit-name');
             
             // Remove existing listener to avoid duplicates
             const newSubmitButton = submitButton.cloneNode(true);
