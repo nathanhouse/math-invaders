@@ -1780,7 +1780,8 @@
             moveSpeed: 500,
             dangerWarningShown: false,
             keysPressed: {},
-            rocketSpeed: ROCKET_SPEED  // Always use the global constant for consistent speed
+            rocketSpeed: ROCKET_SPEED,  // Always use the global constant for consistent speed
+            lives: 3  // Add lives property, starting with 3 lives
         };
 
         // Scoring System Constants
@@ -1966,6 +1967,9 @@
                 highScoreSection.style.display = 'none';
             }
             
+            // Clear any stray projectiles that might be on screen
+            clearAllProjectiles();
+            
             // Debug logging
             console.log("Starting game with state:", {
                 pendingHighScore,
@@ -1987,6 +1991,10 @@
             if (sounds.background) {
                 sounds.background.pause();
             }
+            
+            // Clear all projectiles to fix issue with lasers persisting
+            clearAllProjectiles();
+            
             gameState = {
                 score: 0,
                 level: 1,
@@ -2002,9 +2010,17 @@
                 lastMoveTime: 0,
                 moveSpeed: 500,
                 dangerWarningShown: false,
-                keysPressed: {}
+                keysPressed: {},
+                lives: 3  // Reset lives to 3
             };
             updateScore();
+            
+            // Remove lives display if it exists
+            const livesContainer = document.getElementById('lives-container');
+            if (livesContainer) {
+                livesContainer.remove();
+            }
+            
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('exit-game-container').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
@@ -2046,8 +2062,12 @@
                     mathDifficulty: mathLevel,      // Store the math difficulty level
                     operator: operator,             // Store the operator for reference
                     rocketSpeed: ROCKET_SPEED,      // Always use the global constant for consistent speed
-                    gameStartTime: Date.now()       // Add a timestamp for when the game started
+                    gameStartTime: Date.now(),      // Add a timestamp for when the game started
+                    lives: 3                       // Player starts with 3 lives
                 };
+                
+                // Create lives display
+                createLivesDisplay();
                 
                 // Enable firing after a short delay
                 setTimeout(() => {
@@ -2869,365 +2889,73 @@
             try {
                 if (!gameState.projectiles) return;
                 const gameContainer = document.getElementById('game-container');
+                if (!gameContainer) return;
+                
                 const containerRect = gameContainer.getBoundingClientRect();
+                
+                // Counter for missing projectile elements
+                let missingElementCount = 0;
                 
                 gameState.projectiles.forEach((projectile, index) => {
                     if (!projectile.isActive) return;
+                    
                     const element = projectile.element;
-                    if (!element) return;
-                    const currentTop = element.offsetTop;
-                    
-                    // ALWAYS use exactly 10 for rocket speed, ignoring any gameState value
-                    // This ensures constant rocket speed regardless of any game state changes
-                    element.style.top = `${currentTop - 10}px`;
-                    
-                    // Animate the trail for more dynamic effect
-                    const trail = element.querySelector('div');
-                    if (trail) {
-                        // Randomly vary the trail opacity and length for a more dynamic effect
-                        const trailOpacity = 0.4 + (Math.random() * 0.3);
-                        const trailHeight = 8 + (Math.random() * 4);
-                        trail.style.opacity = trailOpacity.toString();
-                        trail.style.height = `${trailHeight}px`;
-                    }
-                    
-                    if (currentTop < 0) {
-                        element.remove();
+                    if (!element || !element.parentNode) {
+                        // Mark projectile as inactive if element is missing
                         projectile.isActive = false;
+                        missingElementCount++;
                         return;
                     }
-                    checkProjectileCollisions(projectile);
-                });
-                gameState.projectiles = gameState.projectiles.filter(p => p.isActive);
-            } catch (err) {
-                console.error("Error in updateProjectiles:", err);
-            }
-        }
-        function checkProjectileCollisions(projectile) {
-            try {
-                if (!projectile.isActive || !projectile.element) return;
-                const projectileRect = projectile.element.getBoundingClientRect();
-                gameState.invaders.forEach(invader => {
-                    if (!invader.isAlive || !invader.element) return;
-                    const invaderRect = invader.element.getBoundingClientRect();
-                    if (
-                        projectileRect.left < invaderRect.right &&
-                        projectileRect.right > invaderRect.left &&
-                        projectileRect.top < invaderRect.bottom &&
-                        projectileRect.bottom > invaderRect.top
-                    ) {
-                        console.log(`Collision with invader number: ${invader.number}`);
-                        if (invader.number && invader.number !== '') {
-                            const invaderNumber = parseInt(invader.number);
-                            console.log(`Comparing invader number ${invaderNumber} with correct answer ${gameState.correctAnswer}`);
-                            if (invaderNumber === gameState.correctAnswer) {
-                                console.log("Correct answer hit!");
-                                showFeedbackEmoji('✔', '#00ff00', invaderRect);
-                                soundManager.playSound('correct', { volume: 0.7 });
-                                
-                                // Calculate score using the new scoring system for correct answers
-                                const pointsEarned = calculateCorrectAnswerScore(gameState.mathDifficulty, gameState.alienDifficulty);
-                                gameState.score += pointsEarned;
-                                
-                                // Show score feedback with animated text only if score popups are enabled
-                                if (scorePopupsEnabled) {
-                                    showFeedbackEmoji(`+${pointsEarned}`, '#ffff00', invaderRect, true);
-                                }
-                                
-                                updateScore();
-                                invader.isAlive = false;
-                                invader.element.style.visibility = 'hidden';
-                                projectile.isActive = false;
-                                projectile.element.remove();
-                                
-                                // Check if this was the last invader before generating a new question
-                                setTimeout(() => {
-                                    // Only generate a new question if we still have invaders and the game isn't over
-                                    const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
-                                    if (anyInvadersLeft && !gameState.isGameOver && !gamePaused) {
-                                        console.log("Generating new question after correct answer");
-                                        generateMathQuestion(selectedOperator, selectedMathDifficulty);
-                                    } else {
-                                        console.log("Not generating new question - level may be complete or game over");
-                                    }
-                                }, 100);
-                                return;
-                            } else {
-                                // Incorrect answer hit
-                                console.log("Incorrect answer hit!");
-                                showFeedbackEmoji('❌', '#ff0000', invaderRect);
-                                soundManager.playSound('incorrect', { volume: 0.5 });
-                                invader.isAlive = false;
-                                invader.element.style.visibility = 'hidden';
-                                projectile.isActive = false;
-                                projectile.element.remove();
-                                return;
-                            }
-                        } else {
-                            // Regular invader without a number (no correct/incorrect answer check)
-                            soundManager.playSound('explosion', { volume: 0.5 });
-                            
-                            // Calculate score using the new scoring system for regular invaders
-                            const pointsEarned = calculateRegularInvaderScore(gameState.alienDifficulty);
-                            gameState.score += pointsEarned;
-                            
-                            // Show score feedback (optional enhancement)
-                            if (scorePopupsEnabled) {
-                                showFeedbackEmoji(`+${pointsEarned}`, '#ffff00', invaderRect, true);
-                            }
-                            
-                            updateScore();
-                            invader.isAlive = false;
-                            invader.element.style.visibility = 'hidden';
+                    
+                    // Check if element is still in DOM by trying to access style
+                    try {
+                        const currentTop = element.offsetTop;
+                        
+                        // ALWAYS use exactly 10 for rocket speed, ignoring any gameState value
+                        // This ensures constant rocket speed regardless of any game state changes
+                        element.style.top = `${currentTop - 10}px`;
+                        
+                        // Animate the trail for more dynamic effect
+                        const trail = element.querySelector('div');
+                        if (trail) {
+                            // Randomly vary the trail opacity and length for a more dynamic effect
+                            const trailOpacity = 0.4 + (Math.random() * 0.3);
+                            const trailHeight = 8 + (Math.random() * 4);
+                            trail.style.opacity = trailOpacity.toString();
+                            trail.style.height = `${trailHeight}px`;
+                        }
+                        
+                        if (currentTop < 0) {
+                            element.remove();
                             projectile.isActive = false;
-                            projectile.element.remove();
+                            return;
+                        }
+                        checkProjectileCollisions(projectile);
+                    } catch (err) {
+                        // If there's an error accessing the element, consider it inactive
+                        console.log("Error updating projectile, marking as inactive:", err);
+                        projectile.isActive = false;
+                        
+                        // Try to remove the element if it exists
+                        try {
+                            if (element.parentNode) {
+                                element.parentNode.removeChild(element);
+                            }
+                        } catch (removeErr) {
+                            console.log("Could not remove projectile element:", removeErr);
                         }
                     }
                 });
-            } catch (err) {
-                console.error("Error in checkProjectileCollisions:", err);
-            }
-        }
-        function showFeedbackEmoji(emoji, color, targetRect, isScore = false, duration = 1000, fontSize = '2.5em') {
-            try {
-                const gameContainer = document.getElementById('game-container');
-                if (!gameContainer) return;
-                const containerRect = gameContainer.getBoundingClientRect();
-                const feedback = document.createElement('div');
-                feedback.textContent = emoji === '✓' ? '✔' : emoji;
-                feedback.style.position = 'absolute';
-                feedback.style.fontSize = emoji === '✓' ? '3.5em' : fontSize;
-                feedback.style.color = color;
-                feedback.style.textShadow = `0 0 10px ${color}`;
-                feedback.style.zIndex = '50';
-                feedback.style.pointerEvents = 'none';
                 
-                // Default position
-                let left = targetRect.left - containerRect.left + (targetRect.width / 2) - 15;
-                let top = targetRect.top - containerRect.top + (targetRect.height / 2) - 15;
+                // Filter out inactive projectiles
+                gameState.projectiles = gameState.projectiles.filter(p => p.isActive);
                 
-                // Center text for wave bonuses or long text
-                if (emoji.length > 2 || emoji.includes('WAVE')) {
-                    feedback.style.textAlign = 'center';
-                    feedback.style.width = '300px';
-                    left = targetRect.left - containerRect.left + (targetRect.width / 2) - 150;
-                }
-                
-                feedback.style.left = `${left}px`;
-                feedback.style.top = `${top}px`;
-                
-                // Different animation for scores and regular feedback
-                if (isScore) {
-                    feedback.style.animation = 'score-feedback 1s forwards';
-                    
-                    if (!document.getElementById('score-feedback-animation-style')) {
-                        const style = document.createElement('style');
-                        style.id = 'score-feedback-animation-style';
-                        style.textContent = `
-                            @keyframes score-feedback {
-                                0% { transform: scale(0.8); opacity: 0; }
-                                10% { transform: scale(1.2); opacity: 1; }
-                                80% { transform: translateY(-40px) scale(1); opacity: 1; }
-                                100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
-                            }
-                        `;
-                        document.head.appendChild(style);
-                    }
-                } else {
-                    feedback.style.animation = 'feedback-fade 1s forwards';
-                    
-                    if (!document.getElementById('feedback-animation-style')) {
-                        const style = document.createElement('style');
-                        style.id = 'feedback-animation-style';
-                        style.textContent = `
-                            @keyframes feedback-fade {
-                                0% { transform: scale(0.5); opacity: 0; }
-                                20% { transform: scale(1.5); opacity: 1; }
-                                80% { transform: scale(1.5); opacity: 1; }
-                                100% { transform: scale(2); opacity: 0; }
-                            }
-                        `;
-                        document.head.appendChild(style);
-                    }
-                }
-                
-                gameContainer.appendChild(feedback);
-                setTimeout(() => {
-                    if (feedback && feedback.parentNode) {
-                        feedback.parentNode.removeChild(feedback);
-                    }
-                }, duration);
-            } catch (err) {
-                console.error("Error in showFeedbackEmoji:", err);
-            }
-        }
-        function updateInvaders() {
-            try {
-                const now = Date.now();
-                if (now - gameState.lastMoveTime < gameState.moveSpeed) return;
-                gameState.lastMoveTime = now;
-                
-                // Update the alien speed display with a more prominent format
-                const alienSpeedDisplay = document.getElementById('alien-speed-display');
-                if (alienSpeedDisplay) {
-                    // Update speed display with level info
-                    alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
-                    // Ensure it's visible
-                    alienSpeedDisplay.style.display = 'block';
-                }
-                
-                if (now - (gameState.lastAlienMoveSound || 0) > 500) {
-                    soundManager.playSound('alienMove', { volume: 0.15, playbackRate: 0.8 + Math.random() * 0.4 });
-                    gameState.lastAlienMoveSound = now;
-                }
-                const gameContainer = document.getElementById('game-container');
-                const gameWidth = gameContainer.clientWidth;
-                let atRightEdge = false;
-                let atLeftEdge = false;
-                let lowestInvaderGridRow = -1;
-                const basesContainer = document.getElementById('bases-container');
-                const basesRect = basesContainer.getBoundingClientRect();
-                const gameContainerRect = gameContainer.getBoundingClientRect();
-                const basesTop = basesRect.top - gameContainerRect.top;
-                let invadersReachedBases = false;
-                
-                // Get the current time to check against grace period
-                const gameStartTime = gameState.gameStartTime || 0;
-                const gameRunningTime = now - gameStartTime;
-                const GRACE_PERIOD_MS = 1000; // 1 second grace period
-                
-                gameState.invaders.forEach(invader => {
-                    if (!invader.isAlive || !invader.element) return;
-                    const rect = invader.element.getBoundingClientRect();
-                    const containerRect = gameContainer.getBoundingClientRect();
-                    
-                    // Add debug logging for the first invader check
-                    if (gameRunningTime > GRACE_PERIOD_MS && gameRunningTime < GRACE_PERIOD_MS + 500) {
-                        console.log("Debug positioning:", {
-                            invaderBottom: rect.bottom,
-                            basesTop: basesRect.top,
-                            difference: rect.bottom - basesRect.top,
-                            invaderGridRow: invader.gridRow
-                        });
-                    }
-                    
-                    if (rect.bottom >= basesRect.top - 20) { // Added 20px buffer
-                        invadersReachedBases = true;
-                        // Debug log this specific collision
-                        console.log("Invader collision with base:", {
-                            invaderBottom: rect.bottom,
-                            basesTop: basesRect.top,
-                            difference: rect.bottom - basesRect.top,
-                            invaderGridRow: invader.gridRow
-                        });
-                    }
-                    const edgeThreshold = 20;
-                    if (rect.right > containerRect.right - edgeThreshold) {
-                        atRightEdge = true;
-                    }
-                    if (rect.left < containerRect.left + edgeThreshold) {
-                        atLeftEdge = true;
-                    }
-                    if (invader.gridRow > lowestInvaderGridRow) {
-                        lowestInvaderGridRow = invader.gridRow;
-                    }
-                });
-                
-                // Only check game over conditions after grace period to prevent false game over on startup
-                if (gameRunningTime > GRACE_PERIOD_MS) {
-                    if (invadersReachedBases) {
-                        console.log(`Game over triggered. Invaders reached bases after ${gameRunningTime}ms`);
-                        gameOver();
-                        return;
-                    }
-                    
-                    const gridInfo = gameState.gridInfo || {
-                        dangerRow: 5,
-                        gameOverRow: 6
-                    };
-                    
-                    if (lowestInvaderGridRow >= gridInfo.dangerRow && !gameState.dangerWarningShown) {
-                        gameContainer.style.backgroundColor = '#500';
-                        setTimeout(() => {
-                            gameContainer.style.backgroundColor = '#0a0a2a';
-                        }, 200);
-                        soundManager.playSound('warning', { volume: 0.7 });
-                        gameState.dangerWarningShown = true;
-                    }
-                    
-                    if (lowestInvaderGridRow >= gridInfo.gameOverRow) {
-                        console.log(`Game over triggered. Invaders at row ${lowestInvaderGridRow}, game over row is ${gridInfo.gameOverRow}, game running for ${gameRunningTime}ms`);
-                        gameOver();
-                        return;
-                    }
-                } else {
-                    console.log(`Grace period active: ${gameRunningTime}ms / ${GRACE_PERIOD_MS}ms`);
-                }
-                
-                if ((atRightEdge && gameState.moveDirection > 0) || (atLeftEdge && gameState.moveDirection < 0)) {
-                    gameState.moveDirection *= -1;
-                    gameState.moveDownTrigger = true;
-                    soundManager.playSound('alienMove', { volume: 0.3, playbackRate: 0.6 });
-                }
-                gameState.invaders.forEach(invader => {
-                    if (!invader.isAlive || !invader.element) return;
-                    const element = invader.element;
-                    const currentLeft = element.offsetLeft;
-                    if (gameState.moveDownTrigger) {
-                        const rowHeight = gameState.gridInfo.rowHeight;
-                        invader.gridRow += 0.5;
-                        const newTop = parseFloat(element.style.top) + (rowHeight * 0.5);
-                        element.style.top = `${newTop}px`;
-                    } else {
-                        const moveSidewaysAmount = 10 * gameState.moveDirection;
-                        element.style.left = `${currentLeft + moveSidewaysAmount}px`;
-                    }
-                });
-                gameState.moveDownTrigger = false;
-                
-                // Check if all invaders are destroyed
-                const livingInvaders = gameState.invaders.filter(invader => invader.isAlive);
-                console.log(`Checking invaders: ${gameState.invaders.length} total, ${livingInvaders.length} alive`);
-                
-                if (livingInvaders.length === 0 && gameState.invaders.length > 0) {
-                    console.log("All invaders destroyed! Level complete!");
-                    
-                    // Calculate and add wave completion bonus using the new scoring system
-                    const waveBonus = calculateWaveCompletionScore(gameState.mathDifficulty, gameState.alienDifficulty);
-                    gameState.score += waveBonus;
-                    
-                    // Show bonus score notification in the center of the screen if score popups are enabled
-                    if (scorePopupsEnabled) {
-                        const gameContainer = document.getElementById('game-container');
-                        const containerRect = gameContainer.getBoundingClientRect();
-                        const center = {
-                            left: containerRect.left + containerRect.width / 2,
-                            top: containerRect.top + containerRect.height / 2,
-                            right: containerRect.left + containerRect.width / 2,
-                            bottom: containerRect.top + containerRect.height / 2
-                        };
-                        showFeedbackEmoji(`WAVE BONUS: +${waveBonus}`, '#ffff00', center, true, 2500, '2em');
-                    }
-                    
-                    gameState.level += 1;   // Increment level
-                    updateScore();
-                    gameState.dangerWarningShown = false;
-                    gameState.invaders = [];
-                    
-                    // Stop game loop
-                    if (gameLoopInterval) {
-                        clearInterval(gameLoopInterval);
-                        gameLoopInterval = null;
-                    }
-                    
-                    // Play level complete sound
-                    soundManager.playSound('levelComplete', { volume: 0.7 });
-                    
-                    // Show level complete screen
-                    showLevelCompleteScreen();
+                // If we found missing elements, log a warning
+                if (missingElementCount > 0) {
+                    console.log(`Found and removed ${missingElementCount} projectiles with missing elements`);
                 }
             } catch (err) {
-                console.error("Error in updateInvaders:", err);
+                console.error("Error in updateProjectiles:", err);
             }
         }
         
@@ -3327,6 +3055,9 @@
                 }, 1000);
             }
             
+            // Refresh the lives display
+            updateLivesDisplay();
+            
             // Create new invaders for the next level
             createInvaders(selectedAlienDifficulty);
             
@@ -3374,6 +3105,9 @@
                     clearInterval(gameLoopInterval);
                     gameLoopInterval = null;
                 }
+                
+                // Clear all projectiles to fix issue with lasers persisting
+                clearAllProjectiles();
                 
                 // Stop all game-related activities
                 stopAllGameActivities();
@@ -4222,6 +3956,9 @@
         function restartGame() {
             console.log("Restarting game...");
             
+            // Clear all projectiles to fix issue with lasers persisting
+            clearAllProjectiles();
+            
             // Reset game state variables
             gameState = {
                 score: 0,
@@ -4243,7 +3980,8 @@
                 canFire: false,  // Start with firing disabled
                 alienDifficulty: selectedAlienDifficulty || 1,
                 mathDifficulty: selectedMathDifficulty || 1,
-                operator: selectedOperator || 'addition'
+                operator: selectedOperator || 'addition',
+                lives: 3  // Reset lives to 3
             };
             
             // Explicitly reset rocket speed to ensure consistency
@@ -4267,6 +4005,9 @@
                     msg.parentNode.removeChild(msg);
                 }
             });
+            
+            // Create lives display
+            createLivesDisplay();
             
             // Start background music if enabled
             if (soundEnabled) {
@@ -4523,6 +4264,492 @@
             // Hide scroll buttons
             document.getElementById('scroll-up-button').style.display = 'none';
             document.getElementById('scroll-down-button').style.display = 'none';
+        }
+
+        // Function to create and display player lives on the right side
+        function createLivesDisplay() {
+            // Check if lives container already exists and remove it
+            let livesContainer = document.getElementById('lives-container');
+            if (livesContainer) {
+                livesContainer.remove();
+            }
+            
+            // Create a new lives container
+            livesContainer = document.createElement('div');
+            livesContainer.id = 'lives-container';
+            livesContainer.style.position = 'absolute';
+            livesContainer.style.right = '-30px'; // Position outside the game box
+            livesContainer.style.top = '50%'; // Center vertically
+            livesContainer.style.transform = 'translateY(-50%)'; // Ensure true vertical centering
+            livesContainer.style.display = 'flex';
+            livesContainer.style.flexDirection = 'column'; // Vertical layout
+            livesContainer.style.alignItems = 'center';
+            livesContainer.style.justifyContent = 'center';
+            livesContainer.style.gap = '10px'; // Space between rockets
+            livesContainer.style.zIndex = '100';
+            
+            // Create rocket icons for each life
+            for (let i = 0; i < gameState.lives; i++) {
+                const lifeRocket = document.createElement('div');
+                lifeRocket.className = 'life-rocket';
+                lifeRocket.textContent = '🚀';
+                lifeRocket.style.fontSize = '1.2em'; // Make rockets slightly larger than last time
+                livesContainer.appendChild(lifeRocket);
+            }
+            
+            // Add the lives container to the game container
+            document.getElementById('game-container').appendChild(livesContainer);
+        }
+        
+        // Function to update the lives display when a life is lost
+        function updateLivesDisplay() {
+            const livesContainer = document.getElementById('lives-container');
+            if (!livesContainer) return;
+            
+            // Remove all life rockets
+            while (livesContainer.firstChild) {
+                livesContainer.removeChild(livesContainer.firstChild);
+            }
+            
+            // Add rockets for remaining lives
+            for (let i = 0; i < gameState.lives; i++) {
+                const lifeRocket = document.createElement('div');
+                lifeRocket.className = 'life-rocket';
+                lifeRocket.textContent = '🚀';
+                lifeRocket.style.fontSize = '1.2em'; // Match the size in createLivesDisplay
+                livesContainer.appendChild(lifeRocket);
+            }
+        }
+        
+        // Function to handle player losing a life
+        function loseLife() {
+            if (gameState.isGameOver) return;
+            
+            gameState.lives--;
+            console.log(`Player lost a life. Remaining lives: ${gameState.lives}`);
+            
+            // Update the lives display
+            updateLivesDisplay();
+            
+            // Play life lost sound
+            soundManager.playSound('incorrect', { volume: 0.5 });
+            
+            // Shake the game container for feedback
+            const gameContainer = document.getElementById('game-container');
+            gameContainer.style.animation = 'shake 0.5s';
+            
+            // Remove animation after it completes
+            setTimeout(() => {
+                gameContainer.style.animation = '';
+            }, 500);
+            
+            // Check if player has run out of lives
+            if (gameState.lives <= 0) {
+                // Game over when all lives are lost
+                gameOver();
+            }
+        }
+
+        // Function to reset invader positions when a life is lost
+        function resetInvaderPositions() {
+            // Clear all projectiles
+            clearAllProjectiles();
+            
+            // Clear existing invaders
+            gameState.invaders.forEach(invader => {
+                if (invader.element) {
+                    invader.element.remove();
+                }
+            });
+            
+            // Reset invaders array
+            gameState.invaders = [];
+            
+            // Create new invaders
+            createInvaders(gameState.alienDifficulty);
+            
+            // Generate a new math question
+            generateMathQuestion(gameState.operator, gameState.mathDifficulty);
+            
+            // Reset the danger warning flag
+            gameState.dangerWarningShown = false;
+        }
+
+        // Add a CSS animation for the shake effect
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translate(0, 0); }
+                10%, 30%, 50%, 70%, 90% { transform: translate(-5px, 0); }
+                20%, 40%, 60%, 80% { transform: translate(5px, 0); }
+            }
+        `;
+        document.head.appendChild(styleElement);
+
+        // Function to handle when player is hit by an alien laser
+        function handleAlienLaserHit() {
+            console.log("Player hit by alien laser!");
+            
+            // Create a flash effect for the player
+            const playerShip = document.getElementById('player');
+            if (playerShip) {
+                playerShip.style.backgroundColor = 'rgba(255, 0, 0, 0.5)';
+                setTimeout(() => {
+                    playerShip.style.backgroundColor = 'transparent';
+                }, 300);
+            }
+            
+            // Player loses a life when hit by an alien laser
+            loseLife();
+        }
+
+        // Check for collisions between projectile and invaders
+        function checkProjectileCollisions(projectile) {
+            try {
+                if (!projectile.isActive || !projectile.element) return;
+                const projectileRect = projectile.element.getBoundingClientRect();
+                gameState.invaders.forEach(invader => {
+                    if (!invader.isAlive || !invader.element) return;
+                    const invaderRect = invader.element.getBoundingClientRect();
+                    if (
+                        projectileRect.left < invaderRect.right &&
+                        projectileRect.right > invaderRect.left &&
+                        projectileRect.top < invaderRect.bottom &&
+                        projectileRect.bottom > invaderRect.top
+                    ) {
+                        console.log(`Collision with invader number: ${invader.number}`);
+                        if (invader.number && invader.number !== '') {
+                            const invaderNumber = parseInt(invader.number);
+                            console.log(`Comparing invader number ${invaderNumber} with correct answer ${gameState.correctAnswer}`);
+                            if (invaderNumber === gameState.correctAnswer) {
+                                console.log("Correct answer hit!");
+                                showFeedbackEmoji('✔', '#00ff00', invaderRect);
+                                soundManager.playSound('correct', { volume: 0.7 });
+                                
+                                // Calculate score using the new scoring system for correct answers
+                                const pointsEarned = calculateCorrectAnswerScore(gameState.mathDifficulty, gameState.alienDifficulty);
+                                gameState.score += pointsEarned;
+                                
+                                // Show score feedback with animated text only if score popups are enabled
+                                if (scorePopupsEnabled) {
+                                    showFeedbackEmoji(`+${pointsEarned}`, '#ffff00', invaderRect, true);
+                                }
+                                
+                                updateScore();
+                                invader.isAlive = false;
+                                invader.element.style.visibility = 'hidden';
+                                projectile.isActive = false;
+                                projectile.element.remove();
+                                
+                                // Check if this was the last invader before generating a new question
+                                setTimeout(() => {
+                                    // Only generate a new question if we still have invaders and the game isn't over
+                                    const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
+                                    if (anyInvadersLeft && !gameState.isGameOver && !gamePaused) {
+                                        console.log("Generating new question after correct answer");
+                                        generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                                    } else {
+                                        console.log("Not generating new question - level may be complete or game over");
+                                    }
+                                }, 100);
+                                return;
+                            } else {
+                                // Incorrect answer hit - lose a life
+                                console.log("Incorrect answer hit!");
+                                showFeedbackEmoji('❌', '#ff0000', invaderRect);
+                                soundManager.playSound('incorrect', { volume: 0.5 });
+                                invader.isAlive = false;
+                                invader.element.style.visibility = 'hidden';
+                                projectile.isActive = false;
+                                projectile.element.remove();
+                                
+                                // Player loses a life when shooting an incorrect answer
+                                loseLife();
+                                return;
+                            }
+                        } else {
+                            // Regular invader without a number (no correct/incorrect answer check)
+                            soundManager.playSound('explosion', { volume: 0.5 });
+                            
+                            // Calculate score using the new scoring system for regular invaders
+                            const pointsEarned = calculateRegularInvaderScore(gameState.alienDifficulty);
+                            gameState.score += pointsEarned;
+                            
+                            // Show score feedback (optional enhancement)
+                            if (scorePopupsEnabled) {
+                                showFeedbackEmoji(`+${pointsEarned}`, '#ffff00', invaderRect, true);
+                            }
+                            
+                            updateScore();
+                            invader.isAlive = false;
+                            invader.element.style.visibility = 'hidden';
+                            projectile.isActive = false;
+                            projectile.element.remove();
+                            return;
+                        }
+                    }
+                });
+            } catch (err) {
+                console.error("Error in checkProjectileCollisions:", err);
+            }
+        }
+
+        // Function to handle displaying feedback emojis and text
+        function showFeedbackEmoji(emoji, color, targetRect, isScore = false, duration = 1000, fontSize = '2.5em') {
+            try {
+                const gameContainer = document.getElementById('game-container');
+                if (!gameContainer) return;
+                const containerRect = gameContainer.getBoundingClientRect();
+                const feedback = document.createElement('div');
+                feedback.textContent = emoji === '✓' ? '✔' : emoji;
+                feedback.style.position = 'absolute';
+                feedback.style.fontSize = emoji === '✓' ? '3.5em' : fontSize;
+                feedback.style.color = color;
+                feedback.style.textShadow = `0 0 10px ${color}`;
+                feedback.style.zIndex = '50';
+                feedback.style.pointerEvents = 'none';
+                
+                // Default position
+                let left = targetRect.left - containerRect.left + (targetRect.width / 2) - 15;
+                let top = targetRect.top - containerRect.top + (targetRect.height / 2) - 15;
+                
+                // Center text for wave bonuses or long text
+                if (emoji.length > 2 || emoji.includes('WAVE')) {
+                    feedback.style.textAlign = 'center';
+                    feedback.style.width = '300px';
+                    left = targetRect.left - containerRect.left + (targetRect.width / 2) - 150;
+                }
+                
+                feedback.style.left = `${left}px`;
+                feedback.style.top = `${top}px`;
+                
+                // Different animation for scores and regular feedback
+                if (isScore) {
+                    feedback.style.animation = 'score-feedback 1s forwards';
+                    
+                    if (!document.getElementById('score-feedback-animation-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'score-feedback-animation-style';
+                        style.textContent = `
+                            @keyframes score-feedback {
+                                0% { transform: scale(0.8); opacity: 0; }
+                                10% { transform: scale(1.2); opacity: 1; }
+                                80% { transform: translateY(-40px) scale(1); opacity: 1; }
+                                100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                } else {
+                    feedback.style.animation = 'feedback-fade 1s forwards';
+                    
+                    if (!document.getElementById('feedback-animation-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'feedback-animation-style';
+                        style.textContent = `
+                            @keyframes feedback-fade {
+                                0% { transform: scale(0.5); opacity: 0; }
+                                20% { transform: scale(1.5); opacity: 1; }
+                                80% { transform: scale(1.5); opacity: 1; }
+                                100% { transform: scale(2); opacity: 0; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                }
+                
+                gameContainer.appendChild(feedback);
+                setTimeout(() => {
+                    if (feedback && feedback.parentNode) {
+                        feedback.parentNode.removeChild(feedback);
+                    }
+                }, duration);
+            } catch (err) {
+                console.error("Error in showFeedbackEmoji:", err);
+            }
+        }
+
+        // Function to update invader positions and check for collisions
+        function updateInvaders() {
+            try {
+                const now = Date.now();
+                if (now - gameState.lastMoveTime < gameState.moveSpeed) return;
+                gameState.lastMoveTime = now;
+                
+                // Update the alien speed display with a more prominent format
+                const alienSpeedDisplay = document.getElementById('alien-speed-display');
+                if (alienSpeedDisplay) {
+                    // Update speed display with level info
+                    alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
+                    // Ensure it's visible
+                    alienSpeedDisplay.style.display = 'block';
+                }
+                
+                if (now - (gameState.lastAlienMoveSound || 0) > 500) {
+                    soundManager.playSound('alienMove', { volume: 0.15, playbackRate: 0.8 + Math.random() * 0.4 });
+                    gameState.lastAlienMoveSound = now;
+                }
+                const gameContainer = document.getElementById('game-container');
+                const gameWidth = gameContainer.clientWidth;
+                let atRightEdge = false;
+                let atLeftEdge = false;
+                let lowestInvaderGridRow = -1;
+                const basesContainer = document.getElementById('bases-container');
+                const basesRect = basesContainer.getBoundingClientRect();
+                const gameContainerRect = gameContainer.getBoundingClientRect();
+                const basesTop = basesRect.top - gameContainerRect.top;
+                let invadersReachedBases = false;
+                
+                // Get the current time to check against grace period
+                const gameStartTime = gameState.gameStartTime || 0;
+                const gameRunningTime = now - gameStartTime;
+                const GRACE_PERIOD_MS = 1000; // 1 second grace period
+                
+                gameState.invaders.forEach(invader => {
+                    if (!invader.isAlive || !invader.element) return;
+                    const rect = invader.element.getBoundingClientRect();
+                    const containerRect = gameContainer.getBoundingClientRect();
+                    
+                    // Add debug logging for the first invader check
+                    if (gameRunningTime > GRACE_PERIOD_MS && gameRunningTime < GRACE_PERIOD_MS + 500) {
+                        console.log("Debug positioning:", {
+                            invaderBottom: rect.bottom,
+                            basesTop: basesRect.top,
+                            difference: rect.bottom - basesRect.top,
+                            invaderGridRow: invader.gridRow
+                        });
+                    }
+                    
+                    if (rect.bottom >= basesRect.top - 20) { // Added 20px buffer
+                        invadersReachedBases = true;
+                        // Debug log this specific collision
+                        console.log("Invader collision with base:", {
+                            invaderBottom: rect.bottom,
+                            basesTop: basesRect.top,
+                            difference: rect.bottom - basesRect.top,
+                            invaderGridRow: invader.gridRow
+                        });
+                    }
+                    const edgeThreshold = 20;
+                    if (rect.right > containerRect.right - edgeThreshold) {
+                        atRightEdge = true;
+                    }
+                    if (rect.left < containerRect.left + edgeThreshold) {
+                        atLeftEdge = true;
+                    }
+                    if (invader.gridRow > lowestInvaderGridRow) {
+                        lowestInvaderGridRow = invader.gridRow;
+                    }
+                });
+                
+                // Only check game over conditions after grace period to prevent false game over on startup
+                if (gameRunningTime > GRACE_PERIOD_MS) {
+                    if (invadersReachedBases) {
+                        console.log(`Invaders reached bases after ${gameRunningTime}ms`);
+                        // Player loses a life when invaders reach the bases
+                        loseLife();
+                        
+                        // Reset invader positions if player still has lives
+                        if (gameState.lives > 0) {
+                            resetInvaderPositions();
+                        }
+                        return;
+                    }
+                    
+                    const gridInfo = gameState.gridInfo || {
+                        dangerRow: 5,
+                        gameOverRow: 6
+                    };
+                    
+                    if (lowestInvaderGridRow >= gridInfo.dangerRow && !gameState.dangerWarningShown) {
+                        gameContainer.style.backgroundColor = '#500';
+                        setTimeout(() => {
+                            gameContainer.style.backgroundColor = '#0a0a2a';
+                        }, 200);
+                        soundManager.playSound('warning', { volume: 0.7 });
+                        gameState.dangerWarningShown = true;
+                    }
+                    
+                    if (lowestInvaderGridRow >= gridInfo.gameOverRow) {
+                        console.log(`Invaders reached game over row ${lowestInvaderGridRow}, game over row is ${gridInfo.gameOverRow}`);
+                        // Player loses a life when invaders reach the game over row
+                        loseLife();
+                        
+                        // Reset invader positions if player still has lives
+                        if (gameState.lives > 0) {
+                            resetInvaderPositions();
+                        }
+                        return;
+                    }
+                } else {
+                    console.log(`Grace period active: ${gameRunningTime}ms / ${GRACE_PERIOD_MS}ms`);
+                }
+                
+                if ((atRightEdge && gameState.moveDirection > 0) || (atLeftEdge && gameState.moveDirection < 0)) {
+                    gameState.moveDirection *= -1;
+                    gameState.moveDownTrigger = true;
+                    soundManager.playSound('alienMove', { volume: 0.3, playbackRate: 0.6 });
+                }
+                gameState.invaders.forEach(invader => {
+                    if (!invader.isAlive || !invader.element) return;
+                    const element = invader.element;
+                    const currentLeft = element.offsetLeft;
+                    if (gameState.moveDownTrigger) {
+                        const rowHeight = gameState.gridInfo.rowHeight;
+                        invader.gridRow += 0.5;
+                        const newTop = parseFloat(element.style.top) + (rowHeight * 0.5);
+                        element.style.top = `${newTop}px`;
+                    } else {
+                        const moveSidewaysAmount = 10 * gameState.moveDirection;
+                        element.style.left = `${currentLeft + moveSidewaysAmount}px`;
+                    }
+                });
+                gameState.moveDownTrigger = false;
+                
+                // Check if all invaders are destroyed
+                const livingInvaders = gameState.invaders.filter(invader => invader.isAlive);
+                console.log(`Checking invaders: ${gameState.invaders.length} total, ${livingInvaders.length} alive`);
+                
+                if (livingInvaders.length === 0 && gameState.invaders.length > 0) {
+                    console.log("All invaders destroyed! Level complete!");
+                    
+                    // Calculate and add wave completion bonus using the new scoring system
+                    const waveBonus = calculateWaveCompletionScore(gameState.mathDifficulty, gameState.alienDifficulty);
+                    gameState.score += waveBonus;
+                    
+                    // Show bonus score notification in the center of the screen if score popups are enabled
+                    if (scorePopupsEnabled) {
+                        const gameContainer = document.getElementById('game-container');
+                        const containerRect = gameContainer.getBoundingClientRect();
+                        const center = {
+                            left: containerRect.left + containerRect.width / 2,
+                            top: containerRect.top + containerRect.height / 2,
+                            right: containerRect.left + containerRect.width / 2,
+                            bottom: containerRect.top + containerRect.height / 2
+                        };
+                        showFeedbackEmoji(`WAVE BONUS: +${waveBonus}`, '#ffff00', center, true, 2500, '2em');
+                    }
+                    
+                    gameState.level += 1;   // Increment level
+                    updateScore();
+                    gameState.dangerWarningShown = false;
+                    gameState.invaders = [];
+                    
+                    // Stop game loop
+                    if (gameLoopInterval) {
+                        clearInterval(gameLoopInterval);
+                        gameLoopInterval = null;
+                    }
+                    
+                    // Play level complete sound
+                    soundManager.playSound('levelComplete', { volume: 0.7 });
+                    
+                    // Show level complete screen
+                    showLevelCompleteScreen();
+                }
+            } catch (err) {
+                console.error("Error in updateInvaders:", err);
+            }
         }
     </script>
 </body>
