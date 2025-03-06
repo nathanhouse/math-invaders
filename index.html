@@ -425,6 +425,11 @@
         #final-score {
             font-size: 2em;
             color: #00ff00;
+            margin-bottom: 10px;
+        }
+        #final-level {
+            font-size: 1.6em;
+            color: #00ffff;
             margin-bottom: 40px;
         }
         #restart-button, #return-menu-button {
@@ -447,7 +452,7 @@
             left: 0;
             width: 100%;
             background-color: rgba(10, 10, 42, 0.8);
-            padding: 5px 0;
+            padding: 10px 0 10px 0; /* Equal padding top and bottom */
             text-align: center;
             z-index: 20;
             border-bottom: 1px solid rgba(0, 255, 0, 0.3);
@@ -480,6 +485,8 @@
             text-shadow: 0 0 10px #00ff00;
             text-align: center;
             width: 100%;
+            position: relative;
+            top: 3px; /* Move down a few pixels */
         }
         #difficulty-display {
             position: absolute;
@@ -606,9 +613,208 @@
         }
         #score-display {
             position: absolute;
-            right: 20px;
+            right: 15px;
             font-size: 1.2em;
-            color: #fff;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            top: 5px;
+        }
+        #level-display {
+            position: absolute;
+            right: 15px;
+            font-size: 1.2em;
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+            top: 30px;
+        }
+        #level-complete-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 10, 42, 0.9);
+            z-index: 1000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #level-complete-title {
+            font-size: 3.5em;
+            color: #00ff00;
+            text-shadow: 0 0 20px #00ff00;
+            margin-bottom: 30px;
+            animation: level-complete-pulse 2s ease-in-out infinite;
+        }
+        #next-level-text {
+            font-size: 2em;
+            color: #00ffff;
+            margin-bottom: 40px;
+        }
+        
+        /* Projectile styling and animation */
+        .projectile {
+            animation: laser-pulse 0.3s linear infinite;
+        }
+        
+        @keyframes laser-pulse {
+            0% { 
+                box-shadow: 0 0 5px #00ff00;
+                opacity: 0.8;
+            }
+            50% { 
+                box-shadow: 0 0 10px #00ff00, 0 0 15px #00ff00;
+                opacity: 1;
+            }
+            100% { 
+                box-shadow: 0 0 5px #00ff00;
+                opacity: 0.8; 
+            }
+        }
+        @keyframes level-complete-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* High score styles */
+        #high-scores-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .high-scores-title {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #00ff00;
+            text-align: center;
+        }
+        
+        .operator-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .operator-tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            font-size: 1.5em;
+            background-color: transparent;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .operator-tab.active {
+            background-color: #00ff00;
+            color: #0a0a2a;
+        }
+        
+        .operator-tab:hover {
+            background-color: rgba(0, 255, 0, 0.3);
+        }
+        
+        .operator-tab.addition { border-color: #ff0000; color: #ff0000; }
+        .operator-tab.addition.active, .operator-tab.addition:hover { background-color: #ff0000; color: #0a0a2a; }
+        
+        .operator-tab.subtraction { border-color: #ffff00; color: #ffff00; }
+        .operator-tab.subtraction.active, .operator-tab.subtraction:hover { background-color: #ffff00; color: #0a0a2a; }
+        
+        .operator-tab.multiplication { border-color: #00ffff; color: #00ffff; }
+        .operator-tab.multiplication.active, .operator-tab.multiplication:hover { background-color: #00ffff; color: #0a0a2a; }
+        
+        .operator-tab.division { border-color: #ff00ff; color: #ff00ff; }
+        .operator-tab.division.active, .operator-tab.division:hover { background-color: #ff00ff; color: #0a0a2a; }
+        
+        .high-scores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            color: #00ff00;
+            max-width: 600px;
+        }
+        
+        .high-scores-table th, .high-scores-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .high-scores-table th {
+            background-color: rgba(0, 255, 0, 0.2);
+            font-size: 1.2em;
+        }
+        
+        .high-scores-table tr:hover {
+            background-color: rgba(0, 255, 0, 0.1);
+        }
+        
+        .name-input-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #0a0a2a;
+            border: 3px solid #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            padding: 30px;
+            z-index: 1100;
+            text-align: center;
+            width: 350px;
+        }
+        
+        .name-input-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        
+        .name-input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.5em;
+            background-color: #0a0a2a;
+            border: 2px solid #00ff00;
+            color: #00ff00;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .name-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px #00ff00;
+        }
+        
+        .name-submit {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .name-submit:hover {
+            background-color: #00ffff;
+            color: #0a0a2a;
+        }
+        
+        .no-scores-message {
+            font-size: 1.5em;
+            color: #00ffff;
+            text-align: center;
+            margin: 30px 0;
         }
     </style>
 </head>
@@ -621,6 +827,7 @@
     <div class="title">MATH INVADERS</div>
     <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 2.0</div>
     <button id="sound-toggle" class="control-toggle">SOUND: ON</button>
+    <button id="score-popup-toggle" class="control-toggle" style="margin-left: 10px;">SCORE POPUPS: ON</button>
     <div class="equation">
         <span class="invader-char">👾</span> 2 + 2 = 4 <span class="invader-char">👾</span>
     </div>
@@ -636,6 +843,7 @@
     <div class="invader">👾</div>
     <div id="main-menu" style="margin-bottom: 30px;">
         <button class="start-button" onclick="showPlayerSelection()">START GAME</button>
+        <button class="start-button" onclick="showHighScores()" style="margin-top: 15px;">HIGH SCORES</button>
     </div>
     <div id="player-selection" style="display: none; text-align: center; margin-bottom: 30px;">
         <h2 style="font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT PLAYERS</h2>
@@ -773,16 +981,65 @@
     <div id="game-over-screen">
         <div id="game-over-title">GAME OVER</div>
         <div id="final-score">SCORE: 0</div>
+        <div id="final-level">LEVEL: 1</div>
         <div class="game-over-buttons">
             <button id="return-menu-button" class="control-toggle">RETURN TO MENU <span class="key-hint">Q</span></button>
             <button id="restart-button" class="control-toggle">PLAY AGAIN <span class="key-hint">R</span></button>
         </div>
     </div>
+    
+    <!-- Level complete screen -->
+    <div id="level-complete-screen">
+        <div id="level-complete-title">LEVEL COMPLETE!</div>
+        <div id="next-level-text">GET READY FOR LEVEL <span id="next-level-number">2</span></div>
+        <div class="game-over-buttons">
+            <button id="continue-button" class="control-toggle">CONTINUE <span class="key-hint">ENTER/SPACE/F</span></button>
+        </div>
+    </div>
+    
+    <!-- High Scores Screen -->
+    <div id="high-scores-screen">
+        <div class="high-scores-title">HIGH SCORES</div>
+        <div class="operator-tabs">
+            <button class="operator-tab addition" data-operator="addition">+</button>
+            <button class="operator-tab subtraction" data-operator="subtraction">-</button>
+            <button class="operator-tab multiplication" data-operator="multiplication">×</button>
+            <button class="operator-tab division" data-operator="division">÷</button>
+        </div>
+        <div id="high-scores-container">
+            <table class="high-scores-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Score</th>
+                        <th>Level</th>
+                        <th>Difficulty</th>
+                    </tr>
+                </thead>
+                <tbody id="high-scores-body">
+                    <!-- High scores will be inserted here -->
+                </tbody>
+            </table>
+            <div id="no-scores-message" class="no-scores-message">No high scores yet!</div>
+        </div>
+        <button class="back-button" onclick="hideHighScores()">BACK</button>
+    </div>
+    
+    <!-- Name Input for High Score -->
+    <div id="name-input-container" class="name-input-container">
+        <div class="name-input-title">NEW HIGH SCORE!</div>
+        <div id="new-high-score-value" style="font-size: 1.5em; margin-bottom: 20px; color: #ffff00;">Score: 0</div>
+        <input type="text" id="player-name" class="name-input" placeholder="Enter your name" maxlength="20">
+        <button id="submit-name" class="name-submit">SUBMIT</button>
+    </div>
+    
     <div class="credits">Created by <span>Vincent</span> & <span>Brandon</span></div>
     <div id="game-container">
         <div id="game-header">
             <div id="math-question"></div>
-            <div id="score-display" style="position: absolute; right: 15px; font-size: 1.2em; color: #00ffff; text-shadow: 0 0 5px #00ffff;">SCORE: <span id="score">0</span></div>
+            <div id="score-display" style="position: absolute; right: 15px; font-size: 1.2em; color: #00ffff; text-shadow: 0 0 5px #00ffff; top: 5px;">SCORE : <span id="score">0</span></div>
+            <div id="level-display" style="position: absolute; right: 15px; font-size: 1.2em; color: #00ffff; text-shadow: 0 0 5px #00ffff; top: 30px;">LEVEL : <span id="level">1</span></div>
         </div>
         <div id="difficulty-display">
             <div style="display: flex; gap: 10px;">
@@ -862,6 +1119,7 @@
                 this.sounds["warning"] = this.createWarningSound();
                 this.sounds["gameOver"] = this.createGameOverSound();
                 this.sounds["levelComplete"] = this.createLevelCompleteSound();
+                this.sounds["highScore"] = this.createHighScoreSound();
                 console.log("All sounds generated successfully!");
             }
             createShootSound() {
@@ -1087,8 +1345,13 @@
                 return buffer;
             }
             playSound(name, options = {}) {
-                if (this.isMuted || !this.isInitialized) return null;
+                console.log(`Attempting to play sound: ${name} with options:`, options);
+                if (this.isMuted || !this.isInitialized) {
+                    console.log(`Sound ${name} not played - Muted: ${this.isMuted}, Initialized: ${this.isInitialized}`);
+                    return null;
+                }
                 if (this.audioContext.state === 'suspended') {
+                    console.log(`AudioContext was suspended, attempting to resume for sound: ${name}`);
                     this.audioContext.resume().catch(err => {
                         console.warn("Could not resume AudioContext:", err);
                     });
@@ -1104,6 +1367,7 @@
                     return;
                 }
                 try {
+                    console.log(`Creating buffer source for sound: ${name}`);
                     const source = this.audioContext.createBufferSource();
                     source.buffer = this.sounds[name];
                     source.loop = settings.loop;
@@ -1120,6 +1384,7 @@
                     }
                     gainNode.connect(this.gainNode);
                     source.start(0);
+                    console.log(`Sound ${name} started playing successfully`);
                     return source;
                 } catch (e) {
                     console.warn(`Error playing sound ${name}:`, e);
@@ -1154,6 +1419,9 @@
         const soundManager = new SoundManager();
         document.addEventListener('DOMContentLoaded', function() {
             soundManager.preloadSounds();
+            
+            // Load high scores
+            loadHighScores();
         });
         document.addEventListener('click', function() {
             if (soundManager.audioContext && soundManager.audioContext.state === 'suspended') {
@@ -1180,6 +1448,10 @@
             correct: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 },
             gameOver: { play: () => Promise.resolve(), pause: () => {}, currentTime: 0 }
         };
+        
+        // Score popup toggle state
+        let scorePopupsEnabled = true;
+        
         sounds.background.loop = true;
         sounds.background.volume = 0.5;
         function playSound(soundName) {
@@ -1213,12 +1485,32 @@
                 this.textContent = soundEnabled ? 'SOUND: ON' : 'SOUND: OFF';
             }
         });
+        
+        // Score popup toggle functionality
+        document.getElementById('score-popup-toggle').addEventListener('click', function() {
+            try {
+                scorePopupsEnabled = !scorePopupsEnabled;
+                this.textContent = scorePopupsEnabled ? 'SCORE POPUPS: ON' : 'SCORE POPUPS: OFF';
+                console.log(`Score popups ${scorePopupsEnabled ? 'enabled' : 'disabled'}`);
+                
+                // Play button click sound if sound is enabled
+                if (soundEnabled) {
+                    soundManager.playSound('buttonClick');
+                }
+            } catch (error) {
+                console.warn("Error toggling score popups:", error);
+                scorePopupsEnabled = !scorePopupsEnabled;
+                this.textContent = scorePopupsEnabled ? 'SCORE POPUPS: ON' : 'SCORE POPUPS: OFF';
+            }
+        });
+        
         let selectedOperator = '';
         let selectedAlienDifficulty = 0;
         let selectedMathDifficulty = 0;
         let gameLoopInterval = null;
         let gameState = {
             score: 0,
+            level: 1,
             isGameOver: false,
             currentQuestion: null,
             correctAnswer: null,
@@ -1233,6 +1525,43 @@
             dangerWarningShown: false,
             keysPressed: {}
         };
+
+        // Scoring System Constants
+        const SCORE_BASE = {
+            CORRECT_ANSWER: 100,     // Base points for hitting an invader with the correct number
+            REGULAR_INVADER: 20,     // Base points for hitting an invader without a number
+            WAVE_COMPLETION: 500,    // Base points for completing a wave (destroying all invaders)
+            BOSS_ALIEN: 500          // Base points for hitting a boss alien (future implementation)
+        };
+
+        // Scoring System Multiplier Functions
+        function getMathMultiplier(mathDifficulty) {
+            // Math difficulty has a direct multiplier: Level 1 = 1x, Level 2 = 2x, etc.
+            return mathDifficulty;
+        }
+
+        function getAlienMultiplier(alienDifficulty) {
+            // Alien difficulty has a gradual scaling multiplier: 1 + (level - 1) * 0.2
+            return 1 + (alienDifficulty - 1) * 0.2;
+        }
+
+        // Scoring Calculation Functions
+        function calculateCorrectAnswerScore(mathDifficulty, alienDifficulty) {
+            return Math.round(SCORE_BASE.CORRECT_ANSWER * getMathMultiplier(mathDifficulty) * getAlienMultiplier(alienDifficulty));
+        }
+
+        function calculateRegularInvaderScore(alienDifficulty) {
+            return Math.round(SCORE_BASE.REGULAR_INVADER * getAlienMultiplier(alienDifficulty));
+        }
+
+        function calculateWaveCompletionScore(mathDifficulty, alienDifficulty) {
+            return Math.round(SCORE_BASE.WAVE_COMPLETION * getMathMultiplier(mathDifficulty) * getAlienMultiplier(alienDifficulty));
+        }
+
+        function calculateBossAlienScore(mathDifficulty, alienDifficulty) {
+            return Math.round(SCORE_BASE.BOSS_ALIEN * getMathMultiplier(mathDifficulty) * getAlienMultiplier(alienDifficulty));
+        }
+
         function getOperatorSymbol(operatorWord) {
             switch(operatorWord) {
                 case 'addition': return '+';
@@ -1365,6 +1694,7 @@
             }
             gameState = {
                 score: 0,
+                level: 1,
                 isGameOver: false,
                 currentQuestion: null,
                 correctAnswer: null,
@@ -1383,6 +1713,7 @@
             document.getElementById('game-container').style.display = 'none';
             document.getElementById('exit-game-container').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('level-complete-screen').style.display = 'none';
             showMainMenu();
             soundManager.playSound('menuBack');
         }
@@ -1391,6 +1722,7 @@
             try {
                 gameState = {
                     score: 0,
+                    level: 1,
                     isGameOver: false,
                     currentQuestion: null,
                     correctAnswer: null,
@@ -1404,8 +1736,20 @@
                     moveSpeed: getMoveSpeed(alienLevel),
                     dangerWarningShown: false,
                     keysPressed: {},
-                    lastAlienMoveSound: 0
+                    lastAlienMoveSound: 0,
+                    canFire: false,  // Start with firing disabled
+                    alienDifficulty: alienLevel,    // Store the alien difficulty level
+                    mathDifficulty: mathLevel,      // Store the math difficulty level
+                    operator: operator              // Store the operator for reference
                 };
+                
+                // Enable firing after a short delay
+                setTimeout(() => {
+                    gameState.canFire = true;
+                    console.log("Player can now fire");
+                }, 500); // Half-second delay
+                
+                updateScore();
                 console.log(`Using alien emoji: ${gameState.alienEmoji} for level ${alienLevel}`);
                 console.log(`Move speed set to: ${gameState.moveSpeed}ms`);
                 console.log("Creating invaders...");
@@ -1864,27 +2208,52 @@
                 return;
             }
             
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
-                if (!gameState.keysPressed || !gameState.keysPressed[e.key]) {
-                    console.log("Key pressed:", e.key);
-                }
-                if (!gameState.keysPressed) {
-                    gameState.keysPressed = {};
+            if (!gameState.keysPressed) {
+                gameState.keysPressed = {};
+            }
+            
+            // Player 1 controls
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
+                if (!gameState.keysPressed[e.key]) {
+                    console.log("Player 1 key pressed:", e.key);
                 }
                 gameState.keysPressed[e.key] = true;
+                
+                // Prevent default scrolling behavior for space
                 if (e.key === ' ') {
+                    e.preventDefault();
+                }
+                
+                // Check for firing on keydown
+                if (e.key === 'o' || e.key === 'O') {
                     fireProjectile();
+                }
+            }
+            
+            // Player 2 controls (preparation for future multiplayer)
+            if (e.key === 'a' || e.key === 'A' || e.key === 's' || e.key === 'S' || e.key === 'f' || e.key === 'F') {
+                if (!gameState.keysPressed[e.key.toLowerCase()]) {
+                    console.log("Player 2 key pressed:", e.key);
+                }
+                gameState.keysPressed[e.key.toLowerCase()] = true;
+                
+                // Keep the prevention of default behavior for F key (not implemented yet)
+                if (e.key === 'f' || e.key === 'F') {
                     e.preventDefault();
                 }
             }
         }
         function handleKeyRelease(e) {
-            if (gameState.isGameOver || gamePaused) return;
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ') {
-                if (!gameState.keysPressed) {
-                    gameState.keysPressed = {};
-                }
+            if (!gameState.keysPressed) return;
+            
+            // Player 1 controls
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
                 gameState.keysPressed[e.key] = false;
+            }
+            
+            // Player 2 controls
+            if (e.key === 'a' || e.key === 'A' || e.key === 's' || e.key === 'S' || e.key === 'f' || e.key === 'F') {
+                gameState.keysPressed[e.key.toLowerCase()] = false;
             }
         }
         let touchStartX = 0;
@@ -1952,6 +2321,13 @@
         }
         function fireProjectile() {
             try {
+                // Don't allow firing if level complete screen is shown, game is paused, or firing is disabled
+                if (document.getElementById('level-complete-screen').style.display === 'flex' || 
+                    gamePaused || gameState.isGameOver || !gameState.canFire) {
+                    console.log("Firing prevented: canFire =", gameState.canFire);
+                    return;
+                }
+                
                 const now = Date.now();
                 if (gameState.lastFireTime && now - gameState.lastFireTime < 250) {
                     return;
@@ -1979,6 +2355,20 @@
                 projectile.style.backgroundColor = '#00ff00';
                 projectile.style.borderRadius = '2px';
                 projectile.style.boxShadow = '0 0 5px #00ff00';
+                
+                // Add a trail element for visual effect
+                const trail = document.createElement('div');
+                trail.style.position = 'absolute';
+                trail.style.width = '2px';
+                trail.style.height = '10px';
+                trail.style.backgroundColor = 'rgba(0, 255, 0, 0.5)';
+                trail.style.borderRadius = '1px';
+                trail.style.boxShadow = '0 0 3px #00ff00';
+                trail.style.left = '1px'; // Center it within the projectile
+                trail.style.top = '15px'; // Position it just below the projectile
+                trail.style.opacity = '0.7';
+                projectile.appendChild(trail);
+                
                 const projectileLeft = playerRect.left - containerRect.left + (playerRect.width / 2) + 10;
                 const projectileTop = playerRect.top - containerRect.top - 15;
                 projectile.style.left = `${projectileLeft}px`;
@@ -1998,20 +2388,37 @@
         }
         function updateScore() {
             document.getElementById('score').textContent = gameState.score;
+            document.getElementById('level').textContent = gameState.level;
         }
         function gameLoop() {
             try {
                 if (gameState.isGameOver || gamePaused) return;
                 if (gameState.keysPressed) {
+                    // Player 1 controls
                     if (gameState.keysPressed['ArrowLeft']) {
                         movePlayer(-1.5);
                     }
                     if (gameState.keysPressed['ArrowRight']) {
                         movePlayer(1.5);
                     }
-                    if (gameState.keysPressed[' ']) {
+                    if (gameState.keysPressed[' '] || gameState.keysPressed['o'] || gameState.keysPressed['O']) {
                         fireProjectile();
                     }
+                    
+                    // Player 2 controls (for future multiplayer support)
+                    // These are reserved for Player 2 and don't affect Player 1 currently
+                    // Will be implemented in future multiplayer version
+                    /* 
+                    if (gameState.keysPressed['a']) {
+                        movePlayer2(-1.5);
+                    }
+                    if (gameState.keysPressed['s']) {
+                        movePlayer2(1.5);
+                    }
+                    if (gameState.keysPressed['f']) {
+                        fireProjectile2();
+                    }
+                    */
                 }
                 updateProjectiles();
                 updateInvaders();
@@ -2030,7 +2437,20 @@
                     const element = projectile.element;
                     if (!element) return;
                     const currentTop = element.offsetTop;
+                    
+                    // Update projectile position
                     element.style.top = `${currentTop - 10}px`;
+                    
+                    // Animate the trail for more dynamic effect
+                    const trail = element.querySelector('div');
+                    if (trail) {
+                        // Randomly vary the trail opacity and length for a more dynamic effect
+                        const trailOpacity = 0.4 + (Math.random() * 0.3);
+                        const trailHeight = 8 + (Math.random() * 4);
+                        trail.style.opacity = trailOpacity.toString();
+                        trail.style.height = `${trailHeight}px`;
+                    }
+                    
                     if (currentTop < 0) {
                         element.remove();
                         projectile.isActive = false;
@@ -2064,27 +2484,59 @@
                                 console.log("Correct answer hit!");
                                 showFeedbackEmoji('✔', '#00ff00', invaderRect);
                                 soundManager.playSound('correct', { volume: 0.7 });
-                                gameState.score += 100;
+                                
+                                // Calculate score using the new scoring system for correct answers
+                                const pointsEarned = calculateCorrectAnswerScore(gameState.mathDifficulty, gameState.alienDifficulty);
+                                gameState.score += pointsEarned;
+                                
+                                // Show score feedback with animated text only if score popups are enabled
+                                if (scorePopupsEnabled) {
+                                    showFeedbackEmoji(`+${pointsEarned}`, '#ffff00', invaderRect, true);
+                                }
+                                
                                 updateScore();
                                 invader.isAlive = false;
                                 invader.element.style.visibility = 'hidden';
                                 projectile.isActive = false;
                                 projectile.element.remove();
+                                
+                                // Check if this was the last invader before generating a new question
                                 setTimeout(() => {
-                                    console.log("Generating new question after correct answer");
-                                    generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                                    // Only generate a new question if we still have invaders and the game isn't over
+                                    const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
+                                    if (anyInvadersLeft && !gameState.isGameOver && !gamePaused) {
+                                        console.log("Generating new question after correct answer");
+                                        generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                                    } else {
+                                        console.log("Not generating new question - level may be complete or game over");
+                                    }
                                 }, 100);
                                 return;
                             } else {
+                                // Incorrect answer hit
+                                console.log("Incorrect answer hit!");
                                 showFeedbackEmoji('❌', '#ff0000', invaderRect);
                                 soundManager.playSound('incorrect', { volume: 0.5 });
                                 invader.isAlive = false;
                                 invader.element.style.visibility = 'hidden';
                                 projectile.isActive = false;
                                 projectile.element.remove();
+                                return;
                             }
                         } else {
+                            // Regular invader without a number (no correct/incorrect answer check)
                             soundManager.playSound('explosion', { volume: 0.5 });
+                            
+                            // Calculate score using the new scoring system for regular invaders
+                            const pointsEarned = calculateRegularInvaderScore(gameState.alienDifficulty);
+                            gameState.score += pointsEarned;
+                            
+                            // Show score feedback (optional enhancement)
+                            if (scorePopupsEnabled) {
+                                showFeedbackEmoji(`+${pointsEarned}`, '#ffff00', invaderRect, true);
+                            }
+                            
+                            updateScore();
                             invader.isAlive = false;
                             invader.element.style.visibility = 'hidden';
                             projectile.isActive = false;
@@ -2096,7 +2548,7 @@
                 console.error("Error in checkProjectileCollisions:", err);
             }
         }
-        function showFeedbackEmoji(emoji, color, targetRect) {
+        function showFeedbackEmoji(emoji, color, targetRect, isScore = false, duration = 1000, fontSize = '2.5em') {
             try {
                 const gameContainer = document.getElementById('game-container');
                 if (!gameContainer) return;
@@ -2104,35 +2556,67 @@
                 const feedback = document.createElement('div');
                 feedback.textContent = emoji === '✓' ? '✔' : emoji;
                 feedback.style.position = 'absolute';
-                feedback.style.fontSize = emoji === '✓' ? '3.5em' : '2.5em';
+                feedback.style.fontSize = emoji === '✓' ? '3.5em' : fontSize;
                 feedback.style.color = color;
                 feedback.style.textShadow = `0 0 10px ${color}`;
                 feedback.style.zIndex = '50';
                 feedback.style.pointerEvents = 'none';
-                const left = targetRect.left - containerRect.left + (targetRect.width / 2) - 15;
-                const top = targetRect.top - containerRect.top + (targetRect.height / 2) - 15;
+                
+                // Default position
+                let left = targetRect.left - containerRect.left + (targetRect.width / 2) - 15;
+                let top = targetRect.top - containerRect.top + (targetRect.height / 2) - 15;
+                
+                // Center text for wave bonuses or long text
+                if (emoji.length > 2 || emoji.includes('WAVE')) {
+                    feedback.style.textAlign = 'center';
+                    feedback.style.width = '300px';
+                    left = targetRect.left - containerRect.left + (targetRect.width / 2) - 150;
+                }
+                
                 feedback.style.left = `${left}px`;
                 feedback.style.top = `${top}px`;
-                feedback.style.animation = 'feedback-fade 1s forwards';
-                if (!document.getElementById('feedback-animation-style')) {
-                    const style = document.createElement('style');
-                    style.id = 'feedback-animation-style';
-                    style.textContent = `
-                        @keyframes feedback-fade {
-                            0% { transform: scale(0.5); opacity: 0; }
-                            20% { transform: scale(1.5); opacity: 1; }
-                            80% { transform: scale(1.5); opacity: 1; }
-                            100% { transform: scale(2); opacity: 0; }
-                        }
-                    `;
-                    document.head.appendChild(style);
+                
+                // Different animation for scores and regular feedback
+                if (isScore) {
+                    feedback.style.animation = 'score-feedback 1s forwards';
+                    
+                    if (!document.getElementById('score-feedback-animation-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'score-feedback-animation-style';
+                        style.textContent = `
+                            @keyframes score-feedback {
+                                0% { transform: scale(0.8); opacity: 0; }
+                                10% { transform: scale(1.2); opacity: 1; }
+                                80% { transform: translateY(-40px) scale(1); opacity: 1; }
+                                100% { transform: translateY(-60px) scale(0.8); opacity: 0; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                } else {
+                    feedback.style.animation = 'feedback-fade 1s forwards';
+                    
+                    if (!document.getElementById('feedback-animation-style')) {
+                        const style = document.createElement('style');
+                        style.id = 'feedback-animation-style';
+                        style.textContent = `
+                            @keyframes feedback-fade {
+                                0% { transform: scale(0.5); opacity: 0; }
+                                20% { transform: scale(1.5); opacity: 1; }
+                                80% { transform: scale(1.5); opacity: 1; }
+                                100% { transform: scale(2); opacity: 0; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
                 }
+                
                 gameContainer.appendChild(feedback);
                 setTimeout(() => {
                     if (feedback && feedback.parentNode) {
                         feedback.parentNode.removeChild(feedback);
                     }
-                }, 1000);
+                }, duration);
             } catch (err) {
                 console.error("Error in showFeedbackEmoji:", err);
             }
@@ -2214,20 +2698,139 @@
                     }
                 });
                 gameState.moveDownTrigger = false;
-                const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
-                if (!anyInvadersLeft) {
-                    console.log("All invaders destroyed! Creating new wave...");
-                    gameState.score += 500;
+                
+                // Check if all invaders are destroyed
+                const livingInvaders = gameState.invaders.filter(invader => invader.isAlive);
+                console.log(`Checking invaders: ${gameState.invaders.length} total, ${livingInvaders.length} alive`);
+                
+                if (livingInvaders.length === 0 && gameState.invaders.length > 0) {
+                    console.log("All invaders destroyed! Level complete!");
+                    
+                    // Calculate and add wave completion bonus using the new scoring system
+                    const waveBonus = calculateWaveCompletionScore(gameState.mathDifficulty, gameState.alienDifficulty);
+                    gameState.score += waveBonus;
+                    
+                    // Show bonus score notification in the center of the screen if score popups are enabled
+                    if (scorePopupsEnabled) {
+                        const gameContainer = document.getElementById('game-container');
+                        const containerRect = gameContainer.getBoundingClientRect();
+                        const center = {
+                            left: containerRect.left + containerRect.width / 2,
+                            top: containerRect.top + containerRect.height / 2,
+                            right: containerRect.left + containerRect.width / 2,
+                            bottom: containerRect.top + containerRect.height / 2
+                        };
+                        showFeedbackEmoji(`WAVE BONUS: +${waveBonus}`, '#ffff00', center, true, 2500, '2em');
+                    }
+                    
+                    gameState.level += 1;   // Increment level
                     updateScore();
                     gameState.dangerWarningShown = false;
                     gameState.invaders = [];
+                    
+                    // Stop game loop
+                    if (gameLoopInterval) {
+                        clearInterval(gameLoopInterval);
+                        gameLoopInterval = null;
+                    }
+                    
+                    // Play level complete sound
                     soundManager.playSound('levelComplete', { volume: 0.7 });
-                    createInvaders(selectedAlienDifficulty);
-                    generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                    
+                    // Show level complete screen
+                    showLevelCompleteScreen();
                 }
             } catch (err) {
                 console.error("Error in updateInvaders:", err);
             }
+        }
+        
+        // Function to show level complete screen
+        function showLevelCompleteScreen() {
+            console.log("showLevelCompleteScreen called - Showing level complete screen");
+            
+            // Stop the game loop
+            clearInterval(gameLoopInterval);
+            console.log("Game loop stopped for level completion");
+            
+            // Clear any active projectiles
+            clearAllProjectiles();
+            
+            // Ensure firing is disabled
+            gameState.canFire = false;
+            console.log("Firing disabled at level complete screen");
+            
+            // Update next level number
+            document.getElementById('next-level-number').textContent = gameState.level;
+            console.log(`Next level number updated to: ${gameState.level}`);
+            
+            // Show level complete screen
+            const levelCompleteScreen = document.getElementById('level-complete-screen');
+            if (!levelCompleteScreen) {
+                console.error("Level complete screen element not found!");
+                return;
+            }
+            levelCompleteScreen.style.display = 'flex';
+            console.log("Level complete screen display set to 'flex'");
+            
+            // Set up continue button
+            const continueButton = document.getElementById('continue-button');
+            if (!continueButton) {
+                console.error("Continue button not found!");
+                return;
+            }
+            continueButton.onclick = continueToNextLevel;
+            console.log("Continue button click handler set");
+            
+            // Set up keyboard listener for multiple keys
+            function levelCompleteKeyHandler(e) {
+                console.log(`Key pressed on level complete screen: ${e.key}`);
+                // Allow Enter, Space, or F to continue to next level
+                if (e.key === 'Enter' || e.key === ' ' || e.key.toLowerCase() === 'f') {
+                    continueToNextLevel();
+                    document.removeEventListener('keydown', levelCompleteKeyHandler);
+                }
+            }
+            
+            document.addEventListener('keydown', levelCompleteKeyHandler);
+            console.log("Level complete keyboard listener added");
+        }
+        
+        // Function to continue to next level
+        function continueToNextLevel() {
+            // Hide level complete screen
+            document.getElementById('level-complete-screen').style.display = 'none';
+            
+            // Make sure all projectiles are cleared before starting new level
+            clearAllProjectiles();
+            
+            // Temporarily disable firing for half a second
+            gameState.canFire = false;
+            console.log("Firing disabled at level transition, canFire =", gameState.canFire);
+            
+            // Increase difficulty slightly based on level
+            const moveSpeedDecrease = Math.min(50, (gameState.level - 1) * 10);
+            const baseSpeed = getMoveSpeed(selectedAlienDifficulty);
+            gameState.moveSpeed = Math.max(150, baseSpeed - moveSpeedDecrease);
+            
+            // Create new invaders for the next level
+            createInvaders(selectedAlienDifficulty);
+            
+            // Generate new math question
+            generateMathQuestion(selectedOperator, selectedMathDifficulty);
+            
+            // Play sound
+            soundManager.playSound('buttonClick');
+            
+            // Wait for firing delay before resuming game
+            setTimeout(() => {
+                // Resume game loop
+                gameLoopInterval = setInterval(gameLoop, 16);
+                
+                // Re-enable firing after half a second
+                gameState.canFire = true;
+                console.log("Player can now fire after level transition");
+            }, 500);
         }
         function checkGameOver() {}
         function gameOver() {
@@ -2266,12 +2869,18 @@
                 
                 // Hide game UI elements
                 document.getElementById('exit-game-container').style.display = 'none';
+                document.getElementById('level-complete-screen').style.display = 'none';
                 
                 // Show game over screen with score
                 const gameOverScreen = document.getElementById('game-over-screen');
                 document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
+                document.getElementById('final-level').textContent = `LEVEL: ${gameState.level}`;
                 gameOverScreen.style.display = 'flex';
                 
+                // Check for high score
+                checkForHighScore();
+                
+                // Set up button listeners
                 // Set up button listeners
                 document.getElementById('restart-button').onclick = function() {
                     gameOverScreen.style.display = 'none';
@@ -2510,6 +3119,361 @@
                         }
                     }, 100);
                 }
+            }
+        }
+
+        // Add this function after the updateInvaders function
+        function debugKillAllInvaders() {
+            console.log("Debug: Killing all invaders to test level completion");
+            gameState.invaders.forEach(invader => {
+                invader.isAlive = false;
+                if (invader.element) {
+                    invader.element.style.visibility = 'hidden';
+                }
+            });
+            
+            // Force a check for any invaders left
+            const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
+            console.log(`After killing all: ${gameState.invaders.length} total, ${gameState.invaders.filter(inv => inv.isAlive).length} alive`);
+            
+            if (!anyInvadersLeft) {
+                console.log("All invaders destroyed via debug! Level complete!");
+                
+                // Calculate and add wave completion bonus using the new scoring system
+                const waveBonus = calculateWaveCompletionScore(gameState.mathDifficulty, gameState.alienDifficulty);
+                gameState.score += waveBonus;
+                
+                // Show bonus score notification in the center of the screen if score popups are enabled
+                if (scorePopupsEnabled) {
+                    const gameContainer = document.getElementById('game-container');
+                    const containerRect = gameContainer.getBoundingClientRect();
+                    const center = {
+                        left: containerRect.left + containerRect.width / 2,
+                        top: containerRect.top + containerRect.height / 2,
+                        right: containerRect.left + containerRect.width / 2,
+                        bottom: containerRect.top + containerRect.height / 2
+                    };
+                    showFeedbackEmoji(`WAVE BONUS: +${waveBonus}`, '#ffff00', center, true, 2500, '2em');
+                }
+                
+                gameState.level += 1;   // Increment level
+                updateScore();
+                gameState.dangerWarningShown = false;
+                gameState.invaders = [];
+                
+                // Stop game loop
+                if (gameLoopInterval) {
+                    clearInterval(gameLoopInterval);
+                    gameLoopInterval = null;
+                }
+                
+                // Play level complete sound
+                soundManager.playSound('levelComplete', { volume: 0.7 });
+                
+                // Show level complete screen
+                showLevelCompleteScreen();
+            }
+        }
+
+        // Add a keyboard shortcut to trigger the debug function
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'D' && e.ctrlKey && !gameState.isGameOver && !gamePaused) {
+                debugKillAllInvaders();
+            }
+        });
+
+        // Function to clear all active projectiles
+        function clearAllProjectiles() {
+            if (gameState.projectiles && gameState.projectiles.length > 0) {
+                console.log("Clearing all active projectiles:", gameState.projectiles.length);
+                
+                // Remove projectile elements from the DOM
+                gameState.projectiles.forEach(projectile => {
+                    if (projectile.element) {
+                        projectile.element.remove();
+                    }
+                });
+                
+                // Clear the projectiles array
+                gameState.projectiles = [];
+                console.log("All projectiles cleared");
+            }
+        }
+
+        // High Score Management
+        let highScores = {
+            addition: [],
+            subtraction: [],
+            multiplication: [],
+            division: []
+        };
+        
+        const MAX_HIGH_SCORES = 10;
+        let currentHighScoreOperator = 'addition';
+        let pendingHighScore = null;
+        
+        // Load high scores from localStorage
+        function loadHighScores() {
+            try {
+                const savedScores = localStorage.getItem('mathInvadersHighScores');
+                if (savedScores) {
+                    highScores = JSON.parse(savedScores);
+                    
+                    // Ensure all operators exist in the high scores
+                    if (!highScores.addition) highScores.addition = [];
+                    if (!highScores.subtraction) highScores.subtraction = [];
+                    if (!highScores.multiplication) highScores.multiplication = [];
+                    if (!highScores.division) highScores.division = [];
+                }
+            } catch (error) {
+                console.error("Error loading high scores:", error);
+                // Reset to default if there's an error
+                highScores = {
+                    addition: [],
+                    subtraction: [],
+                    multiplication: [],
+                    division: []
+                };
+            }
+        }
+        
+        // Save high scores to localStorage
+        function saveHighScores() {
+            try {
+                localStorage.setItem('mathInvadersHighScores', JSON.stringify(highScores));
+            } catch (error) {
+                console.error("Error saving high scores:", error);
+            }
+        }
+        
+        // Check if a score qualifies as a high score
+        function isHighScore(operator, score) {
+            if (highScores[operator].length < MAX_HIGH_SCORES) return true;
+            return highScores[operator].some(entry => score > entry.score);
+        }
+        
+        // Add a new high score
+        function addHighScore(name, score, level, operator, alienDifficulty, mathDifficulty) {
+            // Create difficulty string
+            const difficultyLabels = ["EASY", "MEDIUM", "HARD", "EXPERT"];
+            const difficultyLabel = `A:${difficultyLabels[alienDifficulty-1]} M:${difficultyLabels[mathDifficulty-1]}`;
+            
+            // Create the new entry
+            const newEntry = {
+                name: name.trim() || "Unknown Player",
+                score: score,
+                level: level,
+                difficulty: difficultyLabel,
+                timestamp: Date.now()
+            };
+            
+            // Add to appropriate list and sort
+            highScores[operator].push(newEntry);
+            highScores[operator].sort((a, b) => b.score - a.score);
+            
+            // Keep only the top scores
+            if (highScores[operator].length > MAX_HIGH_SCORES) {
+                highScores[operator] = highScores[operator].slice(0, MAX_HIGH_SCORES);
+            }
+            
+            // Save to localStorage
+            saveHighScores();
+        }
+        
+        // Display high scores for the selected operator
+        function displayHighScores(operator) {
+            currentHighScoreOperator = operator;
+            const scoresForOperator = highScores[operator];
+            const tableBody = document.getElementById('high-scores-body');
+            const noScoresMessage = document.getElementById('no-scores-message');
+            
+            // Clear previous content
+            tableBody.innerHTML = '';
+            
+            // Update the active tab
+            document.querySelectorAll('.operator-tab').forEach(tab => {
+                if (tab.dataset.operator === operator) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // If no scores, show message
+            if (scoresForOperator.length === 0) {
+                noScoresMessage.style.display = 'block';
+                return;
+            }
+            
+            // Hide the no scores message
+            noScoresMessage.style.display = 'none';
+            
+            // Add each score to the table
+            scoresForOperator.forEach((score, index) => {
+                const row = document.createElement('tr');
+                
+                // Create cells for rank, name, score, level, and difficulty
+                const rankCell = document.createElement('td');
+                rankCell.textContent = index + 1;
+                
+                const nameCell = document.createElement('td');
+                nameCell.textContent = score.name;
+                
+                const scoreCell = document.createElement('td');
+                scoreCell.textContent = score.score;
+                
+                const levelCell = document.createElement('td');
+                levelCell.textContent = score.level;
+                
+                const difficultyCell = document.createElement('td');
+                difficultyCell.textContent = score.difficulty;
+                
+                // Add cells to row
+                row.appendChild(rankCell);
+                row.appendChild(nameCell);
+                row.appendChild(scoreCell);
+                row.appendChild(levelCell);
+                row.appendChild(difficultyCell);
+                
+                // Add row to table
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Show high scores screen
+        function showHighScores() {
+            // Hide all other sections
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('player-selection').style.display = 'none';
+            document.getElementById('operator-selection').style.display = 'none';
+            document.getElementById('difficulty-selection').style.display = 'none';
+            
+            // Show high scores screen
+            document.getElementById('high-scores-screen').style.display = 'flex';
+            
+            // Load high scores if needed
+            loadHighScores();
+            
+            // Display addition scores by default
+            displayHighScores('addition');
+            
+            // Add click event listeners to tabs if not already added
+            const tabs = document.querySelectorAll('.operator-tab');
+            tabs.forEach(tab => {
+                // Remove existing listener to prevent duplicates
+                const newTab = tab.cloneNode(true);
+                tab.parentNode.replaceChild(newTab, tab);
+                
+                // Add new listener
+                newTab.addEventListener('click', function() {
+                    const operator = this.dataset.operator;
+                    displayHighScores(operator);
+                    
+                    // Play sound
+                    if (soundEnabled) {
+                        soundManager.playSound('buttonClick');
+                    }
+                });
+            });
+            
+            // Play sound
+            if (soundEnabled) {
+                soundManager.playSound('buttonClick');
+            }
+        }
+        
+        // Hide high scores screen
+        function hideHighScores() {
+            document.getElementById('high-scores-screen').style.display = 'none';
+            document.getElementById('main-menu').style.display = 'block';
+            
+            // Play sound
+            if (soundEnabled) {
+                soundManager.playSound('buttonClick');
+            }
+        }
+        
+        // Show name input for high score
+        function showNameInput() {
+            document.getElementById('name-input-container').style.display = 'block';
+            document.getElementById('player-name').value = '';
+            document.getElementById('player-name').focus();
+            
+            // Set up submit button
+            const submitButton = document.getElementById('submit-name');
+            
+            // Remove existing listener to avoid duplicates
+            const newSubmitButton = submitButton.cloneNode(true);
+            submitButton.parentNode.replaceChild(newSubmitButton, submitButton);
+            
+            // Add new listener
+            newSubmitButton.addEventListener('click', submitHighScore);
+            
+            // Also add listener for Enter key
+            document.getElementById('player-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitHighScore();
+                }
+            });
+            
+            // Play sound
+            if (soundEnabled) {
+                soundManager.playSound('levelComplete', { volume: 0.7 });
+            }
+        }
+        
+        // Submit high score and player name
+        function submitHighScore() {
+            const playerName = document.getElementById('player-name').value.trim();
+            
+            if (pendingHighScore) {
+                addHighScore(
+                    playerName || "Unknown Player",
+                    pendingHighScore.score,
+                    pendingHighScore.level,
+                    pendingHighScore.operator,
+                    pendingHighScore.alienDifficulty,
+                    pendingHighScore.mathDifficulty
+                );
+                
+                // Hide name input
+                document.getElementById('name-input-container').style.display = 'none';
+                pendingHighScore = null;
+                
+                // Show high scores
+                showHighScores();
+                displayHighScores(currentHighScoreOperator);
+                
+                // Play sound
+                if (soundEnabled) {
+                    soundManager.playSound('buttonClick');
+                }
+            }
+        }
+        
+        // Check if current score is a high score at game over
+        function checkForHighScore() {
+            // Only check if we have a valid operator selected
+            if (!selectedOperator) return;
+            
+            // Load high scores
+            loadHighScores();
+            
+            // Check if this score qualifies
+            if (isHighScore(selectedOperator, gameState.score)) {
+                pendingHighScore = {
+                    score: gameState.score,
+                    level: gameState.level,
+                    operator: selectedOperator,
+                    alienDifficulty: selectedAlienDifficulty,
+                    mathDifficulty: selectedMathDifficulty
+                };
+                
+                // Update score display in the input dialog
+                document.getElementById('new-high-score-value').textContent = `Score: ${gameState.score}`;
+                
+                // Show name input after a delay
+                setTimeout(showNameInput, 1000);
             }
         }
     </script>
