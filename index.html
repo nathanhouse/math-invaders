@@ -3019,22 +3019,51 @@
             levelCompleteScreen.style.display = 'flex';
             console.log("Level complete screen display set to 'flex'");
             
+            // Set a minimum display time flag
+            gameState.canDismissLevelComplete = false;
+            
+            // Allow dismissal after 1.5 seconds
+            setTimeout(() => {
+                gameState.canDismissLevelComplete = true;
+                console.log("Level complete screen can now be dismissed");
+            }, 1500);
+            
             // Set up continue button
             const continueButton = document.getElementById('continue-button');
             if (!continueButton) {
                 console.error("Continue button not found!");
                 return;
             }
-            continueButton.onclick = continueToNextLevel;
+            continueButton.onclick = function() {
+                // Only proceed if minimum display time has elapsed
+                if (gameState.canDismissLevelComplete) {
+                    continueToNextLevel();
+                } else {
+                    console.log("Cannot dismiss level complete screen yet - minimum display time not reached");
+                }
+            };
             console.log("Continue button click handler set");
             
             // Set up keyboard listener for multiple keys
             function levelCompleteKeyHandler(e) {
                 console.log(`Key pressed on level complete screen: ${e.key}`);
+                
+                // Explicitly prevent K key from dismissing the level complete screen
+                if (e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    console.log("K key press ignored on level complete screen");
+                    return;
+                }
+                
                 // Allow Enter, Space, or F to continue to next level
                 if (e.key === 'Enter' || e.key === ' ' || e.key.toLowerCase() === 'f') {
-                    continueToNextLevel();
-                    document.removeEventListener('keydown', levelCompleteKeyHandler);
+                    // Only proceed if minimum display time has elapsed
+                    if (gameState.canDismissLevelComplete) {
+                        continueToNextLevel();
+                        document.removeEventListener('keydown', levelCompleteKeyHandler);
+                    } else {
+                        console.log("Cannot dismiss level complete screen yet - minimum display time not reached");
+                    }
                 }
             }
             
@@ -3404,8 +3433,12 @@
         // Add keyboard shortcuts to trigger the debug function
         document.addEventListener('keydown', function(e) {
             // Allow either Ctrl+D or just K key to kill all invaders (for testing)
+            // But prevent K key from working when level complete screen is shown
+            const levelCompleteScreenVisible = document.getElementById('level-complete-screen') && 
+                                              document.getElementById('level-complete-screen').style.display === 'flex';
+            
             if ((e.key === 'D' && e.ctrlKey && !gameState.isGameOver && !gamePaused) || 
-                ((e.key === 'K' || e.key === 'k') && !gameState.isGameOver && !gamePaused)) {
+                ((e.key === 'K' || e.key === 'k') && !gameState.isGameOver && !gamePaused && !levelCompleteScreenVisible)) {
                 debugKillAllInvaders();
             }
         });
