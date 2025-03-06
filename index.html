@@ -1128,6 +1128,8 @@
                 this.isInitialized = false;
                 this.pendingPreload = false;
                 this.backgroundMusicSource = null;
+                this.activeSources = []; // Track all active sound sources
+                
                 const initOnInteraction = () => {
                     this.initAudioContext();
                     if (this.pendingPreload) {
@@ -1141,6 +1143,7 @@
                 document.addEventListener('click', initOnInteraction, { once: true });
                 document.addEventListener('keydown', initOnInteraction, { once: true });
                 document.addEventListener('touchstart', initOnInteraction, { once: true });
+                
                 console.log("Sound Manager created - waiting for user interaction to initialize audio");
             }
             initAudioContext() {
@@ -1497,6 +1500,21 @@
                     }
                     gainNode.connect(this.gainNode);
                     source.start(0);
+                    
+                    // Add this source to our tracking array
+                    if (!this.activeSources) {
+                        this.activeSources = [];
+                    }
+                    this.activeSources.push(source);
+                    
+                    // Remove from active sources when it ends
+                    source.onended = () => {
+                        const index = this.activeSources.indexOf(source);
+                        if (index !== -1) {
+                            this.activeSources.splice(index, 1);
+                        }
+                    };
+                    
                     console.log(`Sound ${name} started playing successfully`);
                     return source;
                 } catch (e) {
@@ -1526,6 +1544,25 @@
                         console.log("Error stopping background music:", e);
                     }
                     this.backgroundMusicSource = null;
+                }
+                
+                // Force stop all audio contexts and sound sources
+                try {
+                    // Clear any active sources that might be playing
+                    if (this.activeSources) {
+                        this.activeSources.forEach(source => {
+                            try {
+                                source.stop();
+                            } catch (e) {
+                                // Ignore errors, the source might have already stopped
+                            }
+                        });
+                        this.activeSources = [];
+                    }
+                    
+                    console.log("All background music and active sources stopped");
+                } catch (e) {
+                    console.error("Error in extended backgroundMusic cleanup:", e);
                 }
             }
         }
@@ -1738,6 +1775,9 @@
             soundManager.playSound('menuSelect');
         }
         function showMainMenu() {
+            // Make sure all game sounds are stopped when returning to the main menu
+            soundManager.stopBackgroundMusic();
+            
             document.getElementById('main-menu').style.display = 'flex';
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('operator-selection').style.display = 'none';
@@ -1747,10 +1787,6 @@
             document.getElementById('high-scores-screen').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('level-complete-screen').style.display = 'none';
-            document.getElementById('name-input-container').style.display = 'none';
-            
-            // Hide alien speed display on main menu
-            document.getElementById('alien-speed-display').style.display = 'none';
         }
         function showOperatorSelection() {
             document.getElementById('main-menu').style.display = 'none';
@@ -3305,8 +3341,22 @@
         
         // Function to stop all game-related activities
         function stopAllGameActivities() {
-            // Add any additional cleanup logic here
-            // For example, clear any other intervals or timeouts
+            // Stop all game loops
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
+            }
+            
+            // Stop all sounds
+            soundManager.stopBackgroundMusic();
+            
+            // Stop all animations
+            const invaders = document.querySelectorAll('.game-invader');
+            invaders.forEach(invader => {
+                if (invader.style.animation) {
+                    invader.style.animation = '';
+                }
+            });
         }
         
         // Updated showGameOverScreen function to ensure button functionality
