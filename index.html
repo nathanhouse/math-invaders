@@ -1835,6 +1835,21 @@
             document.getElementById('difficulty-selection').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             
+            // Reset the pending high score to prevent game over screen from appearing immediately
+            pendingHighScore = null;
+            
+            // Ensure game-over-high-score is hidden
+            const highScoreSection = document.getElementById('game-over-high-score');
+            if (highScoreSection) {
+                highScoreSection.style.display = 'none';
+            }
+            
+            // Debug logging
+            console.log("Starting game with state:", {
+                pendingHighScore,
+                gameState: gameState ? { isGameOver: gameState.isGameOver } : null
+            });
+            
             if (!selectedOperator || selectedAlienDifficulty === 0 || selectedMathDifficulty === 0) {
                 alert("Please select an operator and both difficulties!");
                 return;
@@ -1878,6 +1893,15 @@
         function initGame(operator, alienLevel, mathLevel) {
             console.log(`Initializing game: Operator=${operator}, Alien=${alienLevel}, Math=${mathLevel}`);
             try {
+                // Reset pendingHighScore to ensure it doesn't trigger game over
+                pendingHighScore = null;
+                
+                // Make sure game-over-high-score is hidden
+                const highScoreSection = document.getElementById('game-over-high-score');
+                if (highScoreSection) {
+                    highScoreSection.style.display = 'none';
+                }
+                
                 gameState = {
                     score: 0,
                     level: 1,
@@ -1899,27 +1923,75 @@
                     alienDifficulty: alienLevel,    // Store the alien difficulty level
                     mathDifficulty: mathLevel,      // Store the math difficulty level
                     operator: operator,             // Store the operator for reference
-                    rocketSpeed: ROCKET_SPEED       // Always use the global constant for consistent speed
+                    rocketSpeed: ROCKET_SPEED,      // Always use the global constant for consistent speed
+                    gameStartTime: Date.now()       // Add a timestamp for when the game started
                 };
                 
                 // Enable firing after a short delay
                 setTimeout(() => {
                     gameState.canFire = true;
                     console.log("Player can now fire");
-                }, 500); // Half-second delay
+                }, 1500);
+                
+                // Make game container visible BEFORE creating game elements
+                document.getElementById('game-container').style.display = 'block';
+                document.getElementById('game-area').style.display = 'block';
+                document.getElementById('invaders-container').style.display = 'block';
+                document.getElementById('bases-container').style.display = 'block';
+                document.getElementById('player').style.display = 'block';
+                
+                // Log container dimensions immediately after making it visible
+                const gameContainer = document.getElementById('game-container');
+                console.log("Initial game container dimensions:", {
+                    width: gameContainer.clientWidth,
+                    height: gameContainer.clientHeight,
+                    display: gameContainer.style.display
+                });
+                
+                // Give the browser a moment to calculate the container dimensions
+                setTimeout(() => {
+                    console.log("Creating invaders...");
+                    createInvaders(alienLevel);
+                    console.log("Invaders created successfully");
+                    
+                    console.log("Generating first math question...");
+                    generateMathQuestion(operator, mathLevel);
+                    console.log("Math question generated successfully");
+                    
+                    console.log("Setting up controls...");
+                    setupControls();
+                    console.log("Controls set up successfully");
+                    
+                    // Start the game loop
+                    console.log("Starting game loop...");
+                    gameLoopInterval = safeSetGameLoop();
+                    console.log("Game loop started");
+                    
+                    // Play background music
+                    soundManager.playSound('backgroundMusic', { volume: 0.4, loop: true });
+                    
+                    console.log("Game initialization complete!");
+                    
+                    // Log the final dimensions of all game containers for debugging
+                    console.log("Final container dimensions:", {
+                        game: {
+                            width: document.getElementById('game-container').clientWidth,
+                            height: document.getElementById('game-container').clientHeight
+                        },
+                        invaders: {
+                            width: document.getElementById('invaders-container').clientWidth,
+                            height: document.getElementById('invaders-container').clientHeight
+                        },
+                        bases: {
+                            width: document.getElementById('bases-container').clientWidth,
+                            height: document.getElementById('bases-container').clientHeight
+                        }
+                    });
+                }, 100); // Small delay to ensure DOM is updated
                 
                 updateScore();
                 console.log(`Using alien emoji: ${gameState.alienEmoji} for level ${alienLevel}`);
                 console.log(`Move speed set to: ${gameState.moveSpeed}ms`);
-                console.log("Creating invaders...");
-                createInvaders(alienLevel);
-                console.log("Invaders created successfully");
-                console.log("Generating first math question...");
-                generateMathQuestion(operator, mathLevel);
-                console.log("Math question generated successfully");
-                console.log("Setting up controls...");
-                setupControls();
-                console.log("Controls set up successfully");
                 
                 // Update alien speed display
                 const alienSpeedDisplay = document.getElementById('alien-speed-display');
@@ -2020,6 +2092,18 @@
                     console.error("Invaders container not found!");
                     return;
                 }
+                
+                // Force reflow to ensure dimensions are calculated
+                void container.offsetWidth;
+                
+                console.log("Invaders container:", {
+                    display: window.getComputedStyle(container).display,
+                    width: container.clientWidth,
+                    height: container.clientHeight,
+                    offsetWidth: container.offsetWidth,
+                    offsetHeight: container.offsetHeight
+                });
+                
                 container.innerHTML = '';
                 const GRID_ROWS = 10;
                 const PLAYER_ROW = 9;
@@ -2032,6 +2116,13 @@
                     dangerRow: DANGER_ROW,
                     rowHeight: container.clientHeight / GRID_ROWS
                 };
+                
+                // Log container dimensions for debugging
+                console.log("Invaders container dimensions:", {
+                    width: container.clientWidth,
+                    height: container.clientHeight,
+                    rowHeight: gameState.gridInfo.rowHeight
+                });
                 const rows = 5;
                 const cols = 10;
                 const gameWidth = container.clientWidth;
@@ -2040,7 +2131,7 @@
                 const spacing = invaderSize * 0.8;
                 const totalWidth = (cols * invaderSize) + ((cols - 1) * spacing);
                 const leftOffset = (gameWidth - totalWidth) / 2;
-                const topOffset = 40;
+                const topOffset = 50; // Increased from 5 to position invaders lower
                 for (let row = 0; row < rows; row++) {
                     for (let col = 0; col < cols; col++) {
                         try {
@@ -2051,6 +2142,7 @@
                             invader.style.height = `${invaderSize}px`;
                             invader.style.left = `${leftOffset + (col * (invaderSize + spacing))}px`;
                             const gridRow = row;
+                            // Use full rowHeight factor (previously 0.7)
                             invader.style.top = `${topOffset + (gridRow * rowHeight) + (rowHeight - invaderSize) / 2}px`;
                             invader.style.fontSize = '1.4em';
                             invader.style.display = 'flex';
@@ -2112,6 +2204,10 @@
             basesContainer.innerHTML = '';
             basesContainer.style.bottom = '100px';
             basesContainer.style.top = 'auto';
+            basesContainer.style.display = 'flex';
+            basesContainer.style.justifyContent = 'space-around';
+            basesContainer.style.width = '100%';
+            
             for (let i = 0; i < 6; i++) {
                 const base = document.createElement('div');
                 base.className = 'base';
@@ -2119,6 +2215,8 @@
                 base.style.height = '35px';
                 base.style.backgroundColor = '#00ff00';
                 base.style.borderRadius = '5px 5px 0 0';
+                base.style.display = 'inline-block';
+                base.style.margin = '0 5px';
                 basesContainer.appendChild(base);
             }
         }
@@ -2870,12 +2968,36 @@
                 const gameContainerRect = gameContainer.getBoundingClientRect();
                 const basesTop = basesRect.top - gameContainerRect.top;
                 let invadersReachedBases = false;
+                
+                // Get the current time to check against grace period
+                const gameStartTime = gameState.gameStartTime || 0;
+                const gameRunningTime = now - gameStartTime;
+                const GRACE_PERIOD_MS = 1000; // 1 second grace period
+                
                 gameState.invaders.forEach(invader => {
                     if (!invader.isAlive || !invader.element) return;
                     const rect = invader.element.getBoundingClientRect();
                     const containerRect = gameContainer.getBoundingClientRect();
-                    if (rect.bottom >= basesRect.top) {
+                    
+                    // Add debug logging for the first invader check
+                    if (gameRunningTime > GRACE_PERIOD_MS && gameRunningTime < GRACE_PERIOD_MS + 500) {
+                        console.log("Debug positioning:", {
+                            invaderBottom: rect.bottom,
+                            basesTop: basesRect.top,
+                            difference: rect.bottom - basesRect.top,
+                            invaderGridRow: invader.gridRow
+                        });
+                    }
+                    
+                    if (rect.bottom >= basesRect.top - 20) { // Added 20px buffer
                         invadersReachedBases = true;
+                        // Debug log this specific collision
+                        console.log("Invader collision with base:", {
+                            invaderBottom: rect.bottom,
+                            basesTop: basesRect.top,
+                            difference: rect.bottom - basesRect.top,
+                            invaderGridRow: invader.gridRow
+                        });
                     }
                     const edgeThreshold = 20;
                     if (rect.right > containerRect.right - edgeThreshold) {
@@ -2888,26 +3010,38 @@
                         lowestInvaderGridRow = invader.gridRow;
                     }
                 });
-                if (invadersReachedBases) {
-                    gameOver();
-                    return;
+                
+                // Only check game over conditions after grace period to prevent false game over on startup
+                if (gameRunningTime > GRACE_PERIOD_MS) {
+                    if (invadersReachedBases) {
+                        console.log(`Game over triggered. Invaders reached bases after ${gameRunningTime}ms`);
+                        gameOver();
+                        return;
+                    }
+                    
+                    const gridInfo = gameState.gridInfo || {
+                        dangerRow: 5,
+                        gameOverRow: 6
+                    };
+                    
+                    if (lowestInvaderGridRow >= gridInfo.dangerRow && !gameState.dangerWarningShown) {
+                        gameContainer.style.backgroundColor = '#500';
+                        setTimeout(() => {
+                            gameContainer.style.backgroundColor = '#0a0a2a';
+                        }, 200);
+                        soundManager.playSound('warning', { volume: 0.7 });
+                        gameState.dangerWarningShown = true;
+                    }
+                    
+                    if (lowestInvaderGridRow >= gridInfo.gameOverRow) {
+                        console.log(`Game over triggered. Invaders at row ${lowestInvaderGridRow}, game over row is ${gridInfo.gameOverRow}, game running for ${gameRunningTime}ms`);
+                        gameOver();
+                        return;
+                    }
+                } else {
+                    console.log(`Grace period active: ${gameRunningTime}ms / ${GRACE_PERIOD_MS}ms`);
                 }
-                const gridInfo = gameState.gridInfo || {
-                    dangerRow: 5,
-                    gameOverRow: 6
-                };
-                if (lowestInvaderGridRow >= gridInfo.dangerRow && !gameState.dangerWarningShown) {
-                    gameContainer.style.backgroundColor = '#500';
-                    setTimeout(() => {
-                        gameContainer.style.backgroundColor = '#0a0a2a';
-                    }, 200);
-                    soundManager.playSound('warning', { volume: 0.7 });
-                    gameState.dangerWarningShown = true;
-                }
-                if (lowestInvaderGridRow >= gridInfo.gameOverRow) {
-                    gameOver();
-                    return;
-                }
+                
                 if ((atRightEdge && gameState.moveDirection > 0) || (atLeftEdge && gameState.moveDirection < 0)) {
                     gameState.moveDirection *= -1;
                     gameState.moveDownTrigger = true;
@@ -3090,7 +3224,27 @@
         function checkGameOver() {}
         function gameOver() {
             try {
-                console.log("Game over!");
+                // Extra safety measure - don't allow game over if we're in the grace period
+                const now = Date.now();
+                const gameStartTime = gameState.gameStartTime || 0;
+                const gameRunningTime = now - gameStartTime;
+                const GRACE_PERIOD_MS = 1000; // 1 second grace period
+                
+                // If game has been running for less than the grace period, ignore this game over call
+                if (gameRunningTime < GRACE_PERIOD_MS) {
+                    console.log(`Ignoring game over call during grace period (${gameRunningTime}ms into game)`);
+                    return;
+                }
+                
+                console.log("Game over called! Debug info:", {
+                    time: new Date().toISOString(),
+                    score: gameState.score,
+                    level: gameState.level,
+                    isGameOver: gameState.isGameOver,
+                    pendingHighScore: pendingHighScore ? true : false,
+                    gameRunningTime: gameRunningTime,
+                    stack: new Error().stack
+                });
                 gameState.isGameOver = true;
                 
                 // Clear game loop
@@ -3421,6 +3575,8 @@
         
         // Check if a score qualifies as a high score
         function isHighScore(operator, score) {
+            // Don't consider scores of 0 or less as high scores
+            if (score <= 0) return false;
             if (highScores[operator].length < MAX_HIGH_SCORES) return true;
             return highScores[operator].some(entry => score > entry.score);
         }
