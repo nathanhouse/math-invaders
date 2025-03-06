@@ -4968,7 +4968,7 @@
         // Get number of shots fired by boss based on alien difficulty level
         function getBossShots(alienDifficulty) {
             switch(alienDifficulty) {
-                case 1: return 2; // Easy mode - 2 shots
+                case 1: return 1; // Easy mode - 1 shot (changed from 2)
                 case 2: return 3; // Medium mode - 3 shots
                 case 3: return 5; // Hard mode - 5 shots
                 case 4: return 3; // Expert mode - 3 shots
@@ -4994,17 +4994,51 @@
                 if (gameState.bossAlien !== null || gameState.isGameOver) return;
                 
                 const now = Date.now();
-                // Minimum time between boss spawns (adjusted by level)
-                const minTimeBetweenBosses = 15000 - (gameState.level * 1000);
-                // Ensure minimum time is at least 5 seconds
-                const spawnDelay = Math.max(5000, minTimeBetweenBosses);
                 
-                // Check if enough time has passed since last boss and we haven't exceeded max spawns for this level
-                if (now - gameState.lastBossAlienSpawnTime > spawnDelay && 
+                // Special case for Easy mode (Level 1) - wait at least 30 seconds
+                if (gameState.alienDifficulty === 1) {
+                    // Use game start time or last boss spawn time, whichever is more recent
+                    const lastRelevantTime = Math.max(gameState.gameStartTime, gameState.lastBossAlienSpawnTime);
+                    
+                    // If it's been less than 30 seconds since game start or last boss, don't spawn
+                    if (now - lastRelevantTime < 30000) {
+                        return;
+                    }
+                }
+                
+                // Reduced minimum time between boss spawns (from 15s to 10s, adjusted by level)
+                const minTimeBetweenBosses = 10000 - (gameState.level * 800);
+                // Ensure minimum time is at least 3 seconds
+                const spawnDelay = Math.max(3000, minTimeBetweenBosses);
+                
+                // Initialize the lastGuaranteedBossCheck property if it doesn't exist
+                if (!gameState.lastGuaranteedBossCheck) {
+                    gameState.lastGuaranteedBossCheck = now;
+                }
+                
+                // Calculate time passed since last boss or level start
+                const timeSinceLastBoss = now - gameState.lastBossAlienSpawnTime;
+                
+                // Check for a guaranteed spawn every 20 seconds if no boss has appeared
+                const guaranteedSpawnCheckInterval = 20000; // 20 seconds
+                if (now - gameState.lastGuaranteedBossCheck > guaranteedSpawnCheckInterval) {
+                    gameState.lastGuaranteedBossCheck = now;
+                    
+                    // If it's been too long since the last boss and we're under the max spawn count
+                    if (timeSinceLastBoss > guaranteedSpawnCheckInterval && 
+                        gameState.bossAliensSpawnedThisLevel < getMaxBossSpawnsPerLevel(gameState.alienDifficulty)) {
+                        console.log("Guaranteed boss spawn triggered!");
+                        spawnBossAlien();
+                        return;
+                    }
+                }
+                
+                // Regular spawn check with increased probability (50% instead of 25%)
+                if (timeSinceLastBoss > spawnDelay && 
                     gameState.bossAliensSpawnedThisLevel < getMaxBossSpawnsPerLevel(gameState.alienDifficulty)) {
                     
-                    // 25% chance to spawn boss when conditions are met
-                    if (Math.random() < 0.25) {
+                    // Increased chance to spawn boss when conditions are met (from 25% to 50%)
+                    if (Math.random() < 0.5) {
                         spawnBossAlien();
                     }
                 }
