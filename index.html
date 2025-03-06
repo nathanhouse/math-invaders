@@ -1790,7 +1790,11 @@
             isGameOver: false,
             alienSpeedMultiplier: 1,
             invaderDropDistance: 0, // Initial drop distance (will be updated based on level)
-            dangerWarningShown: false
+            dangerWarningShown: false,
+            bossAlien: null, // Add boss alien property
+            bossAlienProjectiles: [], // Add boss alien projectiles array
+            lastBossAlienSpawnTime: 0, // Track when the last boss alien spawned
+            bossAliensSpawnedThisLevel: 0 // Track how many boss aliens have spawned in current level
         };
         
         // Define a utility function to format numbers with commas
@@ -1803,7 +1807,7 @@
             CORRECT_ANSWER: 100,     // Base points for hitting an invader with the correct number
             REGULAR_INVADER: 20,     // Base points for hitting an invader without a number
             WAVE_COMPLETION: 500,    // Base points for completing a wave (destroying all invaders)
-            BOSS_ALIEN: 500          // Base points for hitting a boss alien (future implementation)
+            BOSS_ALIEN: 500          // Base points for boss alien (will be adjusted by level)
         };
 
         // Scoring System Multiplier Functions
@@ -2086,7 +2090,11 @@
                     operator: operator,             // Store the operator for reference
                     rocketSpeed: ROCKET_SPEED,      // Always use the global constant for consistent speed
                     gameStartTime: Date.now(),      // Add a timestamp for when the game started
-                    lives: 3                       // Player starts with 3 lives
+                    lives: 3,                       // Player starts with 3 lives
+                    bossAlien: null,                // Boss alien object
+                    bossAlienProjectiles: [],       // Boss alien projectiles
+                    lastBossAlienSpawnTime: 0,      // Track when the last boss alien spawned
+                    bossAliensSpawnedThisLevel: 0   // Track how many boss aliens have appeared this level
                 };
                 
                 // Create lives display
@@ -2903,6 +2911,8 @@
                 
                 updateProjectiles();
                 updateInvaders();
+                updateBossAlien(); // Add boss alien update
+                updateBossAlienProjectiles(); // Add boss alien projectile update
                 checkGameOver();
             } catch (err) {
                 console.error("Error in gameLoop:", err);
@@ -2985,6 +2995,9 @@
         // Function to show level complete screen
         function showLevelCompleteScreen() {
             console.log("showLevelCompleteScreen called - Showing level complete screen");
+            
+            // Reset boss alien for new level
+            resetBossAlienForNewLevel();
             
             // Store the current wave bonus for display
             const waveBonus = calculateWaveCompletionScore(gameState.mathDifficulty, gameState.alienDifficulty);
@@ -3232,6 +3245,22 @@
                     invader.style.animation = '';
                 }
             });
+            
+            // Clean up boss alien if it exists
+            if (gameState.bossAlien && gameState.bossAlien.element) {
+                gameState.bossAlien.element.remove();
+                gameState.bossAlien = null;
+            }
+            
+            // Clean up boss projectiles
+            if (gameState.bossAlienProjectiles && gameState.bossAlienProjectiles.length > 0) {
+                gameState.bossAlienProjectiles.forEach(projectile => {
+                    if (projectile.element && projectile.element.parentNode) {
+                        projectile.element.parentNode.removeChild(projectile.element);
+                    }
+                });
+                gameState.bossAlienProjectiles = [];
+            }
         }
         
         // Updated showGameOverScreen function to ensure button functionality
@@ -4426,6 +4455,8 @@
             try {
                 if (!projectile.isActive || !projectile.element) return;
                 const projectileRect = projectile.element.getBoundingClientRect();
+                
+                // Check collisions with invaders
                 gameState.invaders.forEach(invader => {
                     if (!invader.isAlive || !invader.element) return;
                     const invaderRect = invader.element.getBoundingClientRect();
@@ -4465,14 +4496,14 @@
                                     const anyInvadersLeft = gameState.invaders.some(invader => invader.isAlive);
                                     if (anyInvadersLeft && !gameState.isGameOver && !gamePaused) {
                                         console.log("Generating new question after correct answer");
-                                        generateMathQuestion(selectedOperator, selectedMathDifficulty);
+                                        generateMathQuestion(gameState.operator, gameState.mathDifficulty);
                                     } else {
                                         console.log("Not generating new question - level may be complete or game over");
                                     }
                                 }, 100);
                                 return;
                             } else {
-                                // Incorrect answer hit - lose a life
+                                // Incorrect answer hit
                                 console.log("Incorrect answer hit!");
                                 showFeedbackEmoji('❌', '#ff0000', invaderRect);
                                 soundManager.playSound('incorrect', { volume: 0.5 });
@@ -4480,9 +4511,6 @@
                                 invader.element.style.visibility = 'hidden';
                                 projectile.isActive = false;
                                 projectile.element.remove();
-                                
-                                // Player loses a life when shooting an incorrect answer
-                                loseLife();
                                 return;
                             }
                         } else {
@@ -4507,6 +4535,37 @@
                         }
                     }
                 });
+                
+                // Check collision with boss alien
+                if (gameState.bossAlien && gameState.bossAlien.isActive && gameState.bossAlien.element) {
+                    const bossRect = gameState.bossAlien.element.getBoundingClientRect();
+                    if (
+                        projectileRect.left < bossRect.right &&
+                        projectileRect.right > bossRect.left &&
+                        projectileRect.top < bossRect.bottom &&
+                        projectileRect.bottom > bossRect.top
+                    ) {
+                        // Calculate boss score based on alien difficulty
+                        const points = getBossPoints(gameState.alienDifficulty);
+                        gameState.score += points;
+                        
+                        // Show points if score popups are enabled
+                        if (scorePopupsEnabled) {
+                            showFeedbackEmoji(`+${points}`, '#ffff00', bossRect, true, 1500, '1.5em');
+                        }
+                        
+                        // Play boss destruction sound
+                        soundManager.playSound('explosion', { volume: 0.7 });
+                        
+                        // Destroy the boss
+                        destroyBossAlien();
+                        updateScore();
+                        
+                        // Remove the projectile
+                        projectile.element.remove();
+                        projectile.isActive = false;
+                    }
+                }
             } catch (err) {
                 console.error("Error in checkProjectileCollisions:", err);
             }
@@ -4593,6 +4652,9 @@
                 const now = Date.now();
                 if (now - gameState.lastMoveTime < gameState.moveSpeed) return;
                 gameState.lastMoveTime = now;
+                
+                // Check if we should spawn a boss alien
+                checkBossAlienSpawn();
                 
                 // Update the alien speed display with a more prominent format
                 const alienSpeedDisplay = document.getElementById('alien-speed-display');
@@ -4865,6 +4927,508 @@
             const livesContainer = document.getElementById('lives-container');
             if (livesContainer) {
                 livesContainer.style.display = 'none';
+            }
+        }
+
+        // Boss Alien Functions
+        
+        // Get boss points based on alien difficulty level
+        function getBossPoints(alienDifficulty) {
+            switch(alienDifficulty) {
+                case 1: return 500;  // Easy mode
+                case 2: return 600;  // Medium mode
+                case 3: return 800;  // Hard mode
+                case 4: return 2000; // Expert mode
+                default: return 500;
+            }
+        }
+        
+        // Get boss emoji based on alien difficulty level
+        function getBossEmoji(alienDifficulty) {
+            switch(alienDifficulty) {
+                case 1: return '🐙'; // Easy mode - Tentacle Monster
+                case 2: return '👹'; // Medium mode - Oni Demon
+                case 3: return '🤖'; // Hard mode - Robot Minion
+                case 4: return '👿'; // Expert mode - Demonic Overlord
+                default: return '👾';
+            }
+        }
+        
+        // Get boss stay time based on alien difficulty level
+        function getBossStayTime(alienDifficulty) {
+            switch(alienDifficulty) {
+                case 1: return 5000; // Easy mode - 5 seconds
+                case 2: return 5000; // Medium mode - 5 seconds
+                case 3: return 4000; // Hard mode - 4 seconds
+                case 4: return 2000; // Expert mode - 2 seconds
+                default: return 5000;
+            }
+        }
+        
+        // Get number of shots fired by boss based on alien difficulty level
+        function getBossShots(alienDifficulty) {
+            switch(alienDifficulty) {
+                case 1: return 2; // Easy mode - 2 shots
+                case 2: return 3; // Medium mode - 3 shots
+                case 3: return 5; // Hard mode - 5 shots
+                case 4: return 3; // Expert mode - 3 shots
+                default: return 2;
+            }
+        }
+        
+        // Get max boss spawns per level based on alien difficulty
+        function getMaxBossSpawnsPerLevel(alienDifficulty) {
+            switch(alienDifficulty) {
+                case 1: return 1; // Easy mode - appears once
+                case 2: return 4; // Medium mode - appears 4 times
+                case 3: return 4; // Hard mode - appears 4 times
+                case 4: return 5; // Expert mode - appears 5 times
+                default: return 1;
+            }
+        }
+        
+        // Check if it's time to spawn a boss alien
+        function checkBossAlienSpawn() {
+            try {
+                // If boss already exists or game is over, don't spawn
+                if (gameState.bossAlien !== null || gameState.isGameOver) return;
+                
+                const now = Date.now();
+                // Minimum time between boss spawns (adjusted by level)
+                const minTimeBetweenBosses = 15000 - (gameState.level * 1000);
+                // Ensure minimum time is at least 5 seconds
+                const spawnDelay = Math.max(5000, minTimeBetweenBosses);
+                
+                // Check if enough time has passed since last boss and we haven't exceeded max spawns for this level
+                if (now - gameState.lastBossAlienSpawnTime > spawnDelay && 
+                    gameState.bossAliensSpawnedThisLevel < getMaxBossSpawnsPerLevel(gameState.alienDifficulty)) {
+                    
+                    // 25% chance to spawn boss when conditions are met
+                    if (Math.random() < 0.25) {
+                        spawnBossAlien();
+                    }
+                }
+            } catch (err) {
+                console.error("Error in checkBossAlienSpawn:", err);
+            }
+        }
+        
+        // Spawn a boss alien
+        function spawnBossAlien() {
+            try {
+                console.log("Spawning boss alien");
+                const gameContainer = document.getElementById('game-container');
+                const containerRect = gameContainer.getBoundingClientRect();
+                
+                // Create boss alien element
+                const bossElement = document.createElement('div');
+                bossElement.className = 'boss-alien';
+                bossElement.textContent = getBossEmoji(gameState.alienDifficulty);
+                bossElement.style.position = 'absolute';
+                bossElement.style.fontSize = '2em';
+                bossElement.style.filter = 'drop-shadow(0 0 5px rgba(255, 0, 0, 0.7))';
+                
+                // Random entry point (left, right, or top)
+                const entryPoint = Math.floor(Math.random() * 3); // 0: left, 1: right, 2: top
+                
+                let startX, startY;
+                
+                switch(entryPoint) {
+                    case 0: // Left
+                        startX = -50;
+                        startY = 50 + Math.random() * 100; // Random height in top area
+                        break;
+                    case 1: // Right
+                        startX = containerRect.width + 50;
+                        startY = 50 + Math.random() * 100; // Random height in top area
+                        break;
+                    case 2: // Top
+                    default:
+                        startX = Math.random() * containerRect.width;
+                        startY = -50;
+                        break;
+                }
+                
+                bossElement.style.left = `${startX}px`;
+                bossElement.style.top = `${startY}px`;
+                gameContainer.appendChild(bossElement);
+                
+                // Play boss appearance sound
+                soundManager.playSound('warning', { volume: 0.5 });
+                
+                // Set up boss alien properties
+                const totalShots = getBossShots(gameState.alienDifficulty);
+                const stayTime = getBossStayTime(gameState.alienDifficulty);
+                
+                // Create boss alien object
+                gameState.bossAlien = {
+                    element: bossElement,
+                    isActive: true,
+                    entryPoint: entryPoint,
+                    targetX: Math.random() * (containerRect.width - 100) + 50, // Random target X
+                    targetY: Math.random() * 150 + 50, // Random target Y in top portion
+                    currentX: startX,
+                    currentY: startY,
+                    moveSpeed: 3 + Math.random() * 2, // Random speed between 3 and 5
+                    lastShotTime: 0,
+                    shotsFired: 0,
+                    totalShots: totalShots,
+                    shotInterval: stayTime / (totalShots + 1), // Evenly space shots
+                    arrivalTime: 0, // Will be set when boss reaches target position
+                    stayTime: stayTime
+                };
+                
+                // Update tracking
+                gameState.lastBossAlienSpawnTime = Date.now();
+                gameState.bossAliensSpawnedThisLevel++;
+            } catch (err) {
+                console.error("Error in spawnBossAlien:", err);
+            }
+        }
+        
+        // Update boss alien position and behavior
+        function updateBossAlien() {
+            try {
+                // If no boss exists or game is over, return
+                if (!gameState.bossAlien || !gameState.bossAlien.isActive || gameState.isGameOver) return;
+                
+                const boss = gameState.bossAlien;
+                const element = boss.element;
+                const now = Date.now();
+                
+                // If boss has reached target position
+                if (boss.arrivalTime > 0) {
+                    // Check if stay time is over
+                    if (now - boss.arrivalTime > boss.stayTime) {
+                        // Time to leave - exit in a random direction
+                        const exitDirection = Math.floor(Math.random() * 3); // 0: left, 1: right, 2: top
+                        const gameContainer = document.getElementById('game-container');
+                        const containerRect = gameContainer.getBoundingClientRect();
+                        
+                        switch(exitDirection) {
+                            case 0: // Exit left
+                                boss.targetX = -100;
+                                boss.targetY = Math.random() * 200;
+                                break;
+                            case 1: // Exit right
+                                boss.targetX = containerRect.width + 100;
+                                boss.targetY = Math.random() * 200;
+                                break;
+                            case 2: // Exit top
+                            default:
+                                boss.targetX = Math.random() * containerRect.width;
+                                boss.targetY = -100;
+                                break;
+                        }
+                        
+                        // Reset arrival time so we don't trigger this again
+                        boss.arrivalTime = -1;
+                    } else {
+                        // Check if it's time to fire a shot
+                        if (boss.shotsFired < boss.totalShots && 
+                            now - boss.lastShotTime > boss.shotInterval) {
+                            fireBossProjectile();
+                            boss.shotsFired++;
+                            boss.lastShotTime = now;
+                        }
+                    }
+                }
+                
+                // Move boss towards target position
+                const dx = boss.targetX - boss.currentX;
+                const dy = boss.targetY - boss.currentY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // If boss is close to target and we haven't set arrival time yet
+                if (distance < 5 && boss.arrivalTime === 0) {
+                    // Boss has arrived at target position
+                    boss.arrivalTime = now;
+                    boss.lastShotTime = now; // Start shot timer
+                }
+                
+                // If distance is significant, move towards target
+                if (distance > 1) {
+                    const moveX = (dx / distance) * boss.moveSpeed;
+                    const moveY = (dy / distance) * boss.moveSpeed;
+                    
+                    boss.currentX += moveX;
+                    boss.currentY += moveY;
+                    
+                    element.style.left = `${boss.currentX}px`;
+                    element.style.top = `${boss.currentY}px`;
+                } else if (boss.arrivalTime < 0) {
+                    // Boss has reached exit point, remove it
+                    destroyBossAlien(false); // Don't show destruction effect
+                }
+            } catch (err) {
+                console.error("Error in updateBossAlien:", err);
+            }
+        }
+        
+        // Fire a projectile from the boss alien
+        function fireBossProjectile() {
+            try {
+                if (!gameState.bossAlien || !gameState.bossAlien.isActive) return;
+                
+                // Play boss shot sound
+                soundManager.playSound('shoot', { volume: 0.4, playbackRate: 0.7 });
+                
+                const boss = gameState.bossAlien;
+                const bossRect = boss.element.getBoundingClientRect();
+                const gameContainer = document.getElementById('game-container');
+                const containerRect = gameContainer.getBoundingClientRect();
+                
+                // Create projectile element
+                const projectile = document.createElement('div');
+                projectile.className = 'boss-projectile';
+                projectile.style.position = 'absolute';
+                projectile.style.width = '6px';
+                projectile.style.height = '18px';
+                projectile.style.backgroundColor = '#00ffff';
+                projectile.style.borderRadius = '3px';
+                projectile.style.boxShadow = '0 0 8px #00ffff';
+                
+                // Position projectile at center bottom of boss
+                const projectileLeft = boss.currentX + (bossRect.width / 2) - 3; // Center projectile
+                const projectileTop = boss.currentY + bossRect.height;
+                
+                projectile.style.left = `${projectileLeft}px`;
+                projectile.style.top = `${projectileTop}px`;
+                
+                gameContainer.appendChild(projectile);
+                
+                // Add projectile to game state
+                if (!gameState.bossAlienProjectiles) {
+                    gameState.bossAlienProjectiles = [];
+                }
+                
+                // Create velocity for diagonal movement (aimed at player's general area)
+                const playerShip = document.getElementById('player');
+                const playerRect = playerShip.getBoundingClientRect();
+                const playerCenterX = playerRect.left - containerRect.left + (playerRect.width / 2);
+                
+                // Calculate angle to player, but with some randomness
+                const angleRandomness = (Math.random() - 0.5) * 0.5; // +/- 25% randomness
+                const dx = (playerCenterX - projectileLeft) + (angleRandomness * containerRect.width);
+                const dy = (containerRect.height - projectileTop);
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                // Normalize and set speed
+                const speed = 5 + Math.random() * 2; // Random speed between 5 and 7
+                const velocityX = (dx / distance) * speed;
+                const velocityY = (dy / distance) * speed;
+                
+                gameState.bossAlienProjectiles.push({
+                    element: projectile,
+                    isActive: true,
+                    velocityX: velocityX,
+                    velocityY: velocityY
+                });
+            } catch (err) {
+                console.error("Error in fireBossProjectile:", err);
+            }
+        }
+        
+        // Update boss alien projectiles
+        function updateBossAlienProjectiles() {
+            try {
+                if (!gameState.bossAlienProjectiles) return;
+                
+                const gameContainer = document.getElementById('game-container');
+                if (!gameContainer) return;
+                
+                const containerRect = gameContainer.getBoundingClientRect();
+                
+                gameState.bossAlienProjectiles.forEach((projectile, index) => {
+                    if (!projectile.isActive) return;
+                    
+                    const element = projectile.element;
+                    if (!element || !element.parentNode) {
+                        projectile.isActive = false;
+                        return;
+                    }
+                    
+                    // Update projectile position with velocity
+                    try {
+                        const currentLeft = element.offsetLeft;
+                        const currentTop = element.offsetTop;
+                        
+                        element.style.left = `${currentLeft + projectile.velocityX}px`;
+                        element.style.top = `${currentTop + projectile.velocityY}px`;
+                        
+                        // Check if projectile is off screen
+                        if (currentLeft < -20 || currentLeft > containerRect.width + 20 ||
+                            currentTop < -20 || currentTop > containerRect.height + 20) {
+                            element.remove();
+                            projectile.isActive = false;
+                            return;
+                        }
+                        
+                        // Check collision with player
+                        checkBossProjectileCollisions(projectile);
+                        
+                        // Check collision with bases
+                        checkBossProjectileBaseCollisions(projectile);
+                    } catch (err) {
+                        console.log("Error updating boss projectile:", err);
+                        projectile.isActive = false;
+                        
+                        try {
+                            if (element.parentNode) {
+                                element.parentNode.removeChild(element);
+                            }
+                        } catch (removeErr) {
+                            console.log("Could not remove boss projectile element:", removeErr);
+                        }
+                    }
+                });
+                
+                // Filter out inactive projectiles
+                gameState.bossAlienProjectiles = gameState.bossAlienProjectiles.filter(p => p.isActive);
+            } catch (err) {
+                console.error("Error in updateBossAlienProjectiles:", err);
+            }
+        }
+        
+        // Check if boss projectiles hit the player
+        function checkBossProjectileCollisions(projectile) {
+            try {
+                if (!projectile.isActive || !projectile.element) return;
+                
+                const projectileRect = projectile.element.getBoundingClientRect();
+                const playerShip = document.getElementById('player');
+                const playerRect = playerShip.getBoundingClientRect();
+                
+                // Check collision with player
+                if (
+                    projectileRect.left < playerRect.right &&
+                    projectileRect.right > playerRect.left &&
+                    projectileRect.top < playerRect.bottom &&
+                    projectileRect.bottom > playerRect.top
+                ) {
+                    console.log("Player hit by boss projectile!");
+                    
+                    // Remove the projectile
+                    projectile.element.remove();
+                    projectile.isActive = false;
+                    
+                    // Handle player getting hit
+                    handleAlienLaserHit();
+                }
+            } catch (err) {
+                console.error("Error in checkBossProjectileCollisions:", err);
+            }
+        }
+        
+        // Check if boss projectiles hit the bases
+        function checkBossProjectileBaseCollisions(projectile) {
+            try {
+                if (!projectile.isActive || !projectile.element) return;
+                
+                const projectileRect = projectile.element.getBoundingClientRect();
+                const bases = document.querySelectorAll('.base');
+                
+                bases.forEach(base => {
+                    const baseRect = base.getBoundingClientRect();
+                    
+                    // Check collision with base
+                    if (
+                        projectileRect.left < baseRect.right &&
+                        projectileRect.right > baseRect.left &&
+                        projectileRect.top < baseRect.bottom &&
+                        projectileRect.bottom > baseRect.top
+                    ) {
+                        console.log("Base hit by boss projectile!");
+                        
+                        // Remove the projectile
+                        projectile.element.remove();
+                        projectile.isActive = false;
+                        
+                        // Make the base invisible but keep it in the DOM
+                        base.style.visibility = 'hidden';
+                        
+                        // Play base destruction sound
+                        soundManager.playSound('explosion', { volume: 0.5 });
+                    }
+                });
+            } catch (err) {
+                console.error("Error in checkBossProjectileBaseCollisions:", err);
+            }
+        }
+        
+        // Destroy the boss alien with explosion effect
+        function destroyBossAlien(showEffect = true) {
+            try {
+                if (!gameState.bossAlien || !gameState.bossAlien.element) return;
+                
+                if (showEffect) {
+                    // Create explosion effect
+                    const boss = gameState.bossAlien;
+                    const bossRect = boss.element.getBoundingClientRect();
+                    const gameContainer = document.getElementById('game-container');
+                    
+                    const explosion = document.createElement('div');
+                    explosion.className = 'explosion';
+                    explosion.style.position = 'absolute';
+                    explosion.style.left = `${boss.currentX}px`;
+                    explosion.style.top = `${boss.currentY}px`;
+                    explosion.style.width = `${bossRect.width * 1.5}px`;
+                    explosion.style.height = `${bossRect.height * 1.5}px`;
+                    explosion.style.backgroundColor = 'rgba(255, 255, 0, 0.7)';
+                    explosion.style.borderRadius = '50%';
+                    explosion.style.boxShadow = '0 0 20px rgba(255, 200, 0, 0.8)';
+                    explosion.style.animation = 'explode 0.5s forwards';
+                    
+                    // Add explosion CSS animation if it doesn't exist
+                    if (!document.getElementById('explosion-animation')) {
+                        const style = document.createElement('style');
+                        style.id = 'explosion-animation';
+                        style.textContent = `
+                            @keyframes explode {
+                                0% { transform: scale(0.5); opacity: 1; }
+                                100% { transform: scale(2); opacity: 0; }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                    
+                    gameContainer.appendChild(explosion);
+                    
+                    // Remove explosion after animation
+                    setTimeout(() => {
+                        if (explosion.parentNode) {
+                            explosion.parentNode.removeChild(explosion);
+                        }
+                    }, 500);
+                }
+                
+                // Remove the boss element
+                gameState.bossAlien.element.remove();
+                gameState.bossAlien = null;
+                
+            } catch (err) {
+                console.error("Error in destroyBossAlien:", err);
+            }
+        }
+        
+        // Reset boss alien spawn count for level
+        function resetBossAlienForNewLevel() {
+            gameState.bossAliensSpawnedThisLevel = 0;
+            gameState.lastBossAlienSpawnTime = Date.now(); // Reset timer for next level
+            
+            // If there's an active boss, remove it
+            if (gameState.bossAlien) {
+                destroyBossAlien(false);
+            }
+            
+            // Clean up any boss projectiles
+            if (gameState.bossAlienProjectiles) {
+                gameState.bossAlienProjectiles.forEach(projectile => {
+                    if (projectile.element && projectile.element.parentNode) {
+                        projectile.element.parentNode.removeChild(projectile.element);
+                    }
+                });
+                gameState.bossAlienProjectiles = [];
             }
         }
     </script>
