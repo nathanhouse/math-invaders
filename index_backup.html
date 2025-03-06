@@ -1045,7 +1045,7 @@
             <button id="restart-button" class="control-toggle">PLAY AGAIN <span class="key-hint">R</span></button>
         </div>
         <div style="margin-top: 20px;">
-            <button id="view-highscores-button" class="control-toggle" style="font-size: 1.2em; padding: 12px 24px; border-width: 2px;" onclick="viewHighScores(); return false;">VIEW HIGH SCORES <span class="key-hint">H</span></button>
+            <button id="view-highscores-button" class="control-toggle" style="font-size: 1.2em; padding: 12px 24px; border-width: 2px;">VIEW HIGH SCORES <span class="key-hint">H</span></button>
         </div>
     </div>
     
@@ -1325,17 +1325,14 @@
                 return buffer;
             }
             createLevelCompleteSound() {
-                const duration = 0.6; // Shortened from 2.0
+                const duration = 2.0;
                 const sampleRate = this.audioContext.sampleRate;
                 const buffer = this.audioContext.createBuffer(2, sampleRate * duration, sampleRate);
                 const leftChannel = buffer.getChannelData(0);
                 const rightChannel = buffer.getChannelData(1);
-                const noteDuration = 0.15;
-                
-                // Simple success jingle (just 4 notes)
-                const notes = [392.00, 523.25, 659.25, 783.99];
-                const harmonies = [261.63, 329.63, 392.00, 523.25];
-                
+                const noteDuration = 0.125;
+                const notes = [523.25, 659.25, 783.99, 523.25, 659.25, 783.99, 880.00, 1046.50];
+                const harmonies = [392.00, 523.25, 587.33, 392.00, 523.25, 587.33, 659.25, 783.99];
                 for (let i = 0; i < buffer.length; i++) {
                     const t = i / sampleRate;
                     const elapsedTime = t;
@@ -1343,73 +1340,25 @@
                     const noteFreq = notes[noteIndex];
                     const harmonyFreq = harmonies[noteIndex];
                     const noteTime = elapsedTime - (noteIndex * noteDuration);
-                    
-                    // Smooth envelope for less harsh sound
                     let envelope;
-                    if (noteTime < 0.03) {
-                        envelope = noteTime / 0.03; // Attack
-                    } else if (noteTime > noteDuration - 0.05) {
-                        envelope = (noteDuration - noteTime) / 0.05; // Release
+                    if (noteTime < 0.02) {
+                        envelope = noteTime / 0.02;
                     } else {
-                        envelope = 1.0; // Sustain
+                        envelope = 1.0 - ((noteTime - 0.02) / (noteDuration - 0.02) * 0.5);
                     }
-                    
-                    // Use sine waves for a softer sound, reduce amplitude
-                    const noteSignal = 0.15 * Math.sin(2 * Math.PI * noteFreq * t) * envelope;
-                    const harmonySignal = 0.08 * Math.sin(2 * Math.PI * harmonyFreq * t) * envelope;
-                    
-                    // Apply a master volume envelope that gently fades out
-                    const masterVolume = Math.max(0, 1 - (t / duration) * 0.5);
-                    
-                    leftChannel[i] = (noteSignal + harmonySignal) * masterVolume;
-                    rightChannel[i] = (noteSignal + harmonySignal) * masterVolume;
+                    const shimmer = Math.sin(t * 4000) * 0.1 * Math.exp(-t * 10);
+                    const vibrato = Math.sin(t * 20) * 5;
+                    const pan = Math.sin(t * 2) * 0.2 + 0.5;
+                    const melody = Math.sin((i + vibrato) * noteFreq * 2 * Math.PI / sampleRate);
+                    const harmony = Math.sin(i * harmonyFreq * 2 * Math.PI / sampleRate) * 0.5;
+                    const bass = (noteIndex % 2 === 0) ? 
+                        Math.sin(i * noteFreq/2 * 2 * Math.PI / sampleRate) * 0.3 : 0;
+                    const sample = (melody + harmony + bass + shimmer) * Math.max(0, envelope) * 0.5;
+                    leftChannel[i] = sample * (1 - pan * 0.5);
+                    rightChannel[i] = sample * (0.5 + pan * 0.5);
                 }
                 return buffer;
             }
-            
-            createHighScoreSound() {
-                const duration = 0.8; // Shortened from 2.5
-                const sampleRate = this.audioContext.sampleRate;
-                const buffer = this.audioContext.createBuffer(2, sampleRate * duration, sampleRate);
-                const leftChannel = buffer.getChannelData(0);
-                const rightChannel = buffer.getChannelData(1);
-                const noteDuration = 0.2;
-                
-                // Simpler sequence with fewer notes and lower frequencies
-                const notes = [392.00, 493.88, 587.33, 783.99];
-                const harmonies = [261.63, 329.63, 392.00, 523.25];
-                
-                for (let i = 0; i < buffer.length; i++) {
-                    const t = i / sampleRate;
-                    const elapsedTime = t;
-                    const noteIndex = Math.min(Math.floor(elapsedTime / noteDuration), notes.length - 1);
-                    const noteFreq = notes[noteIndex];
-                    const harmonyFreq = harmonies[noteIndex];
-                    const noteTime = elapsedTime - (noteIndex * noteDuration);
-                    
-                    // Create a smoother envelope for gentler sound
-                    let envelope;
-                    if (noteTime < 0.04) {
-                        envelope = noteTime / 0.04; // Slower attack
-                    } else if (noteTime > noteDuration - 0.08) {
-                        envelope = (noteDuration - noteTime) / 0.08; // Longer release
-                    } else {
-                        envelope = 1.0; // Sustain
-                    }
-                    
-                    // Use sine waves without vibrato for cleaner sound
-                    const noteSignal = 0.15 * Math.sin(2 * Math.PI * noteFreq * t) * envelope;
-                    const harmonySignal = 0.08 * Math.sin(2 * Math.PI * harmonyFreq * t) * envelope;
-                    
-                    // Apply a master volume envelope that fades out
-                    const masterVolume = Math.max(0, 1 - (t / duration) * 0.3);
-                    
-                    leftChannel[i] = (noteSignal + harmonySignal) * masterVolume;
-                    rightChannel[i] = (noteSignal + harmonySignal) * masterVolume;
-                }
-                return buffer;
-            }
-            
             createBackgroundMusic() {
                 const duration = 4.0;
                 const sampleRate = this.audioContext.sampleRate;
@@ -1587,7 +1536,7 @@
                     if (gameLoopInterval && sounds.background && typeof sounds.background.play === 'function') {
                         sounds.background.play().catch(e => console.log("Error playing background music:", e));
                     }
-                    } else {
+                } else {
                     if (sounds.background && typeof sounds.background.pause === 'function') {
                         sounds.background.pause();
                     }
@@ -1637,8 +1586,7 @@
             lastMoveTime: 0,
             moveSpeed: 500,
             dangerWarningShown: false,
-            keysPressed: {},
-            rocketSpeed: 10  // Add rocket speed to gameState
+            keysPressed: {}
         };
 
         // Scoring System Constants
@@ -1864,8 +1812,7 @@
                     canFire: false,  // Start with firing disabled
                     alienDifficulty: alienLevel,    // Store the alien difficulty level
                     mathDifficulty: mathLevel,      // Store the math difficulty level
-                    operator: operator,             // Store the operator for reference
-                    rocketSpeed: 10                 // Add rocket speed to gameState
+                    operator: operator              // Store the operator for reference
                 };
                 
                 // Enable firing after a short delay
@@ -2618,15 +2565,14 @@
                 if (!gameState.projectiles) return;
                 const gameContainer = document.getElementById('game-container');
                 const containerRect = gameContainer.getBoundingClientRect();
-                
                 gameState.projectiles.forEach((projectile, index) => {
                     if (!projectile.isActive) return;
                     const element = projectile.element;
                     if (!element) return;
                     const currentTop = element.offsetTop;
                     
-                    // Use the rocket speed from gameState
-                    element.style.top = `${currentTop - gameState.rocketSpeed}px`;
+                    // Update projectile position
+                    element.style.top = `${currentTop - 10}px`;
                     
                     // Animate the trail for more dynamic effect
                     const trail = element.querySelector('div');
@@ -3061,16 +3007,15 @@
                     gameLoopInterval = null;
                 }
                 
-                // Stop all game-related activities
-                stopAllGameActivities();
-                
                 // Play game over sound
                 if (soundEnabled) {
+                    // Make sure to stop all other sounds first
                     soundManager.stopBackgroundMusic();
                     if (sounds.background) {
                         sounds.background.pause();
                     }
                     
+                    // Play game over sound after a short delay
                     setTimeout(() => {
                         soundManager.playSound('gameOver', { volume: 0.7 });
                         if (sounds.gameOver) {
@@ -3088,43 +3033,26 @@
                 // Hide game UI elements
                 document.getElementById('exit-game-container').style.display = 'none';
                 document.getElementById('level-complete-screen').style.display = 'none';
-                document.getElementById('name-input-container').style.display = 'none';
                 
-                // Make sure any confirmation messages are removed
-                const confirmMessages = document.querySelectorAll('div[style*="z-index: 2000"]');
-                confirmMessages.forEach(msg => {
-                    if (msg.parentNode) {
-                        msg.parentNode.removeChild(msg);
-                    }
-                });
-                
-                // Show game over screen first
+                // Show game over screen with score first (will show high score section if needed)
                 showGameOverScreen();
                 
-                // Then check for high score and update the game over screen if needed
+                // Check for high score and update the screen if needed
                 checkForHighScore();
-                
-                console.log("Game over process completed successfully");
             } catch (err) {
                 console.error("Error in gameOver:", err);
                 showMainMenu();
             }
         }
         
-        // Function to stop all game-related activities
-        function stopAllGameActivities() {
-            // Add any additional cleanup logic here
-            // For example, clear any other intervals or timeouts
-        }
-        
-        // Updated showGameOverScreen function to ensure button functionality
+        // Function to show the game over screen - extracted to reuse after high score entry
         function showGameOverScreen() {
             const gameOverScreen = document.getElementById('game-over-screen');
             document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
             document.getElementById('final-level').textContent = `LEVEL: ${gameState.level}`;
             gameOverScreen.style.display = 'flex';
             
-            // Hide high score section by default
+            // Hide high score section by default (will be shown by checkForHighScore if needed)
             document.getElementById('game-over-high-score').style.display = 'none';
             
             // Reset high scores button styling
@@ -3134,15 +3062,37 @@
             highScoreButton.style.boxShadow = '';
             highScoreButton.innerHTML = 'VIEW HIGH SCORES <span class="key-hint">H</span>';
             
-            // Make sure the high score button has the onclick attribute
-            if (!highScoreButton.hasAttribute('onclick')) {
-                highScoreButton.setAttribute('onclick', 'viewHighScores(); return false;');
-            }
+            // Set up button listeners
+            document.getElementById('restart-button').onclick = function() {
+                gameOverScreen.style.display = 'none';
+                if (soundEnabled) {
+                    soundManager.playSound('buttonClick');
+                }
+                restartGame();
+            };
             
-            // Setup all other button handlers
-            setupGameOverScreenHandlers();
+            document.getElementById('return-menu-button').onclick = function() {
+                gameOverScreen.style.display = 'none';
+                if (soundEnabled) {
+                    soundManager.playSound('buttonClick');
+                }
+                exitGame();
+            };
             
-            console.log("Game over screen displayed with all button handlers set");
+            // Set up high scores button handler
+            highScoreButton.onclick = function() {
+                console.log("High scores button clicked from game over screen");
+                
+                // Hide the game over screen first
+                gameOverScreen.style.display = 'none';
+                
+                if (soundEnabled) {
+                    soundManager.playSound('buttonClick');
+                }
+                
+                // Call the showHighScores function directly
+                showHighScores();
+            };
         }
         
         // Check if current score is a high score at game over
@@ -3241,11 +3191,6 @@
                 confirmMessage.style.transform = 'translate(-50%, -50%)';
                 confirmMessage.style.zIndex = '2000';
                 document.body.appendChild(confirmMessage);
-                
-                // Update the high scores button to indicate high score was saved
-                const highScoreButton = document.getElementById('view-highscores-button');
-                highScoreButton.classList.add('high-score-button-highlight');
-                highScoreButton.innerHTML = 'VIEW YOUR HIGH SCORE <span class="key-hint">H</span>';
                 
                 // Remove the message after a short delay
                 setTimeout(() => {
@@ -3482,21 +3427,16 @@
                 // Hide any other screens
                 document.getElementById('main-menu').style.display = 'none';
                 document.getElementById('game-over-screen').style.display = 'none';
-                document.getElementById('game-area').style.display = 'none';
-                document.getElementById('game-container').style.display = 'none'; // Added this line to fix high scores display issue
                 document.getElementById('player-selection').style.display = 'none';
                 document.getElementById('operator-selection').style.display = 'none';
                 document.getElementById('difficulty-selection').style.display = 'none';
                 document.getElementById('name-input-container').style.display = 'none';
-                document.getElementById('exit-game-container').style.display = 'none';
                 
                 // Hide floating equations and invader animations
                 document.querySelectorAll('.equation').forEach(eq => {
                     eq.style.display = 'none';
                 });
-                document.querySelectorAll('.invader').forEach(inv => {
-                    inv.style.display = 'none';
-                });
+                document.querySelector('.invader').style.display = 'none';
                 
                 if (soundEnabled) {
                     soundManager.playSound('buttonClick');
@@ -3565,14 +3505,26 @@
                 soundManager.playSound('buttonClick');
             }
             
-            // Always return to main menu
-            showMainMenu();
-            
-            // Only show floating equations and invader if we're at the main menu
-            document.querySelectorAll('.equation').forEach(eq => {
-                eq.style.display = 'flex';
-            });
-            document.querySelector('.invader').style.display = 'block';
+            // Check if we were in a game
+            if (gameState && gameState.isGameOver) {
+                // Return to game over screen
+                document.getElementById('game-over-screen').style.display = 'flex';
+                
+                // Do not show floating equations in game over context
+                document.querySelectorAll('.equation').forEach(eq => {
+                    eq.style.display = 'none';
+                });
+                document.querySelector('.invader').style.display = 'none';
+            } else {
+                // Show main menu
+                showMainMenu();
+                
+                // Only show floating equations and invader if we're at the main menu
+                document.querySelectorAll('.equation').forEach(eq => {
+                    eq.style.display = 'flex';
+                });
+                document.querySelector('.invader').style.display = 'block';
+            }
         }
         
         // Submit high score and player name
@@ -3884,261 +3836,6 @@
                         }
                     }, 100);
                 }
-            }
-        }
-
-        // Updated restartGame function to ensure proper game reset
-        function restartGame() {
-            console.log("Restarting game...");
-            
-            // Reset game state variables
-            gameState = {
-                score: 0,
-                level: 1,
-                isGameOver: false,
-                currentQuestion: null,
-                correctAnswer: null,
-                invaders: [],
-                projectiles: [],
-                playerPosition: 50,
-                alienEmoji: getAlienEmoji(selectedAlienDifficulty || 1),
-                moveDirection: 1,
-                moveDownTrigger: false,
-                lastMoveTime: 0,
-                moveSpeed: getMoveSpeed(selectedAlienDifficulty || 1),
-                dangerWarningShown: false,
-                keysPressed: {},
-                rocketSpeed: 10,  // Start with a fixed rocket speed
-                canFire: false,  // Start with firing disabled
-                alienDifficulty: selectedAlienDifficulty || 1,
-                mathDifficulty: selectedMathDifficulty || 1,
-                operator: selectedOperator || 'addition'
-            };
-            
-            // Reinitialize game loop
-            if (gameLoopInterval) {
-                clearInterval(gameLoopInterval);
-            }
-            gameLoopInterval = setInterval(gameLoop, 16);
-            
-            // Reset UI elements
-            document.getElementById('game-over-screen').style.display = 'none';
-            document.getElementById('game-area').style.display = 'block';
-            
-            // Show exit-game-container and other UI elements
-            document.getElementById('exit-game-container').style.display = 'block';
-            document.getElementById('alien-speed-display').style.display = 'block';
-            
-            // Make sure any confirmation messages are removed
-            const confirmMessages = document.querySelectorAll('div[style*="z-index: 2000"]');
-            confirmMessages.forEach(msg => {
-                if (msg.parentNode) {
-                    msg.parentNode.removeChild(msg);
-                }
-            });
-            
-            // Start background music if enabled
-            if (soundEnabled) {
-                soundManager.playBackgroundMusic();
-            }
-            
-            // Create invaders for the first level
-            createInvaders(selectedAlienDifficulty || 1);
-            
-            // Generate math question
-            generateMathQuestion(selectedOperator || 'addition', selectedMathDifficulty || 1);
-            
-            // Update score display
-            updateScore();
-            
-            // Enable firing after a short delay
-            setTimeout(() => {
-                gameState.canFire = true;
-                console.log("Player can now fire");
-            }, 500);
-            
-            // Update alien speed display
-            const alienSpeedDisplay = document.getElementById('alien-speed-display');
-            if (alienSpeedDisplay) {
-                alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
-                // Make it flash to draw attention to the speed change
-                alienSpeedDisplay.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
-                setTimeout(() => {
-                    alienSpeedDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-                }, 1000);
-            }
-            
-            console.log("Game restarted successfully.");
-        }
-
-        // Investigate rocket speed issue
-        // Ensure rocket speed is reset properly
-        const initialRocketSpeed = 10; // Default initial rocket speed
-
-        function resetRocketSpeed() {
-            if (gameState) {
-                gameState.rocketSpeed = initialRocketSpeed;
-            }
-        }
-
-        // Call resetRocketSpeed when necessary, e.g., at game start or level reset
-        resetRocketSpeed();
-
-        // Add keyboard shortcuts for game over screen
-        document.addEventListener('keydown', function(e) {
-            // Handle H key for high scores
-            if ((e.key === 'H' || e.key === 'h') && gameState.isGameOver) {
-                console.log("H key pressed on game over screen - showing high scores");
-                viewHighScores();
-            }
-            
-            // Handle R key for restart game
-            if ((e.key === 'R' || e.key === 'r') && gameState.isGameOver) {
-                console.log("R key pressed on game over screen - restarting game");
-                document.getElementById('game-over-screen').style.display = 'none';
-                if (soundEnabled) {
-                    soundManager.playSound('buttonClick');
-                }
-                restartGame();
-            }
-            
-            // Handle Q key for returning to menu
-            if ((e.key === 'Q' || e.key === 'q') && gameState.isGameOver) {
-                console.log("Q key pressed on game over screen - returning to menu");
-                document.getElementById('game-over-screen').style.display = 'none';
-                if (soundEnabled) {
-                    soundManager.playSound('buttonClick');
-                }
-                exitGame();
-            }
-        });
-
-        // Add a direct event listener for the high score button
-        document.addEventListener('DOMContentLoaded', function() {
-            // Direct global click handler for high score button
-            document.body.addEventListener('click', function(event) {
-                // Check if the clicked element is the high score button or a child of it
-                if (event.target.id === 'view-highscores-button' || event.target.closest('#view-highscores-button')) {
-                    console.log("High score button clicked via global handler");
-                    document.getElementById('game-over-screen').style.display = 'none';
-                    if (soundEnabled) {
-                        soundManager.playSound('buttonClick');
-                    }
-                    showHighScores();
-                }
-            });
-            
-            console.log("Global high score button handler installed");
-        });
-
-        // Add a global function to handle high score viewing that can be called directly
-        window.viewHighScores = function() {
-            console.log("viewHighScores global function called");
-            // Hide game over screen
-            document.getElementById('game-over-screen').style.display = 'none';
-            
-            // Play button click sound
-            if (soundEnabled) {
-                soundManager.playSound('buttonClick');
-            }
-            
-            // Show high scores
-            showHighScores();
-        };
-
-        // Dedicated function to setup game over screen event handlers
-        function setupGameOverScreenHandlers() {
-            console.log("Setting up game over screen handlers");
-            
-            // Get button references
-            const restartButton = document.getElementById('restart-button');
-            const returnMenuButton = document.getElementById('return-menu-button');
-            
-            // Remove any existing event handlers to prevent duplicates
-            const newRestartButton = restartButton.cloneNode(true);
-            const newReturnMenuButton = returnMenuButton.cloneNode(true);
-            
-            // Replace with cloned elements to ensure clean event handlers
-            restartButton.parentNode.replaceChild(newRestartButton, restartButton);
-            returnMenuButton.parentNode.replaceChild(newReturnMenuButton, returnMenuButton);
-            
-            // Add event handlers to restart button
-            newRestartButton.addEventListener('click', function() {
-                console.log("Restart button clicked");
-                document.getElementById('game-over-screen').style.display = 'none';
-                if (soundEnabled) {
-                    soundManager.playSound('buttonClick');
-                }
-                restartGame();
-            });
-            
-            // Add event handlers to return to menu button
-            newReturnMenuButton.addEventListener('click', function() {
-                console.log("Return to menu button clicked");
-                document.getElementById('game-over-screen').style.display = 'none';
-                if (soundEnabled) {
-                    soundManager.playSound('buttonClick');
-                }
-                exitGame();
-            });
-            
-            console.log("Game over screen handlers set up successfully");
-        }
-
-        function showDifficultyExplanation() {
-            document.getElementById('difficulty-explanation-modal').style.display = 'flex';
-            
-            // Show scroll buttons if content is scrollable
-            const modalContent = document.querySelector('#difficulty-explanation-modal .modal-content');
-            const scrollUpButton = document.getElementById('scroll-up-button');
-            const scrollDownButton = document.getElementById('scroll-down-button');
-            
-            // Check if content is scrollable
-            if (modalContent.scrollHeight > modalContent.clientHeight) {
-                scrollDownButton.style.display = 'flex';
-                
-                // Add click event listeners for scrolling
-                scrollDownButton.onclick = function() {
-                    modalContent.scrollBy({ top: 100, behavior: 'smooth' });
-                    updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
-                };
-                
-                scrollUpButton.onclick = function() {
-                    modalContent.scrollBy({ top: -100, behavior: 'smooth' });
-                    updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
-                };
-                
-                // Initial button state
-                updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
-                
-                // Add scroll event listener to update button visibility
-                modalContent.addEventListener('scroll', function() {
-                    updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
-                });
-            }
-        }
-
-        function hideDifficultyExplanation() {
-            document.getElementById('difficulty-explanation-modal').style.display = 'none';
-            
-            // Hide scroll buttons
-            document.getElementById('scroll-up-button').style.display = 'none';
-            document.getElementById('scroll-down-button').style.display = 'none';
-        }
-
-        function updateScrollButtons(container, upButton, downButton) {
-            // Show up button if not at the top
-            if (container.scrollTop > 20) {
-                upButton.style.display = 'flex';
-            } else {
-                upButton.style.display = 'none';
-            }
-            
-            // Show down button if not at the bottom
-            if (container.scrollTop + container.clientHeight < container.scrollHeight - 20) {
-                downButton.style.display = 'flex';
-            } else {
-                downButton.style.display = 'none';
             }
         }
     </script>
