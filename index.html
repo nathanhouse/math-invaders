@@ -862,6 +862,22 @@
             text-align: center;
             margin: 30px 0;
         }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-2px, 0); }
+            20%, 40%, 60%, 80% { transform: translate(2px, 0); }
+        }
+        
+        @keyframes flash-red {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(255, 0, 0, 0.3); }
+        }
+        
+        @keyframes flash-rocket {
+            0%, 100% { filter: drop-shadow(0 0 5px transparent); }
+            50% { filter: drop-shadow(0 0 8px #ff0000); }
+        }
     </style>
 </head>
 <body>
@@ -1850,6 +1866,9 @@
             // Make sure all game sounds are stopped when returning to the main menu
             soundManager.stopBackgroundMusic();
             
+            // Hide the lives display when returning to main menu
+            hideLivesDisplay();
+            
             document.getElementById('main-menu').style.display = 'flex';
             document.getElementById('main-menu').style.flexDirection = 'row';
             document.getElementById('main-menu').style.justifyContent = 'center';
@@ -1950,6 +1969,12 @@
             // Show alien speed display during gameplay
             document.getElementById('alien-speed-display').style.display = 'block';
             
+            // Remove any existing lives container to ensure a fresh one is created
+            const existingLivesContainer = document.getElementById('lives-container');
+            if (existingLivesContainer) {
+                existingLivesContainer.remove();
+            }
+            
             // Hide other elements
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('high-scores-screen').style.display = 'none';
@@ -2018,7 +2043,7 @@
             // Remove lives display if it exists
             const livesContainer = document.getElementById('lives-container');
             if (livesContainer) {
-                livesContainer.remove();
+                livesContainer.remove(); // Remove completely instead of just hiding
             }
             
             document.getElementById('game-container').style.display = 'none';
@@ -2179,7 +2204,7 @@
             
             // Apply additional speed increase based on current game level
             // Different difficulty levels will now progress at different rates
-            if (gameState && gameState.level) {
+            if (gameState && gameState.level > 1) {
                 const gameLevel = gameState.level - 1; // Level 1 based
                 
                 // Scale the speed reduction differently based on difficulty level
@@ -3106,6 +3131,9 @@
                     gameLoopInterval = null;
                 }
                 
+                // Hide the lives display on game over
+                hideLivesDisplay();
+                
                 // Clear all projectiles to fix issue with lasers persisting
                 clearAllProjectiles();
                 
@@ -3185,6 +3213,9 @@
             document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
             document.getElementById('final-level').textContent = `LEVEL: ${gameState.level}`;
             gameOverScreen.style.display = 'flex';
+            
+            // Hide the lives display
+            hideLivesDisplay();
             
             // Hide high score section by default
             document.getElementById('game-over-high-score').style.display = 'none';
@@ -3959,30 +3990,39 @@
             // Clear all projectiles to fix issue with lasers persisting
             clearAllProjectiles();
             
+            // Explicitly store the alien difficulty to use for reset
+            const alienDifficulty = selectedAlienDifficulty || 1;
+            
             // Reset game state variables
             gameState = {
                 score: 0,
-                level: 1,
+                level: 1,  // Explicitly reset to level 1
                 isGameOver: false,
                 currentQuestion: null,
                 correctAnswer: null,
                 invaders: [],
                 projectiles: [],
                 playerPosition: 50,
-                alienEmoji: getAlienEmoji(selectedAlienDifficulty || 1),
+                alienEmoji: getAlienEmoji(alienDifficulty),
                 moveDirection: 1,
                 moveDownTrigger: false,
                 lastMoveTime: 0,
-                moveSpeed: getMoveSpeed(selectedAlienDifficulty || 1),
+                moveSpeed: 0, // We'll set this properly below
                 dangerWarningShown: false,
                 keysPressed: {},
                 rocketSpeed: ROCKET_SPEED,  // Start with a fixed rocket speed
                 canFire: false,  // Start with firing disabled
-                alienDifficulty: selectedAlienDifficulty || 1,
+                alienDifficulty: alienDifficulty,
                 mathDifficulty: selectedMathDifficulty || 1,
                 operator: selectedOperator || 'addition',
-                lives: 3  // Reset lives to 3
+                lives: 3,  // Reset lives to 3
+                gameStartTime: Date.now() // Reset game start time
             };
+            
+            // Force a proper reset of the alien movement speed based on level 1
+            // Important: We need to call getMoveSpeed AFTER setting gameState
+            gameState.moveSpeed = getMoveSpeed(alienDifficulty);
+            console.log(`Reset moveSpeed to ${gameState.moveSpeed}ms for alien difficulty ${alienDifficulty}, level 1`);
             
             // Explicitly reset rocket speed to ensure consistency
             resetRocketSpeed();
@@ -4269,36 +4309,47 @@
         // Function to create and display player lives on the right side
         function createLivesDisplay() {
             // Check if lives container already exists and remove it
-            let livesContainer = document.getElementById('lives-container');
+            const livesContainer = document.getElementById('lives-container');
             if (livesContainer) {
                 livesContainer.remove();
             }
             
             // Create a new lives container
-            livesContainer = document.createElement('div');
-            livesContainer.id = 'lives-container';
-            livesContainer.style.position = 'absolute';
-            livesContainer.style.right = '-30px'; // Position outside the game box
-            livesContainer.style.top = '50%'; // Center vertically
-            livesContainer.style.transform = 'translateY(-50%)'; // Ensure true vertical centering
-            livesContainer.style.display = 'flex';
-            livesContainer.style.flexDirection = 'column'; // Vertical layout
-            livesContainer.style.alignItems = 'center';
-            livesContainer.style.justifyContent = 'center';
-            livesContainer.style.gap = '10px'; // Space between rockets
-            livesContainer.style.zIndex = '100';
+            const newLivesContainer = document.createElement('div');
+            newLivesContainer.id = 'lives-container';
+            newLivesContainer.style.position = 'fixed'; // Use fixed positioning for reliability
+            newLivesContainer.style.right = '20px'; // Position at the right edge of the screen
+            newLivesContainer.style.top = '50%'; // Center vertically
+            newLivesContainer.style.transform = 'translateY(-50%)'; // Ensure true vertical centering
+            newLivesContainer.style.display = 'flex';
+            newLivesContainer.style.flexDirection = 'column'; // Vertical layout
+            newLivesContainer.style.alignItems = 'center';
+            newLivesContainer.style.justifyContent = 'center';
+            newLivesContainer.style.gap = '15px'; // Space between rockets
+            newLivesContainer.style.zIndex = '9999'; // Very high z-index to ensure visibility
+            newLivesContainer.style.padding = '10px'; // Add padding around lives
+            newLivesContainer.style.backgroundColor = 'rgba(0, 20, 50, 0.8)'; // More opaque background
+            newLivesContainer.style.borderRadius = '10px'; // Rounded corners
+            newLivesContainer.style.border = '2px solid #00ff00'; // Green border like the game box
+            newLivesContainer.style.boxShadow = '0 0 10px #00ff00'; // Glow effect like the game box
             
             // Create rocket icons for each life
             for (let i = 0; i < gameState.lives; i++) {
                 const lifeRocket = document.createElement('div');
                 lifeRocket.className = 'life-rocket';
                 lifeRocket.textContent = '🚀';
-                lifeRocket.style.fontSize = '1.2em'; // Make rockets slightly larger than last time
-                livesContainer.appendChild(lifeRocket);
+                lifeRocket.style.fontSize = '2em'; // Make rockets larger
+                lifeRocket.style.textShadow = '0 0 5px #fff'; // Add glow effect to rockets
+                newLivesContainer.appendChild(lifeRocket);
             }
             
-            // Add the lives container to the game container
-            document.getElementById('game-container').appendChild(livesContainer);
+            // Add to the document body instead of as a sibling to game container
+            document.body.appendChild(newLivesContainer);
+            
+            // Make sure the lives container is visible
+            newLivesContainer.style.display = 'flex';
+            
+            console.log("Lives display created and positioned at right: 20px");
         }
         
         // Function to update the lives display when a life is lost
@@ -4316,75 +4367,11 @@
                 const lifeRocket = document.createElement('div');
                 lifeRocket.className = 'life-rocket';
                 lifeRocket.textContent = '🚀';
-                lifeRocket.style.fontSize = '1.2em'; // Match the size in createLivesDisplay
+                lifeRocket.style.fontSize = '2em'; // Match the size in createLivesDisplay
+                lifeRocket.style.textShadow = '0 0 5px #fff'; // Add glow effect to rockets
                 livesContainer.appendChild(lifeRocket);
             }
         }
-        
-        // Function to handle player losing a life
-        function loseLife() {
-            if (gameState.isGameOver) return;
-            
-            gameState.lives--;
-            console.log(`Player lost a life. Remaining lives: ${gameState.lives}`);
-            
-            // Update the lives display
-            updateLivesDisplay();
-            
-            // Play life lost sound
-            soundManager.playSound('incorrect', { volume: 0.5 });
-            
-            // Shake the game container for feedback
-            const gameContainer = document.getElementById('game-container');
-            gameContainer.style.animation = 'shake 0.5s';
-            
-            // Remove animation after it completes
-            setTimeout(() => {
-                gameContainer.style.animation = '';
-            }, 500);
-            
-            // Check if player has run out of lives
-            if (gameState.lives <= 0) {
-                // Game over when all lives are lost
-                gameOver();
-            }
-        }
-
-        // Function to reset invader positions when a life is lost
-        function resetInvaderPositions() {
-            // Clear all projectiles
-            clearAllProjectiles();
-            
-            // Clear existing invaders
-            gameState.invaders.forEach(invader => {
-                if (invader.element) {
-                    invader.element.remove();
-                }
-            });
-            
-            // Reset invaders array
-            gameState.invaders = [];
-            
-            // Create new invaders
-            createInvaders(gameState.alienDifficulty);
-            
-            // Generate a new math question
-            generateMathQuestion(gameState.operator, gameState.mathDifficulty);
-            
-            // Reset the danger warning flag
-            gameState.dangerWarningShown = false;
-        }
-
-        // Add a CSS animation for the shake effect
-        const styleElement = document.createElement('style');
-        styleElement.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translate(0, 0); }
-                10%, 30%, 50%, 70%, 90% { transform: translate(-5px, 0); }
-                20%, 40%, 60%, 80% { transform: translate(5px, 0); }
-            }
-        `;
-        document.head.appendChild(styleElement);
 
         // Function to handle when player is hit by an alien laser
         function handleAlienLaserHit() {
@@ -4749,6 +4736,101 @@
                 }
             } catch (err) {
                 console.error("Error in updateInvaders:", err);
+            }
+        }
+
+        // Function to handle player losing a life
+        function loseLife() {
+            if (gameState.isGameOver) return;
+            
+            gameState.lives--;
+            console.log(`Player lost a life. Remaining lives: ${gameState.lives}`);
+            
+            // Update the lives display
+            updateLivesDisplay();
+            
+            // Play life lost sound
+            soundManager.playSound('incorrect', { volume: 0.5 });
+            
+            // Get game elements for visual effects
+            const gameContainer = document.getElementById('game-container');
+            const gameArea = document.getElementById('game-area');
+            const playerShip = document.getElementById('player');
+            
+            // Apply red flash to the game area
+            if (gameArea) {
+                gameArea.style.animation = 'flash-red 0.5s';
+                
+                // Remove animation after it completes
+                setTimeout(() => {
+                    gameArea.style.animation = '';
+                }, 500);
+            }
+            
+            // Apply red flash to the player rocket
+            if (playerShip) {
+                playerShip.style.animation = 'flash-rocket 0.5s';
+                playerShip.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+                
+                // Remove animation after it completes
+                setTimeout(() => {
+                    playerShip.style.animation = '';
+                    playerShip.style.backgroundColor = 'transparent';
+                }, 500);
+            }
+            
+            // Check if player has run out of lives
+            if (gameState.lives <= 0) {
+                // Game over when all lives are lost
+                gameOver();
+            }
+        }
+
+        // Function to reset invader positions when a life is lost
+        function resetInvaderPositions() {
+            // Clear all projectiles
+            clearAllProjectiles();
+            
+            // Clear existing invaders
+            gameState.invaders.forEach(invader => {
+                if (invader.element) {
+                    invader.element.remove();
+                }
+            });
+            
+            // Reset invaders array
+            gameState.invaders = [];
+            
+            // Create new invaders
+            createInvaders(gameState.alienDifficulty);
+            
+            // Generate a new math question
+            generateMathQuestion(gameState.operator, gameState.mathDifficulty);
+            
+            // Reset the danger warning flag
+            gameState.dangerWarningShown = false;
+        }
+
+        // Add CSS animations for visual effects
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            @keyframes flash-red {
+                0%, 100% { background-color: transparent; }
+                50% { background-color: rgba(255, 0, 0, 0.3); }
+            }
+            
+            @keyframes flash-rocket {
+                0%, 100% { filter: drop-shadow(0 0 5px transparent); }
+                50% { filter: drop-shadow(0 0 8px #ff0000); }
+            }
+        `;
+        document.head.appendChild(styleElement);
+
+        // Function to hide the lives display
+        function hideLivesDisplay() {
+            const livesContainer = document.getElementById('lives-container');
+            if (livesContainer) {
+                livesContainer.style.display = 'none';
             }
         }
     </script>
