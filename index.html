@@ -871,7 +871,7 @@
         <div id="loading-text">LOADING...</div>
     </div>
     <div class="title">MATH INVADERS</div>
-    <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 2.0</div>
+    <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 0.1 BETA</div>
     <button id="sound-toggle" class="control-toggle">SOUND: ON</button>
     <button id="score-popup-toggle" class="control-toggle">SCORE POPUPS: ON</button>
     <div id="alien-speed-display" style="display: none;">Alien Speed: 500ms</div>
@@ -888,9 +888,10 @@
         <span class="invader-char">🛸</span> 10 ÷ 2 = 5 <span class="invader-char">👾</span>
     </div>
     <div class="invader">👾</div>
-    <div id="main-menu" style="margin-bottom: 30px;">
+    <div id="main-menu" style="margin-bottom: 30px; display: flex; flex-direction: row; justify-content: center; gap: 15px;">
+        <button class="start-button" onclick="showHighScores()">HIGH SCORES</button>
         <button class="start-button" onclick="showPlayerSelection()">START GAME</button>
-        <button class="start-button" onclick="showHighScores()" style="margin-top: 15px;">HIGH SCORES</button>
+        <button class="start-button" onclick="showControlsModal()">CONTROLS</button>
     </div>
     <div id="player-selection" style="display: none; text-align: center; margin-bottom: 30px;">
         <h2 style="font-size: 2em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT PLAYERS</h2>
@@ -1024,6 +1025,76 @@
     <!-- Adding scroll buttons to the modal -->
     <div id="scroll-down-button" class="modal-scroll-button" style="display: none;">⬇</div>
     <div id="scroll-up-button" class="modal-scroll-button" style="display: none;">⬆</div>
+    
+    <!-- Controls modal -->
+    <div id="controls-modal" class="modal" onclick="closeModalOnBackgroundClick(event)">
+        <div class="modal-content">
+            <span class="modal-close" onclick="hideControlsModal()">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 20px; font-family: 'Courier New', monospace;">GAME CONTROLS & INSTRUCTIONS</h2>
+            
+            <div class="difficulty-explanation">
+                <h3>PLAYER ONE CONTROLS</h3>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">LEFT ARROW</span>: Move left</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">RIGHT ARROW</span>: Move right</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">SPACE</span>: Shoot</li>
+                </ul>
+            </div>
+            
+            <div class="difficulty-explanation">
+                <h3>PLAYER TWO CONTROLS</h3>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">A</span>: Move left</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">D</span>: Move right</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">W</span>: Shoot</li>
+                </ul>
+            </div>
+            
+            <div class="difficulty-explanation">
+                <h3>GAME CONTROLS</h3>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">P</span>: Pause game</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">Q</span>: Exit game</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #00ffff;">R</span>: Restart game</li>
+                </ul>
+            </div>
+            
+            <div class="difficulty-explanation">
+                <h3>HOW TO PLAY</h3>
+                <p style="margin-bottom: 10px;">Math Invaders is a math learning game inspired by Space Invaders.</p>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• Solve math problems by shooting at the correct answer.</li>
+                    <li style="margin-bottom: 5px;">• Each alien shows a possible answer - only one is correct!</li>
+                    <li style="margin-bottom: 5px;">• Destroy aliens with correct answers to score points.</li>
+                    <li style="margin-bottom: 5px;">• Shooting incorrect answers will slow your ship temporarily.</li>
+                    <li style="margin-bottom: 5px;">• Prevent aliens from reaching the bottom of the screen.</li>
+                    <li style="margin-bottom: 5px;">• Complete all waves to advance to the next level.</li>
+                    <li style="margin-bottom: 5px;">• The game ends when aliens reach your defense line or you run out of lives.</li>
+                </ul>
+            </div>
+            
+            <div class="difficulty-explanation">
+                <h3>SCORING</h3>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• Correct answer: +100 points (base) multiplied by math and alien difficulty</li>
+                    <li style="margin-bottom: 5px;">• Regular invader (no number): +20 points multiplied by alien difficulty</li>
+                    <li style="margin-bottom: 5px;">• Wave completion: +500 points multiplied by math and alien difficulty</li>
+                    <li style="margin-bottom: 5px;">• Math difficulty multiplier: Level 1 = 1x, Level 2 = 2x, Level 3 = 3x, Level 4 = 4x</li>
+                    <li>• Alien difficulty multiplier: Level 1 = 1x, Level 2 = 1.2x, Level 3 = 1.4x, Level 4 = 1.6x</li>
+                </ul>
+            </div>
+            
+            <div class="difficulty-explanation">
+                <h3>GAME LIVES</h3>
+                <ul style="list-style-type: none; padding-left: 20px;">
+                    <li style="margin-bottom: 5px;">• You start with 3 lives</li>
+                    <li style="margin-bottom: 5px;">• <span style="color: #ff5555;">Shooting an incorrect answer will cost you 1 life</span></li>
+                    <li style="margin-bottom: 5px;">• Letting aliens reach the bottom will cost you 1 life</li>
+                    <li>• Game ends when you run out of lives</li>
+                </ul>
+            </div>
+        </div>
+    </div>
     
     <div id="game-over-screen">
         <div id="game-over-title">GAME OVER</div>
@@ -1779,6 +1850,9 @@
             soundManager.stopBackgroundMusic();
             
             document.getElementById('main-menu').style.display = 'flex';
+            document.getElementById('main-menu').style.flexDirection = 'row';
+            document.getElementById('main-menu').style.justifyContent = 'center';
+            document.getElementById('main-menu').style.gap = '15px';
             document.getElementById('player-selection').style.display = 'none';
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'none';
@@ -4395,6 +4469,60 @@
             } else {
                 downButton.style.display = 'none';
             }
+        }
+
+        function closeModalOnBackgroundClick(event) {
+            if (event.target.classList.contains('modal')) {
+                if (event.target.id === 'difficulty-explanation-modal') {
+                    hideDifficultyExplanation();
+                } else if (event.target.id === 'controls-modal') {
+                    hideControlsModal();
+                }
+            }
+        }
+
+        function showControlsModal() {
+            document.getElementById('controls-modal').style.display = 'flex';
+            if (soundEnabled) {
+                soundManager.playSound('menuSelect');
+            }
+            
+            // Show scroll buttons if content is scrollable
+            const modalContent = document.querySelector('#controls-modal .modal-content');
+            const scrollUpButton = document.getElementById('scroll-up-button');
+            const scrollDownButton = document.getElementById('scroll-down-button');
+            
+            // Check if content is scrollable
+            if (modalContent.scrollHeight > modalContent.clientHeight) {
+                scrollDownButton.style.display = 'flex';
+                
+                // Add click event listeners for scrolling
+                scrollDownButton.onclick = function() {
+                    modalContent.scrollBy({ top: 100, behavior: 'smooth' });
+                    updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
+                };
+                
+                scrollUpButton.onclick = function() {
+                    modalContent.scrollBy({ top: -100, behavior: 'smooth' });
+                    updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
+                };
+                
+                // Initial button state
+                updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
+                
+                // Add scroll event listener to update button visibility
+                modalContent.addEventListener('scroll', function() {
+                    updateScrollButtons(modalContent, scrollUpButton, scrollDownButton);
+                });
+            }
+        }
+
+        function hideControlsModal() {
+            document.getElementById('controls-modal').style.display = 'none';
+            
+            // Hide scroll buttons
+            document.getElementById('scroll-up-button').style.display = 'none';
+            document.getElementById('scroll-down-button').style.display = 'none';
         }
     </script>
 </body>
