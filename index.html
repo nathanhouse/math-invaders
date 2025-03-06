@@ -1780,25 +1780,23 @@
             return gameLoopInterval;
         }
         
+        // Game state and settings
         let gameState = {
-            score: 0,
-            level: 1,
-            isGameOver: false,
-            currentQuestion: null,
-            correctAnswer: null,
             invaders: [],
             projectiles: [],
-            playerPosition: 50,
-            alienEmoji: '👾',
-            moveDirection: 1,
-            moveDownTrigger: false,
-            lastMoveTime: 0,
-            moveSpeed: 500,
-            dangerWarningShown: false,
-            keysPressed: {},
-            rocketSpeed: ROCKET_SPEED,  // Always use the global constant for consistent speed
-            lives: 3  // Add lives property, starting with 3 lives
+            level: 1,
+            score: 0,
+            canFire: true,
+            isGameOver: false,
+            alienSpeedMultiplier: 1,
+            invaderDropDistance: 0, // Initial drop distance (will be updated based on level)
+            dangerWarningShown: false
         };
+        
+        // Define a utility function to format numbers with commas
+        function formatNumberWithCommas(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
 
         // Scoring System Constants
         const SCORE_BASE = {
@@ -2098,7 +2096,7 @@
                 setTimeout(() => {
                     gameState.canFire = true;
                     console.log("Player can now fire");
-                }, 1500);
+                }, 400);
                 
                 // Make game container visible BEFORE creating game elements
                 document.getElementById('game-container').style.display = 'block';
@@ -2868,7 +2866,7 @@
             }
         }
         function updateScore() {
-            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('score').textContent = formatNumberWithCommas(gameState.score);
             document.getElementById('level').textContent = gameState.level;
         }
         function gameLoop() {
@@ -3007,7 +3005,7 @@
             console.log(`Next level number updated to: ${gameState.level}`);
             
             // Update bonus points display
-            document.getElementById('bonus-points-value').textContent = waveBonus;
+            document.getElementById('bonus-points-value').textContent = formatNumberWithCommas(waveBonus);
             console.log(`Bonus points displayed: ${waveBonus}`);
             
             // Show level complete screen
@@ -3126,7 +3124,7 @@
                 // Resume game loop using the safe function
                 safeSetGameLoop();
                 gameState.canFire = true;
-            }, 500);
+            }, 400);
         }
         function checkGameOver() {}
         function gameOver() {
@@ -3239,7 +3237,7 @@
         // Updated showGameOverScreen function to ensure button functionality
         function showGameOverScreen() {
             const gameOverScreen = document.getElementById('game-over-screen');
-            document.getElementById('final-score').textContent = `SCORE: ${gameState.score}`;
+            document.getElementById('final-score').textContent = `SCORE: ${formatNumberWithCommas(gameState.score)}`;
             document.getElementById('final-level').textContent = `LEVEL: ${gameState.level}`;
             gameOverScreen.style.display = 'flex';
             
@@ -3583,7 +3581,7 @@
                 nameCell.textContent = score.name;
                 
                 const scoreCell = document.createElement('td');
-                scoreCell.textContent = score.score;
+                scoreCell.textContent = formatNumberWithCommas(score.score);
                 
                 const levelCell = document.createElement('td');
                 levelCell.textContent = score.level;
@@ -3801,7 +3799,7 @@
             const highScoreCelebration = document.createElement('div');
             highScoreCelebration.innerHTML = `
                 <div style="font-size: 3em; color: #ffff00; text-shadow: 0 0 10px #ffff00; margin-bottom: 20px;">NEW HIGH SCORE!</div>
-                <div style="font-size: 2em; color: #00ff00; margin-bottom: 40px;">Score: ${gameState.score}</div>
+                <div style="font-size: 2em; color: #00ff00; margin-bottom: 40px;">Score: ${formatNumberWithCommas(gameState.score)}</div>
                 <div style="font-size: 1.5em; color: #00ffff; margin-bottom: 20px;">Level: ${gameState.level}</div>
                 <div id="name-input-area" style="opacity: 1; margin-top: 20px; border: 2px solid #ffff00; padding: 15px; border-radius: 10px; background-color: rgba(0, 0, 40, 0.5);">
                     <div style="font-size: 1.5em; color: #ffffff; margin-bottom: 15px; text-shadow: 0 0 5px #ffffff;">ENTER YOUR NAME</div>
@@ -4100,7 +4098,7 @@
             setTimeout(() => {
                 gameState.canFire = true;
                 console.log("Player can now fire");
-            }, 500);
+            }, 400);
             
             // Update alien speed display
             const alienSpeedDisplay = document.getElementById('alien-speed-display');
@@ -4814,8 +4812,11 @@
             
             // Check if player has run out of lives
             if (gameState.lives <= 0) {
-                // Game over when all lives are lost
-                gameOver();
+                // Add a delay before triggering game over to allow player to see the death animation
+                setTimeout(() => {
+                    // Game over when all lives are lost
+                    gameOver();
+                }, 1200); // 1.2 second delay, longer than the flash animation (0.5s)
             }
         }
 
