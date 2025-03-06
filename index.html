@@ -1620,8 +1620,42 @@
         let selectedOperator = '';
         let selectedAlienDifficulty = 0;
         let selectedMathDifficulty = 0;
+        
+        // Game constants that should never change
+        const ROCKET_SPEED = 10; // Fixed rocket speed that never changes
+        
         let gameLoopInterval = null;
         let gamePaused = false;
+
+        // Clean up any possible existing game loops on page load
+        window.addEventListener('load', function() {
+            // Clear any existing game loops that might be running
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
+                console.log("Cleared existing game loop on page load");
+            }
+            
+            // Reset game state
+            resetRocketSpeed();
+            console.log("Game initialized with clean state");
+        });
+        
+        // Function to safely set the game loop and ensure only one is running
+        function safeSetGameLoop() {
+            // Always clear any existing game loop first
+            if (gameLoopInterval) {
+                console.log("Clearing existing game loop:", gameLoopInterval);
+                clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
+            }
+            
+            // Set a new game loop
+            console.log("Creating new game loop");
+            gameLoopInterval = setInterval(gameLoop, 16);
+            return gameLoopInterval;
+        }
+        
         let gameState = {
             score: 0,
             level: 1,
@@ -1638,7 +1672,7 @@
             moveSpeed: 500,
             dangerWarningShown: false,
             keysPressed: {},
-            rocketSpeed: 10  // Add rocket speed to gameState
+            rocketSpeed: ROCKET_SPEED  // Always use the global constant for consistent speed
         };
 
         // Scoring System Constants
@@ -1865,7 +1899,7 @@
                     alienDifficulty: alienLevel,    // Store the alien difficulty level
                     mathDifficulty: mathLevel,      // Store the math difficulty level
                     operator: operator,             // Store the operator for reference
-                    rocketSpeed: initialRocketSpeed // Use the constant initial rocket speed
+                    rocketSpeed: ROCKET_SPEED       // Always use the global constant for consistent speed
                 };
                 
                 // Enable firing after a short delay
@@ -1899,10 +1933,8 @@
                 }
                 
                 console.log("Starting game loop...");
-                if (gameLoopInterval) {
-                    clearInterval(gameLoopInterval);
-                }
-                gameLoopInterval = setInterval(gameLoop, 16);
+                // Use the safe function to set the game loop
+                safeSetGameLoop();
                 console.log("Game loop started");
                 try {
                     if (soundEnabled) {
@@ -2577,35 +2609,35 @@
         function gameLoop() {
             try {
                 if (gameState.isGameOver || gamePaused) return;
-                if (gameState.keysPressed) {
-                    // Player 1 controls - use fixed movement speed that doesn't change with level
-                    const playerMoveSpeed = 1.5; // Constant player speed
-                    
-                    if (gameState.keysPressed['ArrowLeft']) {
-                        movePlayer(-playerMoveSpeed);
-                    }
-                    if (gameState.keysPressed['ArrowRight']) {
-                        movePlayer(1.5);
-                    }
-                    if (gameState.keysPressed[' '] || gameState.keysPressed['o'] || gameState.keysPressed['O']) {
-                        fireProjectile();
-                    }
-                    
-                    // Player 2 controls (for future multiplayer support)
-                    // These are reserved for Player 2 and don't affect Player 1 currently
-                    // Will be implemented in future multiplayer version
-                    /* 
-                    if (gameState.keysPressed['a']) {
-                        movePlayer2(-1.5);
-                    }
-                    if (gameState.keysPressed['s']) {
-                        movePlayer2(1.5);
-                    }
-                    if (gameState.keysPressed['f']) {
-                        fireProjectile2();
-                    }
-                    */
+                
+                // Reset rocket speed on every frame to ensure it's always constant
+                resetRocketSpeed();
+                
+                if (gameState.keysPressed['ArrowLeft']) {
+                    movePlayer(-1.5);
                 }
+                if (gameState.keysPressed['ArrowRight']) {
+                    movePlayer(1.5);
+                }
+                if (gameState.keysPressed[' '] || gameState.keysPressed['o'] || gameState.keysPressed['O']) {
+                    fireProjectile();
+                }
+                
+                // Player 2 controls (for future multiplayer support)
+                // These are reserved for Player 2 and don't affect Player 1 currently
+                // Will be implemented in future multiplayer version
+                /* 
+                if (gameState.keysPressed['a']) {
+                    movePlayer2(-1.5);
+                }
+                if (gameState.keysPressed['s']) {
+                    movePlayer2(1.5);
+                }
+                if (gameState.keysPressed['f']) {
+                    fireProjectile2();
+                }
+                */
+                
                 updateProjectiles();
                 updateInvaders();
                 checkGameOver();
@@ -2625,8 +2657,9 @@
                     if (!element) return;
                     const currentTop = element.offsetTop;
                     
-                    // Use the rocket speed from gameState
-                    element.style.top = `${currentTop - gameState.rocketSpeed}px`;
+                    // ALWAYS use exactly 10 for rocket speed, ignoring any gameState value
+                    // This ensures constant rocket speed regardless of any game state changes
+                    element.style.top = `${currentTop - 10}px`;
                     
                     // Animate the trail for more dynamic effect
                     const trail = element.querySelector('div');
@@ -3008,12 +3041,17 @@
             // Make sure all projectiles are cleared before starting new level
             clearAllProjectiles();
             
-            // Reset rocket speed to ensure it stays constant
-            resetRocketSpeed();
-            
             // Temporarily disable firing for half a second
             gameState.canFire = false;
             console.log("Firing disabled at level transition, canFire =", gameState.canFire);
+            
+            // Reset rocket speed to ensure it stays constant regardless of level
+            resetRocketSpeed();
+            
+            // Clear any existing game loop interval
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+            }
             
             // Calculate base speed using our improved difficulty-specific approach
             const baseSpeed = getMoveSpeed(selectedAlienDifficulty);
@@ -3044,12 +3082,9 @@
             
             // Wait for firing delay before resuming game
             setTimeout(() => {
-                // Resume game loop
-                gameLoopInterval = setInterval(gameLoop, 16);
-                
-                // Re-enable firing after half a second
+                // Resume game loop using the safe function
+                safeSetGameLoop();
                 gameState.canFire = true;
-                console.log("Player can now fire after level transition");
             }, 500);
         }
         function checkGameOver() {}
@@ -3300,6 +3335,7 @@
                 if (gameLoopInterval) {
                     clearInterval(gameLoopInterval);
                     gameLoopInterval = null;
+                    console.log("Game loop stopped for debug level completion");
                 }
                 
                 // Play level complete sound
@@ -3863,8 +3899,8 @@
                     sounds.background.pause();
                 }
             } else {
-                // Resume the game
-                gameLoopInterval = setInterval(gameLoop, 16);
+                // Resume the game using the safe function
+                safeSetGameLoop();
                 
                 // Hide pause overlay
                 if (pauseOverlay) {
@@ -3911,18 +3947,18 @@
                 moveSpeed: getMoveSpeed(selectedAlienDifficulty || 1),
                 dangerWarningShown: false,
                 keysPressed: {},
-                rocketSpeed: initialRocketSpeed,  // Use the constant initial rocket speed
+                rocketSpeed: ROCKET_SPEED,  // Start with a fixed rocket speed
                 canFire: false,  // Start with firing disabled
                 alienDifficulty: selectedAlienDifficulty || 1,
                 mathDifficulty: selectedMathDifficulty || 1,
                 operator: selectedOperator || 'addition'
             };
             
-            // Reinitialize game loop
-            if (gameLoopInterval) {
-                clearInterval(gameLoopInterval);
-            }
-            gameLoopInterval = setInterval(gameLoop, 16);
+            // Explicitly reset rocket speed to ensure consistency
+            resetRocketSpeed();
+            
+            // Reinitialize game loop using the safe function
+            safeSetGameLoop();
             
             // Reset UI elements
             document.getElementById('game-over-screen').style.display = 'none';
@@ -3976,11 +4012,9 @@
 
         // Investigate rocket speed issue
         // Ensure rocket speed is reset properly
-        const initialRocketSpeed = 10; // Default initial rocket speed
-
         function resetRocketSpeed() {
             if (gameState) {
-                gameState.rocketSpeed = initialRocketSpeed;
+                gameState.rocketSpeed = ROCKET_SPEED; // Use the global constant
             }
         }
 
