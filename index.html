@@ -1865,7 +1865,7 @@
                     alienDifficulty: alienLevel,    // Store the alien difficulty level
                     mathDifficulty: mathLevel,      // Store the math difficulty level
                     operator: operator,             // Store the operator for reference
-                    rocketSpeed: 10                 // Add rocket speed to gameState
+                    rocketSpeed: initialRocketSpeed // Use the constant initial rocket speed
                 };
                 
                 // Enable firing after a short delay
@@ -3008,6 +3008,9 @@
             // Make sure all projectiles are cleared before starting new level
             clearAllProjectiles();
             
+            // Reset rocket speed to ensure it stays constant
+            resetRocketSpeed();
+            
             // Temporarily disable firing for half a second
             gameState.canFire = false;
             console.log("Firing disabled at level transition, canFire =", gameState.canFire);
@@ -3908,7 +3911,7 @@
                 moveSpeed: getMoveSpeed(selectedAlienDifficulty || 1),
                 dangerWarningShown: false,
                 keysPressed: {},
-                rocketSpeed: 10,  // Start with a fixed rocket speed
+                rocketSpeed: initialRocketSpeed,  // Use the constant initial rocket speed
                 canFire: false,  // Start with firing disabled
                 alienDifficulty: selectedAlienDifficulty || 1,
                 mathDifficulty: selectedMathDifficulty || 1,
