@@ -4561,7 +4561,11 @@
                                 
                                 // Check if player has run out of lives
                                 if (gameState.lives <= 0) {
-                                    handleGameOver();
+                                    // Add a delay before triggering game over to allow player to see the death animation
+                                    setTimeout(() => {
+                                        // Game over when all lives are lost
+                                        gameOver();
+                                    }, 1200); // 1.2 second delay, longer than the flash animation (0.5s)
                                 }
                                 
                                 return;
