@@ -606,13 +606,51 @@
             z-index: 20;
             background-color: rgba(0, 0, 0, 0.7);
             color: #00ff00;
-            padding: 5px;
+            padding: 4px;
             border-radius: 5px;
             font-family: 'Courier New', monospace;
             border: 1px solid #00ff00;
-            font-size: 0.9em;
+            font-size: 0.85em;
             display: none; /* Hidden by default, shown during gameplay */
             text-shadow: 0 0 5px #00ff00;
+            white-space: nowrap;
+            max-width: 150px; /* Limit width to make it more compact */
+        }
+        
+        #math-difficulty-display {
+            position: absolute;
+            top: 110px; /* Positioned below alien-speed-display */
+            left: 10px;
+            z-index: 20;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            padding: 4px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #00ff00;
+            font-size: 0.85em;
+            display: none; /* Hidden by default, shown during gameplay */
+            text-shadow: 0 0 5px #00ff00;
+            white-space: nowrap;
+            max-width: 150px; /* Limit width to make it more compact */
+        }
+        
+        #operator-display-game {
+            position: absolute;
+            top: 140px; /* Positioned below math-difficulty-display */
+            left: 10px;
+            z-index: 20;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            padding: 4px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #00ff00;
+            font-size: 0.85em;
+            display: none; /* Hidden by default, shown during gameplay */
+            text-shadow: 0 0 5px #00ff00;
+            white-space: nowrap;
+            max-width: 150px; /* Limit width to make it more compact */
         }
         
         .key-hint {
@@ -911,7 +949,9 @@
     <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 0.1 BETA</div>
     <button id="sound-toggle" class="control-toggle">SOUND: ON</button>
     <button id="score-popup-toggle" class="control-toggle">SCORE POPUPS: ON</button>
-    <div id="alien-speed-display" style="display: none;">Alien Speed: 500ms</div>
+    <div id="alien-speed-display" style="display: none;">Speed: 2.0/sec</div>
+    <div id="math-difficulty-display" style="display: none;">Maths: Easy</div>
+    <div id="operator-display-game" style="display: none;">Operator: +</div>
     <div class="equation">
         <span class="invader-char">👾</span> 2 + 2 = 4 <span class="invader-char">👾</span>
     </div>
@@ -2008,6 +2048,10 @@
             // Show alien speed display during gameplay
             document.getElementById('alien-speed-display').style.display = 'block';
             
+            // Show math difficulty and operator displays during gameplay
+            document.getElementById('math-difficulty-display').style.display = 'block';
+            document.getElementById('operator-display-game').style.display = 'block';
+            
             // Remove any existing lives container to ensure a fresh one is created
             const existingLivesContainer = document.getElementById('lives-container');
             if (existingLivesContainer) {
@@ -2089,6 +2133,12 @@
             document.getElementById('exit-game-container').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('level-complete-screen').style.display = 'none';
+            
+            // Hide all game displays
+            document.getElementById('alien-speed-display').style.display = 'none';
+            document.getElementById('math-difficulty-display').style.display = 'none';
+            document.getElementById('operator-display-game').style.display = 'none';
+            
             showMainMenu();
             soundManager.playSound('menuBack');
         }
@@ -2208,11 +2258,35 @@
                 // Update alien speed display
                 const alienSpeedDisplay = document.getElementById('alien-speed-display');
                 if (alienSpeedDisplay) {
-                    alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
+                    alienSpeedDisplay.textContent = `Speed: ${msToMovesPerSecond(gameState.moveSpeed)}/sec`;
                     // Make it flash to draw attention to the speed change
                     alienSpeedDisplay.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
                     setTimeout(() => {
                         alienSpeedDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                    }, 1000);
+                }
+                
+                // Update math difficulty display
+                const mathDifficultyDisplay = document.getElementById('math-difficulty-display');
+                if (mathDifficultyDisplay) {
+                    const difficultyText = ['EASY', 'MEDIUM', 'HARD', 'EXPERT'][mathLevel - 1] || 'UNKNOWN';
+                    mathDifficultyDisplay.textContent = `Maths: ${difficultyText}`;
+                    // Make it flash to draw attention
+                    mathDifficultyDisplay.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                    setTimeout(() => {
+                        mathDifficultyDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                    }, 1000);
+                }
+                
+                // Update operator display
+                const operatorDisplay = document.getElementById('operator-display-game');
+                if (operatorDisplay) {
+                    const operatorSymbol = getOperatorSymbol(operator);
+                    operatorDisplay.textContent = `Operator: ${operatorSymbol}`;
+                    // Make it flash to draw attention
+                    operatorDisplay.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
+                    setTimeout(() => {
+                        operatorDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
                     }, 1000);
                 }
                 
@@ -3141,12 +3215,28 @@
             // Update alien speed display
             const alienSpeedDisplay = document.getElementById('alien-speed-display');
             if (alienSpeedDisplay) {
-                alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
+                alienSpeedDisplay.textContent = `Speed: ${msToMovesPerSecond(gameState.moveSpeed)}/sec`;
                 // Make it flash to draw attention to the speed change
                 alienSpeedDisplay.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
                 setTimeout(() => {
                     alienSpeedDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
                 }, 1000);
+            }
+            
+            // Ensure math difficulty and operator displays are visible
+            const mathDifficultyDisplay = document.getElementById('math-difficulty-display');
+            const operatorDisplay = document.getElementById('operator-display-game');
+            
+            if (mathDifficultyDisplay) {
+                mathDifficultyDisplay.style.display = 'block';
+                const difficultyText = ['EASY', 'MEDIUM', 'HARD', 'EXPERT'][selectedMathDifficulty - 1] || 'UNKNOWN';
+                mathDifficultyDisplay.textContent = `Maths: ${difficultyText}`;
+            }
+            
+            if (operatorDisplay) {
+                operatorDisplay.style.display = 'block';
+                const operatorSymbol = getOperatorSymbol(selectedOperator);
+                operatorDisplay.textContent = `Operator: ${operatorSymbol}`;
             }
             
             // Refresh the lives display
@@ -4179,6 +4269,21 @@
             // Show exit-game-container and other UI elements
             document.getElementById('exit-game-container').style.display = 'block';
             document.getElementById('alien-speed-display').style.display = 'block';
+            document.getElementById('math-difficulty-display').style.display = 'block';
+            document.getElementById('operator-display-game').style.display = 'block';
+            
+            // Update display content for difficulty and operator
+            const mathDifficultyDisplay = document.getElementById('math-difficulty-display');
+            if (mathDifficultyDisplay) {
+                const difficultyText = ['EASY', 'MEDIUM', 'HARD', 'EXPERT'][gameState.mathDifficulty - 1] || 'UNKNOWN';
+                mathDifficultyDisplay.textContent = `Maths: ${difficultyText}`;
+            }
+            
+            const operatorDisplay = document.getElementById('operator-display-game');
+            if (operatorDisplay) {
+                const operatorSymbol = getOperatorSymbol(gameState.operator);
+                operatorDisplay.textContent = `Operator: ${operatorSymbol}`;
+            }
             
             // Make sure any confirmation messages are removed
             const confirmMessages = document.querySelectorAll('div[style*="z-index: 2000"]');
@@ -4214,7 +4319,7 @@
             // Update alien speed display
             const alienSpeedDisplay = document.getElementById('alien-speed-display');
             if (alienSpeedDisplay) {
-                alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
+                alienSpeedDisplay.textContent = `Speed: ${msToMovesPerSecond(gameState.moveSpeed)}/sec`;
                 // Make it flash to draw attention to the speed change
                 alienSpeedDisplay.style.backgroundColor = 'rgba(0, 255, 0, 0.3)';
                 setTimeout(() => {
@@ -4234,6 +4339,12 @@
             if (gameState) {
                 gameState.rocketSpeed = ROCKET_SPEED; // Use the global constant
             }
+        }
+        
+        // Helper function to convert millisecond delay to movements per second
+        function msToMovesPerSecond(delayMs) {
+            const movesPerSecond = 1000 / delayMs;
+            return movesPerSecond.toFixed(1); // Format to 1 decimal place
         }
 
         // Call resetRocketSpeed when necessary, e.g., at game start or level reset
@@ -4791,8 +4902,8 @@
                 // Update the alien speed display with a more prominent format
                 const alienSpeedDisplay = document.getElementById('alien-speed-display');
                 if (alienSpeedDisplay) {
-                    // Update speed display with level info
-                    alienSpeedDisplay.textContent = `Invader Speed: ${gameState.moveSpeed}ms (Level ${gameState.level})`;
+                    // Update speed display with moves per second
+                    alienSpeedDisplay.textContent = `Speed: ${msToMovesPerSecond(gameState.moveSpeed)}/sec`;
                     // Ensure it's visible
                     alienSpeedDisplay.style.display = 'block';
                 }
