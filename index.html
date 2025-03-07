@@ -2140,7 +2140,8 @@
                 moveSpeed: 500,
                 dangerWarningShown: false,
                 keysPressed: {},
-                lives: 3  // Reset lives to 3
+                lives: 3,  // Reset lives to 3
+                maxLives: 10  // Set maximum lives to 10
             };
             updateScore();
             
@@ -2199,6 +2200,7 @@
                     rocketSpeed: ROCKET_SPEED,      // Always use the global constant for consistent speed
                     gameStartTime: Date.now(),      // Add a timestamp for when the game started
                     lives: 3,                       // Player starts with 3 lives
+                    maxLives: 10,                   // Maximum number of lives a player can have
                     bossAlien: null,                // Boss alien object
                     bossAlienProjectiles: [],       // Boss alien projectiles
                     lastBossAlienSpawnTime: 0,      // Track when the last boss alien spawned
@@ -3218,12 +3220,36 @@
             gameState.canFire = false;
             console.log("Firing disabled at level transition, canFire =", gameState.canFire);
             
+            // Add an extra life when leveling up (maximum of 10)
+            if (gameState.lives < gameState.maxLives) {
+                gameState.lives++;
+                console.log(`Player earned an extra life! Lives: ${gameState.lives}/${gameState.maxLives}`);
+                
+                // Show visual notification for extra life
+                const gameContainer = document.getElementById('game-container');
+                const containerRect = gameContainer.getBoundingClientRect();
+                const center = {
+                    left: containerRect.left + containerRect.width / 2,
+                    top: containerRect.top + containerRect.height / 2,
+                    right: containerRect.left + containerRect.width / 2,
+                    bottom: containerRect.top + containerRect.height / 2
+                };
+                showFeedbackEmoji("EXTRA LIFE! 🚀", '#00ff00', center, true, 2000, '2em');
+                
+                // Play a special sound for extra life
+                soundManager.playSound('levelComplete', { volume: 0.8 });
+            }
+            
+            // Update the lives display to show the new life
+            updateLivesDisplay();
+            
             // Reset rocket speed to ensure it stays constant regardless of level
             resetRocketSpeed();
             
             // Clear any existing game loop interval
             if (gameLoopInterval) {
                 clearInterval(gameLoopInterval);
+                gameLoopInterval = null;
             }
             
             // Calculate base speed using our improved difficulty-specific approach
@@ -4596,13 +4622,28 @@
             newLivesContainer.id = 'lives-container';
             newLivesContainer.style.position = 'fixed'; // Use fixed positioning for reliability
             newLivesContainer.style.right = '20px'; // Position at the right edge of the screen
-            newLivesContainer.style.top = '50%'; // Center vertically
+            
+            // Adjust vertical position based on number of lives
+            // Move it higher up when there are more lives to prevent overflow
+            if (gameState.lives > 5) {
+                newLivesContainer.style.top = '35%'; // Higher position for more lives
+            } else {
+                newLivesContainer.style.top = '50%'; // Standard position for fewer lives
+            }
+            
             newLivesContainer.style.transform = 'translateY(-50%)'; // Ensure true vertical centering
             newLivesContainer.style.display = 'flex';
             newLivesContainer.style.flexDirection = 'column'; // Vertical layout
             newLivesContainer.style.alignItems = 'center';
             newLivesContainer.style.justifyContent = 'center';
-            newLivesContainer.style.gap = '15px'; // Space between rockets
+            
+            // Reduce gap between rockets when there are many lives
+            if (gameState.lives > 5) {
+                newLivesContainer.style.gap = '10px'; // Smaller gap for more rockets
+            } else {
+                newLivesContainer.style.gap = '15px'; // Standard gap for fewer rockets
+            }
+            
             newLivesContainer.style.zIndex = '9999'; // Very high z-index to ensure visibility
             newLivesContainer.style.padding = '10px'; // Add padding around lives
             newLivesContainer.style.backgroundColor = 'rgba(0, 20, 50, 0.8)'; // More opaque background
@@ -4615,7 +4656,14 @@
                 const lifeRocket = document.createElement('div');
                 lifeRocket.className = 'life-rocket';
                 lifeRocket.textContent = '🚀';
-                lifeRocket.style.fontSize = '2em'; // Make rockets larger
+                
+                // Adjust size based on number of lives
+                if (gameState.lives > 7) {
+                    lifeRocket.style.fontSize = '1.7em'; // Smaller rockets when there are many
+                } else {
+                    lifeRocket.style.fontSize = '2em'; // Standard size for fewer rockets
+                }
+                
                 lifeRocket.style.textShadow = '0 0 5px #fff'; // Add glow effect to rockets
                 newLivesContainer.appendChild(lifeRocket);
             }
@@ -4639,12 +4687,28 @@
                 livesContainer.removeChild(livesContainer.firstChild);
             }
             
+            // Adjust container position and styling based on number of lives
+            if (gameState.lives > 5) {
+                livesContainer.style.top = '35%'; // Higher position for more lives
+                livesContainer.style.gap = '10px'; // Smaller gap for more rockets
+            } else {
+                livesContainer.style.top = '50%'; // Standard position for fewer lives 
+                livesContainer.style.gap = '15px'; // Standard gap for fewer rockets
+            }
+            
             // Add rockets for remaining lives
             for (let i = 0; i < gameState.lives; i++) {
                 const lifeRocket = document.createElement('div');
                 lifeRocket.className = 'life-rocket';
                 lifeRocket.textContent = '🚀';
-                lifeRocket.style.fontSize = '2em'; // Match the size in createLivesDisplay
+                
+                // Adjust size based on number of lives
+                if (gameState.lives > 7) {
+                    lifeRocket.style.fontSize = '1.7em'; // Smaller rockets when there are many
+                } else {
+                    lifeRocket.style.fontSize = '2em'; // Standard size for fewer rockets
+                }
+                
                 lifeRocket.style.textShadow = '0 0 5px #fff'; // Add glow effect to rockets
                 livesContainer.appendChild(lifeRocket);
             }
