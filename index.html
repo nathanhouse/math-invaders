@@ -878,6 +878,26 @@
             0%, 100% { filter: drop-shadow(0 0 5px transparent); }
             50% { filter: drop-shadow(0 0 8px #ff0000); }
         }
+        @keyframes pulse-invader {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
+        }
+        .flashing-subtitle {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #ff9900;
+            text-shadow: 0 0 8px #ff9900, 0 0 15px #ff0000;
+            animation: flash-subtitle 2s ease-in-out infinite alternate;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        @keyframes flash-subtitle {
+            0% { opacity: 0.7; text-shadow: 0 0 5px #ff9900, 0 0 10px #ff0000; }
+            25% { color: #ffcc00; }
+            50% { opacity: 1; text-shadow: 0 0 10px #ff9900, 0 0 20px #ff0000, 0 0 30px #ff00ff; }
+            75% { color: #ff5500; }
+            100% { opacity: 0.9; text-shadow: 0 0 15px #ff9900, 0 0 25px #ff0000; }
+        }
     </style>
 </head>
 <body>
@@ -887,6 +907,7 @@
         <div id="loading-text">LOADING...</div>
     </div>
     <div class="title">MATH INVADERS</div>
+    <div id="subtitle" class="flashing-subtitle">Blast Aliens, Master Math, and Save the Galaxy! 🚀👽➗💥</div>
     <div style="font-size: 0.8em; margin-bottom: 10px; color: #00ffff;">VERSION 0.1 BETA</div>
     <button id="sound-toggle" class="control-toggle">SOUND: ON</button>
     <button id="score-popup-toggle" class="control-toggle">SCORE POPUPS: ON</button>
@@ -1870,7 +1891,8 @@
             document.getElementById('operator-selection').style.display = 'none';
             document.getElementById('difficulty-selection').style.display = 'none';
             document.querySelector('.title').style.display = 'none';
-            document.querySelector('.title + div').style.display = 'none';
+            document.querySelector('#subtitle').style.display = 'none'; // Hide subtitle
+            document.querySelector('.title + div + div').style.display = 'none'; // Version info
             document.querySelectorAll('.equation').forEach(eq => {
                 eq.style.display = 'none';
             });
@@ -1899,7 +1921,8 @@
             
             // Restore the first screen elements
             document.querySelector('.title').style.display = 'block';
-            document.querySelector('.title + div').style.display = 'block'; // Version info
+            document.querySelector('#subtitle').style.display = 'block'; // Show subtitle
+            document.querySelector('.title + div + div').style.display = 'block'; // Version info
             document.querySelectorAll('.equation').forEach(eq => {
                 eq.style.display = 'block';
             });
@@ -1915,7 +1938,8 @@
             document.getElementById('operator-selection').style.display = 'block';
             document.getElementById('difficulty-selection').style.display = 'none';
             document.querySelector('.title').style.display = 'none';
-            document.querySelector('.title + div').style.display = 'none';
+            document.querySelector('#subtitle').style.display = 'none'; // Hide subtitle
+            document.querySelector('.title + div + div').style.display = 'none'; // Version info
             document.querySelectorAll('.equation').forEach(eq => {
                 eq.style.display = 'none';
             });
@@ -3889,7 +3913,7 @@
                 <div style="font-size: 1.5em; color: #00ffff; margin-bottom: 20px;">Level: ${gameState.level}</div>
                 <div id="name-input-area" style="opacity: 1; margin-top: 20px; border: 2px solid #ffff00; padding: 15px; border-radius: 10px; background-color: rgba(0, 0, 40, 0.5);">
                     <div style="font-size: 1.5em; color: #ffffff; margin-bottom: 15px; text-shadow: 0 0 5px #ffffff;">ENTER YOUR NAME</div>
-                    <input type="text" id="celebration-player-name" class="name-input" placeholder="Enter your name" maxlength="20" style="margin-bottom: 15px; font-size: 1.3em; padding: 10px;">
+                    <input type="text" id="celebration-player-name" class="name-input" placeholder="Enter your name" maxlength="20" style="margin-bottom: 15px; font-size: 1.3em; padding: 10px; width: 80%; text-align: center;">
                     <button id="celebration-submit-name" class="name-submit" style="margin: 0 auto; display: block; font-size: 1.2em; padding: 10px 20px;">SUBMIT</button>
                 </div>
             `;
