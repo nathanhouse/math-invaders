@@ -3521,6 +3521,9 @@
                     if (!highScores.subtraction) highScores.subtraction = [];
                     if (!highScores.multiplication) highScores.multiplication = [];
                     if (!highScores.division) highScores.division = [];
+                    
+                    // Convert old difficulty format to new format
+                    convertOldDifficultyFormat();
                 }
             } catch (error) {
                 console.error("Error loading high scores:", error);
@@ -3531,6 +3534,50 @@
                     multiplication: [],
                     division: []
                 };
+            }
+        }
+        
+        // Function to convert old difficulty format to new format
+        function convertOldDifficultyFormat() {
+            const operators = ['addition', 'subtraction', 'multiplication', 'division'];
+            let needsUpdate = false;
+            
+            operators.forEach(operator => {
+                highScores[operator].forEach(score => {
+                    if (score.difficulty) {
+                        // Check if the difficulty has the old format
+                        if (score.difficulty.includes('A:EASY')) {
+                            score.difficulty = score.difficulty.replace('A:EASY', 'A:SLOW');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:MEDIUM')) {
+                            score.difficulty = score.difficulty.replace('A:MEDIUM', 'A:NORMAL');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:HARD')) {
+                            score.difficulty = score.difficulty.replace('A:HARD', 'A:FAST');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:EXPERT')) {
+                            score.difficulty = score.difficulty.replace('A:EXPERT', 'A:EXTREME');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:slow')) {
+                            score.difficulty = score.difficulty.replace('A:slow', 'A:SLOW');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:normal')) {
+                            score.difficulty = score.difficulty.replace('A:normal', 'A:NORMAL');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:fast')) {
+                            score.difficulty = score.difficulty.replace('A:fast', 'A:FAST');
+                            needsUpdate = true;
+                        } else if (score.difficulty.includes('A:extreme')) {
+                            score.difficulty = score.difficulty.replace('A:extreme', 'A:EXTREME');
+                            needsUpdate = true;
+                        }
+                    }
+                });
+            });
+            
+            // If we made any changes, save the updated high scores
+            if (needsUpdate) {
+                saveHighScores();
             }
         }
         
@@ -3554,8 +3601,9 @@
         // Add a new high score
         function addHighScore(name, score, level, operator, alienDifficulty, mathDifficulty) {
             // Create difficulty string
-            const difficultyLabels = ["EASY", "MEDIUM", "HARD", "EXPERT"];
-            const difficultyLabel = `A:${difficultyLabels[alienDifficulty-1]} M:${difficultyLabels[mathDifficulty-1]}`;
+            const mathDifficultyLabels = ["EASY", "MEDIUM", "HARD", "EXPERT"];
+            const alienSpeedLabels = ["SLOW", "NORMAL", "FAST", "EXTREME"];
+            const difficultyLabel = `A:${alienSpeedLabels[alienDifficulty-1]} M:${mathDifficultyLabels[mathDifficulty-1]}`;
             
             // Create the new entry
             const newEntry = {
