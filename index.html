@@ -2343,11 +2343,17 @@
             let baseSpeed;
             
             if (level === 1) {
-                // For Easy mode, start at 600ms
+                // For Easy mode, start at 700ms
+                baseSpeed = 700;
+            } else if (level === 2) {
+                // For Medium mode, start at 600ms
                 baseSpeed = 600;
-            } else {
-                // For other difficulties, use original formula
-                baseSpeed = 600 - (level * 100);
+            } else if (level === 3) {
+                // For Hard mode, start at 500ms
+                baseSpeed = 500;
+            } else if (level === 4) {
+                // For Expert mode, start at 400ms
+                baseSpeed = 400;
             }
             
             // Apply additional speed increase based on current game level
@@ -4623,29 +4629,23 @@
             newLivesContainer.style.position = 'fixed'; // Use fixed positioning for reliability
             newLivesContainer.style.right = '20px'; // Position at the right edge of the screen
             
-            // Adjust vertical position based on number of lives
-            // Move it higher up when there are more lives to prevent overflow
-            if (gameState.lives > 5) {
-                newLivesContainer.style.top = '35%'; // Higher position for more lives
-            } else {
-                newLivesContainer.style.top = '50%'; // Standard position for fewer lives
-            }
+            // Position the lives display at the bottom right, level with the player's spaceship
+            newLivesContainer.style.bottom = '25px'; // Same bottom position as the player
+            newLivesContainer.style.top = 'auto'; // Remove the top positioning
             
-            newLivesContainer.style.transform = 'translateY(-50%)'; // Ensure true vertical centering
+            // Remove the transform since we're using bottom positioning now
+            newLivesContainer.style.transform = 'none';
+            
             newLivesContainer.style.display = 'flex';
-            newLivesContainer.style.flexDirection = 'column'; // Vertical layout
+            newLivesContainer.style.flexDirection = 'column'; // Vertical layout as requested
             newLivesContainer.style.alignItems = 'center';
-            newLivesContainer.style.justifyContent = 'center';
+            newLivesContainer.style.justifyContent = 'flex-end'; // Align from bottom up
             
-            // Reduce gap between rockets when there are many lives
-            if (gameState.lives > 5) {
-                newLivesContainer.style.gap = '10px'; // Smaller gap for more rockets
-            } else {
-                newLivesContainer.style.gap = '15px'; // Standard gap for fewer rockets
-            }
+            // Spacing between rockets for vertical layout
+            newLivesContainer.style.gap = '5px'; // Tighter spacing for vertical layout
             
             newLivesContainer.style.zIndex = '9999'; // Very high z-index to ensure visibility
-            newLivesContainer.style.padding = '10px'; // Add padding around lives
+            newLivesContainer.style.padding = '10px 8px'; // Adjust padding for vertical layout
             newLivesContainer.style.backgroundColor = 'rgba(0, 20, 50, 0.8)'; // More opaque background
             newLivesContainer.style.borderRadius = '10px'; // Rounded corners
             newLivesContainer.style.border = '2px solid #00ff00'; // Green border like the game box
@@ -4657,12 +4657,8 @@
                 lifeRocket.className = 'life-rocket';
                 lifeRocket.textContent = '🚀';
                 
-                // Adjust size based on number of lives
-                if (gameState.lives > 7) {
-                    lifeRocket.style.fontSize = '1.7em'; // Smaller rockets when there are many
-                } else {
-                    lifeRocket.style.fontSize = '2em'; // Standard size for fewer rockets
-                }
+                // Adjust rocket size for vertical layout
+                lifeRocket.style.fontSize = '1.3em'; // Smaller rockets for compact vertical layout
                 
                 lifeRocket.style.textShadow = '0 0 5px #fff'; // Add glow effect to rockets
                 newLivesContainer.appendChild(lifeRocket);
@@ -4674,7 +4670,7 @@
             // Make sure the lives container is visible
             newLivesContainer.style.display = 'flex';
             
-            console.log("Lives display created and positioned at right: 20px");
+            console.log("Lives display created and positioned at bottom right (vertical)");
         }
         
         // Function to update the lives display when a life is lost
@@ -4687,14 +4683,14 @@
                 livesContainer.removeChild(livesContainer.firstChild);
             }
             
-            // Adjust container position and styling based on number of lives
-            if (gameState.lives > 5) {
-                livesContainer.style.top = '35%'; // Higher position for more lives
-                livesContainer.style.gap = '10px'; // Smaller gap for more rockets
-            } else {
-                livesContainer.style.top = '50%'; // Standard position for fewer lives 
-                livesContainer.style.gap = '15px'; // Standard gap for fewer rockets
-            }
+            // Set consistent vertical layout properties
+            livesContainer.style.bottom = '25px';
+            livesContainer.style.top = 'auto';
+            livesContainer.style.transform = 'none';
+            livesContainer.style.flexDirection = 'column';
+            livesContainer.style.gap = '5px';
+            livesContainer.style.padding = '10px 8px';
+            livesContainer.style.justifyContent = 'flex-end';
             
             // Add rockets for remaining lives
             for (let i = 0; i < gameState.lives; i++) {
@@ -4702,12 +4698,8 @@
                 lifeRocket.className = 'life-rocket';
                 lifeRocket.textContent = '🚀';
                 
-                // Adjust size based on number of lives
-                if (gameState.lives > 7) {
-                    lifeRocket.style.fontSize = '1.7em'; // Smaller rockets when there are many
-                } else {
-                    lifeRocket.style.fontSize = '2em'; // Standard size for fewer rockets
-                }
+                // Use consistent size for vertical layout
+                lifeRocket.style.fontSize = '1.3em'; // Smaller rockets for compact vertical layout
                 
                 lifeRocket.style.textShadow = '0 0 5px #fff'; // Add glow effect to rockets
                 livesContainer.appendChild(lifeRocket);
