@@ -930,23 +930,23 @@
     <div id="difficulty-selection" style="display: none; text-align: center; margin-bottom: 30px;">
         <h2 style="font-size: 2.5em; margin-bottom: 20px; text-shadow: 0 0 10px #00ff00;">SELECT DIFFICULTY</h2>
         <div class="difficulty-section">
-            <h3 style="font-size: 1.5em; margin-bottom: 10px; text-shadow: 0 0 8px #00ff00;">ALIEN DIFFICULTY</h3>
+            <h3 style="font-size: 1.5em; margin-bottom: 10px; text-shadow: 0 0 8px #00ff00;">ALIEN SPEED</h3>
             <div class="alien-selection">
                 <button class="alien-option" type="button" onclick="selectAlienDifficulty(1)">
                     <div class="alien-emoji">👽</div>
-                    <div class="level-indicator">EASY</div>
+                    <div class="level-indicator">SLOW</div>
                 </button>
                 <button class="alien-option" type="button" onclick="selectAlienDifficulty(2)">
                     <div class="alien-emoji">🛸</div>
-                    <div class="level-indicator">MEDIUM</div>
+                    <div class="level-indicator">NORMAL</div>
                 </button>
                 <button class="alien-option" type="button" onclick="selectAlienDifficulty(3)">
                     <div class="alien-emoji">👾</div>
-                    <div class="level-indicator">HARD</div>
+                    <div class="level-indicator">FAST</div>
                 </button>
                 <button class="alien-option" type="button" onclick="selectAlienDifficulty(4)">
                     <div class="alien-emoji">🦠</div>
-                    <div class="level-indicator">EXPERT</div>
+                    <div class="level-indicator">EXTREME</div>
                 </button>
             </div>
         </div>
@@ -982,13 +982,13 @@
             <span class="modal-close" onclick="hideDifficultyExplanation()">&times;</span>
             <h2 style="text-align: center; margin-bottom: 20px; font-family: 'Courier New', monospace;">DIFFICULTY EXPLANATIONS</h2>
             <div class="difficulty-explanation">
-                <h3>ALIEN DIFFICULTY</h3>
+                <h3>ALIEN SPEED</h3>
                 <p style="margin-bottom: 10px;">Controls how fast the aliens move and attack:</p>
                 <ul style="list-style-type: none; padding-left: 20px;">
-                    <li style="margin-bottom: 5px;">• EASY: Slow moving aliens</li>
-                    <li style="margin-bottom: 5px;">• MEDIUM: Moderate speed</li>
-                    <li style="margin-bottom: 5px;">• HARD: Fast moving aliens</li>
-                    <li>• EXPERT: Extremely fast and challenging</li>
+                    <li style="margin-bottom: 5px;">• SLOW: Slow moving aliens</li>
+                    <li style="margin-bottom: 5px;">• NORMAL: Moderate speed</li>
+                    <li style="margin-bottom: 5px;">• FAST: Fast moving aliens</li>
+                    <li>• EXTREME: Extremely fast and challenging</li>
                 </ul>
             </div>
             <div class="difficulty-explanation">
@@ -1092,11 +1092,11 @@
             <div class="difficulty-explanation">
                 <h3>SCORING</h3>
                 <ul style="list-style-type: none; padding-left: 20px;">
-                    <li style="margin-bottom: 5px;">• Correct answer: +100 points (base) multiplied by math and alien difficulty</li>
-                    <li style="margin-bottom: 5px;">• Regular invader (no number): +20 points multiplied by alien difficulty</li>
-                    <li style="margin-bottom: 5px;">• Wave completion: +500 points multiplied by math and alien difficulty</li>
+                    <li style="margin-bottom: 5px;">• Correct answer: +100 points (base) multiplied by math difficulty and alien speed</li>
+                    <li style="margin-bottom: 5px;">• Regular invader (no number): +20 points multiplied by alien speed</li>
+                    <li style="margin-bottom: 5px;">• Wave completion: +500 points multiplied by math difficulty and alien speed</li>
                     <li style="margin-bottom: 5px;">• Math difficulty multiplier: Level 1 = 1x, Level 2 = 2x, Level 3 = 3x, Level 4 = 4x</li>
-                    <li>• Alien difficulty multiplier: Level 1 = 1x, Level 2 = 1.2x, Level 3 = 1.4x, Level 4 = 1.6x</li>
+                    <li>• Alien speed multiplier: Level 1 = 1x, Level 2 = 1.2x, Level 3 = 1.4x, Level 4 = 1.6x</li>
                 </ul>
             </div>
             
@@ -4086,7 +4086,11 @@
                 mathDifficulty: selectedMathDifficulty || 1,
                 operator: selectedOperator || 'addition',
                 lives: 3,  // Reset lives to 3
-                gameStartTime: Date.now() // Reset game start time
+                gameStartTime: Date.now(), // Reset game start time
+                bossAlien: null,                // Boss alien object
+                bossAlienProjectiles: [],       // Boss alien projectiles
+                lastBossAlienSpawnTime: 0,      // Track when the last boss alien spawned
+                bossAliensSpawnedThisLevel: 0   // Track how many boss aliens have appeared this level
             };
             
             // Force a proper reset of the alien movement speed based on level 1
@@ -4151,6 +4155,9 @@
             }
             
             console.log("Game restarted successfully.");
+
+            // Reset boss alien spawn count and clean up any existing boss elements
+            resetBossAlienForNewLevel();
         }
 
         // Investigate rocket speed issue
