@@ -2733,7 +2733,7 @@
             }
             
             // Player 1 controls
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'o' || e.key === 'O' || e.key === 'i' || e.key === 'I' || e.key === '4' || e.key === '5') {
                 if (!gameState.keysPressed[e.key]) {
                     console.log("Player 1 key pressed:", e.key);
                 }
@@ -2742,10 +2742,6 @@
                 // Prevent default scrolling behavior for space
                 if (e.key === ' ') {
                     e.preventDefault();
-                }
-                
-                // Check for firing on keydown
-                if (e.key === 'o' || e.key === 'O') {
                     fireProjectile();
                 }
             }
@@ -2767,7 +2763,7 @@
             if (!gameState.keysPressed) return;
             
             // Player 1 controls
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'o' || e.key === 'O') {
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'o' || e.key === 'O' || e.key === 'i' || e.key === 'I' || e.key === '4' || e.key === '5') {
                 gameState.keysPressed[e.key] = false;
             }
             
@@ -2917,13 +2913,13 @@
                 // Reset rocket speed on every frame to ensure it's always constant
                 resetRocketSpeed();
                 
-                if (gameState.keysPressed['ArrowLeft']) {
+                if (gameState.keysPressed['ArrowLeft'] || gameState.keysPressed['i'] || gameState.keysPressed['I'] || gameState.keysPressed['4']) {
                     movePlayer(-1.5);
                 }
-                if (gameState.keysPressed['ArrowRight']) {
+                if (gameState.keysPressed['ArrowRight'] || gameState.keysPressed['o'] || gameState.keysPressed['O'] || gameState.keysPressed['5']) {
                     movePlayer(1.5);
                 }
-                if (gameState.keysPressed[' '] || gameState.keysPressed['o'] || gameState.keysPressed['O']) {
+                if (gameState.keysPressed[' ']) {
                     fireProjectile();
                 }
                 
