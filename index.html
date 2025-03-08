@@ -3145,6 +3145,30 @@
             gameState.canFire = false;
             console.log("Firing disabled at level complete screen");
             
+            // Add an extra life when completing a level (maximum of 10)
+            // Moving this from continueToNextLevel to ensure it happens when level is completed
+            if (gameState.lives < gameState.maxLives) {
+                gameState.lives++;
+                console.log(`Player earned an extra life! Lives: ${gameState.lives}/${gameState.maxLives}`);
+                
+                // Show visual notification for extra life
+                const gameContainer = document.getElementById('game-container');
+                const containerRect = gameContainer.getBoundingClientRect();
+                const center = {
+                    left: containerRect.left + containerRect.width / 2,
+                    top: containerRect.top + containerRect.height / 2,
+                    right: containerRect.left + containerRect.width / 2,
+                    bottom: containerRect.top + containerRect.height / 2
+                };
+                showFeedbackEmoji("EXTRA LIFE! 🚀", '#00ff00', center, true, 2000, '2em');
+                
+                // Play a special sound for extra life
+                soundManager.playSound('levelComplete', { volume: 0.8 });
+                
+                // Update the lives display to show the new life
+                updateLivesDisplay();
+            }
+            
             // Update next level number
             document.getElementById('next-level-number').textContent = gameState.level;
             console.log(`Next level number updated to: ${gameState.level}`);
@@ -3226,28 +3250,8 @@
             gameState.canFire = false;
             console.log("Firing disabled at level transition, canFire =", gameState.canFire);
             
-            // Add an extra life when leveling up (maximum of 10)
-            if (gameState.lives < gameState.maxLives) {
-                gameState.lives++;
-                console.log(`Player earned an extra life! Lives: ${gameState.lives}/${gameState.maxLives}`);
-                
-                // Show visual notification for extra life
-                const gameContainer = document.getElementById('game-container');
-                const containerRect = gameContainer.getBoundingClientRect();
-                const center = {
-                    left: containerRect.left + containerRect.width / 2,
-                    top: containerRect.top + containerRect.height / 2,
-                    right: containerRect.left + containerRect.width / 2,
-                    bottom: containerRect.top + containerRect.height / 2
-                };
-                showFeedbackEmoji("EXTRA LIFE! 🚀", '#00ff00', center, true, 2000, '2em');
-                
-                // Play a special sound for extra life
-                soundManager.playSound('levelComplete', { volume: 0.8 });
-            }
-            
-            // Update the lives display to show the new life
-            updateLivesDisplay();
+            // Extra life is now awarded in showLevelCompleteScreen function
+            // to ensure it happens when level is completed
             
             // Reset rocket speed to ensure it stays constant regardless of level
             resetRocketSpeed();
